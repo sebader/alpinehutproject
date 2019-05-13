@@ -19,7 +19,7 @@ namespace AlpineHutsProject
         [FunctionName("ParseHutAvailability")]
         public static IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequest req, ILogger log)
         {
-            log.LogInformation("Parsing request received");
+            log.LogInformation("Availability parsing request received");
             string requestBody = new StreamReader(req.Body).ReadToEnd();
 
             try
@@ -49,11 +49,11 @@ namespace AlpineHutsProject
                             {
                                 parsedDay.Date = DateTime.ParseExact(roomDayAvailabilty.ReservationDate, "dd.MM.yyyy", CultureInfo.InvariantCulture);
                             }
+                        }
 
-                            if (hutLanguage == "")
-                            {
-                                hutLanguage = roomDayAvailabilty.HutDefaultLanguage;
-                            }
+                        if (hutLanguage == "")
+                        {
+                            hutLanguage = roomDayAvailabilty.HutDefaultLanguage;
                         }
 
                     }
@@ -68,6 +68,8 @@ namespace AlpineHutsProject
                     hutLanguage,
                     availability = resultList
                 };
+
+                log.LogInformation($"Parsed availability for {resultList.Count} entries");
 
                 return (ActionResult)new OkObjectResult(res);
             }

@@ -16,13 +16,13 @@ namespace AlpineHutsProject.Model
     public class RoomAvailability
     {
         [JsonProperty("bedCategoryId")]
-        public int BedCategoryId { get; set; }
+        public int? BedCategoryId { get; set; }
 
         [JsonProperty("freeRoom")]
-        public int FreeRoom { get; set; }
+        public int? FreeRoom { get; set; }
 
         [JsonProperty("totalRoom")]
-        public int TotalRoom { get; set; }
+        public int? TotalRoom { get; set; }
 
         [JsonProperty("BedCategory")]
         public string BedCategory

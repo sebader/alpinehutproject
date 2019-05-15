@@ -1,0 +1,145 @@
+﻿@page "/"
+@model AlpinHutsDashboard.Pages.HutsModel
+
+@{
+    ViewData["Title"] = "Alpenvereinshütten";
+}
+
+@section Scripts{
+
+    <script>
+        $(document).ready(function () {
+            $.fn.dataTable.moment('ddd, DD.MM.YYYY');
+            $('#hutTable').DataTable({
+                "paging": false,
+                "fixedHeader": true,
+                "columns": [
+                    { "searchable": false },
+                    null,
+                    null,
+                    null,
+                    null,
+                    { "searchable": false }
+                ],
+                initComplete: function () {
+                    this.api().columns().every(function () {
+                        var column = this;
+                        var select = $('<select><option value=""></option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex(
+                                    $(this).val()
+                                );
+                                //to select and search from grid
+                                column
+                                    .search(val ? '^' + val + '$' : '', true, false)
+                                    .draw();
+                            });
+
+                        column.data().unique().sort().each(function (d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>')
+                        });
+                    });
+                }
+            });
+        });
+    </script>
+
+}
+
+
+<h1>@ViewData["Title"]</h1>
+
+
+<div class="form-group">
+    <div class="col-md-3">
+        <form asp-action="Huts" method="get">
+            <div>
+                <label asp-for="DateFilter">Verfügbarkeit an Datum</label>
+                <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div>
+                <input type="submit" class="btn btn-primary" value="Abschicken" />
+                <a asp-route-Huts="" asp-route-SearchString="" class="btn btn-primary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="display" id="hutTable">
+    <thead>
+        <tr>
+            <th>
+                ID
+            </th>
+            <th>
+                Hütte
+            </th>
+            <th>
+                Land / Region
+            </th>
+            <th>
+                Koordination
+            </th>
+            <th>
+                @if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
+                {
+                    @: Verfügbarkeit am @Model.DateFilter?.ToString("dd.MM.yyyy")
+                }
+                else
+                {
+                    @: Nächste freie Verfügbarkeit
+                }
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Huts)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td><a asp-page="./HutAvailability" asp-route-hutid="@item.Id" asp-fragment="@Model.DateFilter?.ToString("yyyy-MM-dd")">
+                    @Html.DisplayFor(modelItem => item.Name)
+                    </a>
+                    
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Country)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Coordinates)
+                </td>
+                <td>
+                    @if (item.Enabled == true)
+                    {
+                        if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
+                        {
+                            var rooms = item.Availability.Where(a => a.Date == Model.DateFilter).OrderBy(a => a.BedCategoryId).Select(a => $"{a.BedCategory?.Name} - {a.FreeRoom}").ToList();
+                            //@string.Join("<br />", rooms)
+                            foreach (var room in rooms)
+                            {
+                                @room<br />
+                            }
+                        }
+                        else
+                        {
+                            @item.Availability.Where(a => a.FreeRoom > 0 && a.Date >= DateTime.Today).OrderBy(a => a.Date).FirstOrDefault()?.Date.ToString("ddd, dd.MM.yyyy")
+                        }
+                    }
+                    else
+                    {
+                        @: Buchung inaktiv
+                    }
+                </td>
+                <td>
+                    <a target="_blank" href="@item.Link">
+                        Onlinebuchung
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

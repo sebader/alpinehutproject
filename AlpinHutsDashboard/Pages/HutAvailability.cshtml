@@ -1,0 +1,68 @@
+﻿@page "{hutid:int?}"
+@model AlpinHutsDashboard.Pages.HutAvailabilityModel
+
+@{
+    ViewData["Title"] = "Verfügbarkeit " + Model.Availability.FirstOrDefault()?.Hut.Name;
+}
+
+@section Scripts{
+
+    <script>
+        $(document).ready(function () {
+            $.fn.dataTable.moment('dddd, DD.MM.YYYY');
+            $('#availabiltyTable').DataTable({
+                "paging": false,
+                "fixedHeader": true
+            });
+        });
+    </script>
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="display" id="availabiltyTable">
+    <thead>
+        <tr>
+            <th>
+                Datum
+            </th>
+            <th>
+                Plätze
+            </th>
+            <th>
+                Unterbringung
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            // We have a page-level filter on hutid, so we only have entries here for one hut. So grouping just by date is fine.
+            var availabilityPerDate = Model.Availability.GroupBy(a => a.Date, (key, g) => new { Date = key, Availability = g });
+        }
+        @foreach (var item in availabilityPerDate)
+        {
+            bool isFirstRow = true;
+            @foreach (var room in item.Availability.OrderBy(a => a.Date).OrderBy(a => a.BedCategory.Name))
+            {
+        <tr>
+            @if (isFirstRow)
+            {
+                isFirstRow = false;
+            <td rowspan=@item.Availability.Count().ToString()>
+                <!-- because of the fixed header of the datatable, we need to jump a bit further up than the actual date. Thus we just add one day to each row-->
+                <a name="@item.Date.AddDays(1).ToString("yyyy-MM-dd")"></a>
+                @item.Date.ToString("dddd, dd.MM.yyyy")
+            </td>
+            }
+            <td>
+                @room.FreeRoom / @room.TotalRoom
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => room.BedCategory.Name)
+            </td>
+        </tr>
+            }
+        }
+    </tbody>
+</table>

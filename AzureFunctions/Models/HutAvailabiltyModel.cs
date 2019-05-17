@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-
-using System.Globalization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
-namespace AlpineHutsProject.Model
+namespace AzureFunctions.Models
 {
-    public class Day
+    public class DayAvailability
     {
         public DateTime? Date { get; set; } = null;
         public List<RoomAvailability> Rooms { get; set; } = new List<RoomAvailability>();
@@ -24,27 +21,7 @@ namespace AlpineHutsProject.Model
         [JsonProperty("totalRoom")]
         public int? TotalRoom { get; set; }
 
-        [JsonProperty("BedCategory")]
-        public string BedCategory
-        {
-            get
-            {
-                switch (BedCategoryId)
-                {
-                    case 1: return "Massenlager";
-                    case 2: return "Zimmer";
-                    case 4: return "Matratzenlager";
-                    case 5: return "Mehrbettzimmer";
-                    case 7: return "Matratzenlager";
-                    case 8: return "Mehrbettzimmer";
-                    case 9: return "Zweierzimmer";
-                    default:
-                        return null;
-                }
-            }
-        }
     }
-
     public class RoomDayAvailability
     {
         [JsonProperty("hutBedCategoryId")]
@@ -77,6 +54,4 @@ namespace AlpineHutsProject.Model
         [JsonProperty("reservedRoomsRatio")]
         public double ReservedRoomsRatio { get; set; }
     }
-
-
 }

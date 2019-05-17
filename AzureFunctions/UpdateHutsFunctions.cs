@@ -6,27 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 
 namespace AzureFunctions
 {
-    public static class UpdateHuts
+    public static class UpdateHutsFunctions
     {
         private const int MaxHutId = 300;
         private const int ParallelTasks = 100;
 
-        private static IConfigurationRoot config = new ConfigurationBuilder()
-        .SetBasePath(Environment.CurrentDirectory)
-        .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-        .AddEnvironmentVariables()
-        .Build();
-
         private static HttpClient _httpClient = new HttpClient();
 
         [FunctionName("UpdateHutsTimerTriggered")]
-        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = true)]TimerInfo myTimer,
+        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0")]TimerInfo myTimer,
             ILogger log,
             [OrchestrationClient] DurableOrchestrationClient starter)
         {
@@ -84,20 +77,19 @@ namespace AzureFunctions
         [FunctionName("GetHutFromProvider")]
         public static async Task<Tuple<int, Hut>> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
         {
-            const string baseUrl = "https://www.alpsonline.org/reservation/calendar?lang=de_DE&hut_id=";
             Hut hut = null;
             try
             {
-                var response = await _httpClient.GetAsync($"{baseUrl}{hutId}");
+                var response = await _httpClient.GetAsync($"{Helpers.HutProviderBaseUrl}{hutId}");
 
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
                 {
-                    hut = UpdateHutHelpers.ParseHutInformation(responseBody, log);
+                    hut = Helpers.ParseHutInformation(responseBody, log);
                     if (hut != null)
                     {
                         hut.Id = hutId;
-                        hut.Link = $"{baseUrl}{hutId}";
+                        hut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";
                     }
                     else
                     {
@@ -121,13 +113,11 @@ namespace AzureFunctions
         {
             try
             {
-                var optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
-                optionsBuilder.UseSqlServer(config["DatabaseConnectionString"]);
-                var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
+                var dbContext = Helpers.GetDbContext();
 
                 foreach (var hut in huts)
                 {
-                    var existingHut = await alpinehutsDbContext.Huts.FirstOrDefaultAsync(h => h.Id == hut.Id);
+                    var existingHut = await dbContext.Huts.FirstOrDefaultAsync(h => h.Id == hut.Id);
                     if (existingHut != null)
                     {
                         log.LogInformation($"Updating existing hut ID={hut.Id} name={hut.Name}");
@@ -137,16 +127,16 @@ namespace AzureFunctions
                         existingHut.Country = hut.Country;
                         existingHut.Enabled = hut.Enabled;
                         existingHut.LastUpdated = hut.LastUpdated;
-                        alpinehutsDbContext.Update(existingHut);
+                        dbContext.Update(existingHut);
                     }
                     else
                     {
                         log.LogInformation($"Adding new hut ID={hut.Id} name={hut.Name}");
-                        alpinehutsDbContext.Huts.Add(hut);
+                        dbContext.Huts.Add(hut);
                     }
                 }
 
-                return await alpinehutsDbContext.SaveChangesAsync();
+                return await dbContext.SaveChangesAsync();
             }
             catch (Exception e)
             {

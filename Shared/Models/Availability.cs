@@ -12,6 +12,7 @@ namespace Shared.Models
         public int? FreeRoom { get; set; }
         public int? TotalRoom { get; set; }
         public virtual BedCategory BedCategory { get; set; }
+        public DateTime? LastUpdated { get; set; }
 
         public virtual Hut Hut { get; set; }
     }

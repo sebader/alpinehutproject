@@ -1,4 +1,6 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using System;
@@ -9,8 +11,24 @@ using System.Text.RegularExpressions;
 
 namespace AzureFunctions
 {
-    public static class UpdateHutHelpers
+    public static class Helpers
     {
+        public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?lang=de_DE&hut_id=";
+        public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
+
+        public static IConfigurationRoot config = new ConfigurationBuilder()
+        .SetBasePath(Environment.CurrentDirectory)
+        .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .Build();
+
+        public static AlpinehutsDbContext GetDbContext()
+        {
+            DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
+            optionsBuilder.UseSqlServer(config["DatabaseConnectionString"], options => options.EnableRetryOnFailure());
+            var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
+            return alpinehutsDbContext;
+        }
         public static Hut ParseHutInformation(string httpBody, ILogger log)
         {
             var doc = new HtmlDocument();
@@ -38,7 +56,7 @@ namespace AzureFunctions
                     Enabled = hutEnabled,
                     Coordinates = coordinates,
                     Country = country,
-                    LastUpdated = DateTime.Now
+                    LastUpdated = DateTime.UtcNow
                 };
 
                 log.LogInformation($"Hut info parsed: name='{hutName}' country='{country}' hutEnabled='{hutEnabled}' coordinates='{coordinates}'");

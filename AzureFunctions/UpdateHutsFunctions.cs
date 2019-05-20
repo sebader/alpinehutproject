@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,13 +22,37 @@ namespace AzureFunctions
         private static HttpClient _httpClient = new HttpClient();
 
         [FunctionName("UpdateHutsTimerTriggered")]
-        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0")]TimerInfo myTimer,
+        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = false)]TimerInfo myTimer,
             ILogger log,
             [OrchestrationClient] DurableOrchestrationClient starter)
         {
-            //var res = await GetHutFromProviderActivity(113, log);
             string instanceId = await starter.StartNewAsync("UpdateHutsOrchestrator", 1);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
+        }
+
+        /// <summary>
+        /// This function can update a single hut. More for debugging.
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("UpdateHutHttpTriggered")]
+        public static async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            string hutid = req.Query["hutid"];
+            int parsedId;
+            if (string.IsNullOrEmpty(hutid) || !int.TryParse(hutid, out parsedId))
+            {
+                return new BadRequestObjectResult("Please pass a hutid in the query string");
+            }
+
+            var res = await GetHutFromProviderActivity(parsedId, log);
+            await UpsertHuts(new List<Hut>() { res.Item2 }, log);
+
+            return new OkObjectResult(res);
         }
 
         [FunctionName("UpdateHutsOrchestrator")]
@@ -85,7 +112,7 @@ namespace AzureFunctions
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
                 {
-                    hut = Helpers.ParseHutInformation(responseBody, log);
+                    hut = await Helpers.ParseHutInformation(responseBody, log);
                     if (hut != null)
                     {
                         hut.Id = hutId;
@@ -121,11 +148,13 @@ namespace AzureFunctions
                     if (existingHut != null)
                     {
                         log.LogInformation($"Updating existing hut ID={hut.Id} name={hut.Name}");
-                        existingHut.Name = hut.Name;
-                        existingHut.Link = hut.Link;
-                        existingHut.Coordinates = hut.Coordinates;
-                        existingHut.Country = hut.Country;
-                        existingHut.Enabled = hut.Enabled;
+                        existingHut.Name = !string.IsNullOrEmpty(hut.Name) ? hut.Name : existingHut.Name;
+                        existingHut.Link = !string.IsNullOrEmpty(hut.Link) ? hut.Link : existingHut.Link;
+                        existingHut.Coordinates = !string.IsNullOrEmpty(hut.Coordinates) ? hut.Coordinates : existingHut.Coordinates;
+                        existingHut.Country = !string.IsNullOrEmpty(hut.Country) ? hut.Country : existingHut.Country;
+                        existingHut.Enabled = hut.Enabled ?? existingHut.Enabled;
+                        existingHut.Latitude = hut.Latitude ?? existingHut.Latitude;
+                        existingHut.Longitude = hut.Longitude ?? existingHut.Longitude;
                         existingHut.LastUpdated = hut.LastUpdated;
                         dbContext.Update(existingHut);
                     }

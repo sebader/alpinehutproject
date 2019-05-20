@@ -1,13 +1,17 @@
-﻿using HtmlAgilityPack;
+﻿using AzureFunctions.Models;
+using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace AzureFunctions
 {
@@ -22,6 +26,8 @@ namespace AzureFunctions
         .AddEnvironmentVariables()
         .Build();
 
+        private static HttpClient _httpClient = new HttpClient();
+
         public static AlpinehutsDbContext GetDbContext()
         {
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
@@ -29,7 +35,7 @@ namespace AzureFunctions
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }
-        public static Hut ParseHutInformation(string httpBody, ILogger log)
+        public static async Task<Hut> ParseHutInformation(string httpBody, ILogger log)
         {
             var doc = new HtmlDocument();
             doc.LoadHtml(httpBody);
@@ -39,8 +45,10 @@ namespace AzureFunctions
             {
                 string hutName = infoDiv.ChildNodes["h4"].InnerText;
                 var spans = infoDiv.ChildNodes.Where(c => c.Name == "span").ToArray();
+                // We use the phone number only as a way to determine the country
                 string phoneNumber = spans[1]?.InnerText;
                 log.LogDebug($"Phonenumber={phoneNumber}");
+
                 string coordinates = spans[4]?.InnerText;
 
                 coordinates = Regex.Replace(coordinates, @"\s+", " ");
@@ -50,16 +58,21 @@ namespace AzureFunctions
 
                 string country = GetCountry(hutName, phoneNumber, httpBody);
 
+                // Only search if the hutname exists
+                var latLong = !string.IsNullOrEmpty(hutName) ? await SearchHutCoordinates(hutName, log) : (null, null);
+
                 Hut hut = new Hut()
                 {
                     Name = hutName,
                     Enabled = hutEnabled,
                     Coordinates = coordinates,
                     Country = country,
-                    LastUpdated = DateTime.UtcNow
+                    LastUpdated = DateTime.UtcNow,
+                    Latitude = latLong.latitude,
+                    Longitude = latLong.longitude
                 };
 
-                log.LogInformation($"Hut info parsed: name='{hutName}' country='{country}' hutEnabled='{hutEnabled}' coordinates='{coordinates}'");
+                log.LogInformation($"Hut info parsed: name={hutName} country={country} hutEnabled={hutEnabled} lat={latLong.latitude} long={latLong.longitude} coordinates={coordinates}");
 
                 return hut;
             }
@@ -106,6 +119,94 @@ namespace AzureFunctions
             }
 
             return "Germany/Austria";
+        }
+
+        /// <summary>
+        /// Looks up the GPS coordinates based on a hut name
+        /// Uses MapQuest API https://developer.mapquest.com/documentation/open/nominatim-search/search/
+        /// This data is based on OpenStreetMap
+        /// </summary>
+        /// <param name="hutName"></param>
+        /// <returns></returns>
+        public static async Task<(double? latitude, double? longitude)> SearchHutCoordinates(string hutName, ILogger log)
+        {
+            const string baseSearchUrl = "https://open.mapquestapi.com/nominatim/v1/search.php?format=json&limit=5";
+
+            string apiKey = config["MapQuestApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new ArgumentException("MapQuestApiKey missing in AppSettings");
+            }
+
+            try
+            {
+                // Most hut names contain the Section after a comma. We only use the name for the search
+                // Sample: "Linzer Tauplitz-Haus, Alpenverein Linz"
+                if (hutName.Contains(','))
+                {
+                    hutName = hutName.Split(',')[0];
+                }
+
+                string searchUrl = $"{baseSearchUrl}&key={apiKey}&q={hutName}";
+                var result = await _httpClient.GetAsync(searchUrl);
+                result.EnsureSuccessStatusCode();
+
+                var searchResults = await result.Content.ReadAsAsync<List<MapQuestSearchResult>>();
+                if (searchResults?.Count > 0)
+                {
+                    MapQuestSearchResult sr = null;
+                    if (searchResults.Count > 1)
+                    {
+                        // Many - but not all - of the huts actually have the type property properly 
+                        sr = searchResults.FirstOrDefault(s => s.type == "alpine_hut" || s.type == "restaurant");
+                        if (sr == null)
+                        {
+                            log.LogWarning($"Multiple coordinate search results for hut name={hutName}. Selecting the first one which might not be the correct one");
+                        }
+                    }
+                    sr = sr ?? searchResults.First();
+                    var lat = double.Parse(sr.lat, CultureInfo.InvariantCulture);
+                    var lon = double.Parse(sr.lon, CultureInfo.InvariantCulture);
+
+                    // Do some simple sanity check if this location is somewhere in central Europe
+                    if (lon < 4 || lon > 17 || lat > 53 || lat < 44)
+                    {
+                        log.LogWarning($"Unrealistic coordinates found for hut={hutName} lat={lat} long={lon}. Discarding result");
+                    }
+                    else
+                    {
+                        log.LogInformation($"Got location for hut={hutName} lat={lat} long={lon}");
+                        return (lat, lon);
+                    }
+                }
+                log.LogWarning($"No coordinate result for hut name={hutName}");
+
+                if (Regex.IsMatch(hutName, "(?<TLA> [A-ZÖÄÜ]{2,4})"))
+                {
+                    hutName = Regex.Replace(hutName, "(?<TLA> [A-ZÖÄÜ]{2,4})", "");
+                    log.LogInformation($"Attempting alternative search for {hutName} without TLA");
+                    return await SearchHutCoordinates(hutName, log);
+                }
+
+                if (hutName.Contains(" Hütte", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    hutName = hutName.Replace(" hütte", "hütte", StringComparison.InvariantCultureIgnoreCase);
+                    log.LogInformation($"Attempting alternative search for {hutName}");
+                    return await SearchHutCoordinates(hutName, log);
+                }
+
+                if (hutName.Contains("hütte", StringComparison.InvariantCultureIgnoreCase) && !hutName.Contains("-hütte", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    hutName = hutName.Replace("hütte", "-hütte", StringComparison.InvariantCultureIgnoreCase);
+                    log.LogInformation($"Attempting alternative search for {hutName}");
+                    return await SearchHutCoordinates(hutName, log);
+                }
+            }
+            catch (Exception e)
+            {
+                log.LogError(default, e, $"Exception while calling coordinate search for hut={hutName}");
+            }
+            return (null, null);
         }
     }
 }

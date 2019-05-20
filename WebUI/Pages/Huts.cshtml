@@ -1,6 +1,8 @@
 ﻿@page "/"
 @model AlpinHutsDashboard.Pages.HutsModel
 
+@using System.Globalization;
+
 @{
     ViewData["Title"] = "Alpenvereinshütten mit Onlinebuchung";
 }
@@ -47,7 +49,6 @@
 
 }
 
-
 <h1>@ViewData["Title"]</h1>
 
 
@@ -79,7 +80,7 @@
                 Land / Region
             </th>
             <th>
-                Koordination
+                Koordinaten
             </th>
             <th>
                 @if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
@@ -101,16 +102,21 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Id)
                 </td>
-                <td><a asp-page="./HutAvailability" asp-route-hutid="@item.Id" asp-fragment="@Model.DateFilter?.ToString("yyyy-MM-dd")">
-                    @Html.DisplayFor(modelItem => item.Name)
+                <td>
+                    <a asp-page="./HutAvailability" asp-route-hutid="@item.Id" asp-fragment="@Model.DateFilter?.ToString("yyyy-MM-dd")">
+                        @Html.DisplayFor(modelItem => item.Name)
                     </a>
-                    
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Country)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Coordinates)
+                    @if (item.Latitude != null && item.Longitude != null)
+                    {
+                        <a target="_blank" href="https://www.openstreetmap.org/#map=15/@item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)">
+                            @item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
+                        </a>
+                    }
                 </td>
                 <td>
                     @if (item.Enabled == true)

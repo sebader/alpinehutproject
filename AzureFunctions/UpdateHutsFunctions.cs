@@ -42,17 +42,27 @@ namespace AzureFunctions
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string hutid = req.Query["hutid"];
-            int parsedId;
-            if (string.IsNullOrEmpty(hutid) || !int.TryParse(hutid, out parsedId))
+            string hutids = req.Query["hutid"];
+            if (string.IsNullOrEmpty(hutids))
             {
-                return new BadRequestObjectResult("Please pass a hutid in the query string");
+                return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");
             }
 
-            var res = await GetHutFromProviderActivity(parsedId, log);
-            await UpsertHuts(new List<Hut>() { res.Item2 }, log);
+            var result = new List<Hut>();
 
-            return new OkObjectResult(res);
+            foreach(var hutid in hutids.Split(','))
+            {
+                int parsedId;
+                if (!int.TryParse(hutid, out parsedId))
+                {
+                    log.LogWarning($"Could not parse '{hutid}'. Ignoring");
+                }
+
+                var res = await GetHutFromProviderActivity(parsedId, log);
+                await UpsertHuts(new List<Hut>() { res.Item2 }, log);
+                result.Add(res.Item2);
+            }
+            return new OkObjectResult(result);
         }
 
         [FunctionName("UpdateHutsOrchestrator")]
@@ -104,7 +114,6 @@ namespace AzureFunctions
         [FunctionName("GetHutFromProvider")]
         public static async Task<Tuple<int, Hut>> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
         {
-            Hut hut = null;
             try
             {
                 var response = await _httpClient.GetAsync($"{Helpers.HutProviderBaseUrl}{hutId}");
@@ -112,7 +121,7 @@ namespace AzureFunctions
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
                 {
-                    hut = await Helpers.ParseHutInformation(responseBody, log);
+                    var hut = await Helpers.ParseHutInformation(responseBody, log);
                     if (hut != null)
                     {
                         hut.Id = hutId;
@@ -132,7 +141,7 @@ namespace AzureFunctions
             {
                 log.LogError(default, e, "Exception in http call to provider");
             }
-            return new Tuple<int, Hut>(hutId, hut);
+            return new Tuple<int, Hut>(hutId, null);
         }
 
         [FunctionName("UpsertHuts")]

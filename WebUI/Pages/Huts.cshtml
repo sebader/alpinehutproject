@@ -108,7 +108,7 @@
                     </a>
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Country)
+                    @item.Country @(!string.IsNullOrEmpty(item.Region) ? "- " + item.Region : "")
                 </td>
                 <td>
                     @if (item.Latitude != null && item.Longitude != null)

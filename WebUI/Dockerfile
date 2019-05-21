@@ -5,16 +5,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
 WORKDIR /src
-COPY ["AlpinHutsDashboard/AlpineHutsDashboard.csproj", "AlpinHutsDashboard/"]
-RUN dotnet restore "AlpinHutsDashboard/AlpineHutsDashboard.csproj"
+COPY ["WebUI/WebUI.csproj", "WebUI/"]
+RUN dotnet restore "WebUI/WebUI.csproj"
 COPY . .
-WORKDIR "/src/AlpinHutsDashboard"
-RUN dotnet build "AlpineHutsDashboard.csproj" -c Release -o /app
+WORKDIR "/src/WebUI"
+RUN dotnet build "WebUI.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "AlpineHutsDashboard.csproj" -c Release -o /app
+RUN dotnet publish "WebUI.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
-ENTRYPOINT ["dotnet", "AlpineHutsDashboard.dll"]
+ENTRYPOINT ["dotnet", "WebUI.dll"]

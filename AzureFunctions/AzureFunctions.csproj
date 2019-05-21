@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.28" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="..\Alpinehuts.Shared\Alpinehuts.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

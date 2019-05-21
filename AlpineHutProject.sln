@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUI", "WebUI\WebUI.csproj", "{6A8E8788-4ED1-4B52-B93F-91D7C782CB43}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{BA20C361-53EC-490C-9E66-4DB4C42DDE3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alpinehuts.Shared", "Alpinehuts.Shared\Alpinehuts.Shared.csproj", "{BA20C361-53EC-490C-9E66-4DB4C42DDE3B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureFunctions", "AzureFunctions\AzureFunctions.csproj", "{5F30F45C-C421-4D40-8ACD-01542A9D2B68}"
 EndProject

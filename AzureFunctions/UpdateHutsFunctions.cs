@@ -42,20 +42,20 @@ namespace AzureFunctions
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string hutids = req.Query["hutid"];
-            if (string.IsNullOrEmpty(hutids))
+            string hutIds = req.Query["hutid"];
+            if (string.IsNullOrEmpty(hutIds))
             {
                 return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");
             }
 
             var result = new List<Hut>();
 
-            foreach(var hutid in hutids.Split(','))
+            foreach(var hutId in hutIds.Split(','))
             {
                 int parsedId;
-                if (!int.TryParse(hutid, out parsedId))
+                if (!int.TryParse(hutId, out parsedId))
                 {
-                    log.LogWarning($"Could not parse '{hutid}'. Ignoring");
+                    log.LogWarning($"Could not parse '{hutId}'. Ignoring");
                 }
 
                 var res = await GetHutFromProviderActivity(parsedId, log);
@@ -121,10 +121,9 @@ namespace AzureFunctions
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
                 {
-                    var hut = await Helpers.ParseHutInformation(responseBody, log);
+                    var hut = await Helpers.ParseHutInformation(hutId, responseBody, log);
                     if (hut != null)
                     {
-                        hut.Id = hutId;
                         hut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";
                         return new Tuple<int, Hut>(hutId, hut);
                     }

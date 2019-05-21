@@ -20,12 +20,12 @@ namespace AlpinHutsDashboard.Pages
 
         public IList<Availability> Availability { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? hutid)
+        public async Task<IActionResult> OnGetAsync(int? hutId)
         {
-            if (hutid == null)
+            if (hutId == null)
                 return NotFound();
 
-            Availability = await _context.Availability.Where(a => a.Hutid == hutid && a.Date >= DateTime.Today)
+            Availability = await _context.Availability.Where(a => a.Hutid == hutId && a.Date >= DateTime.Today)
                 .Include(a => a.Hut).Include(a => a.BedCategory).OrderBy(a => a.Date).ToListAsync();
 
             return Page();

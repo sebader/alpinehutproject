@@ -35,7 +35,7 @@ namespace AzureFunctions
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }
-        public static async Task<Hut> ParseHutInformation(string httpBody, ILogger log)
+        public static async Task<Hut> ParseHutInformation(int hutId, string httpBody, ILogger log)
         {
             var doc = new HtmlDocument();
             doc.LoadHtml(httpBody);
@@ -44,6 +44,12 @@ namespace AzureFunctions
             if (infoDiv != null)
             {
                 string hutName = infoDiv.ChildNodes["h4"].InnerText;
+                if (string.IsNullOrEmpty(hutName))
+                {
+                    log.LogWarning($"HutName empty. Ignoring hutid={hutId}");
+                    return null;
+                }
+                var hut = new Hut() { Id = hutId, Name = hutName };
                 var spans = infoDiv.ChildNodes.Where(c => c.Name == "span").ToArray();
                 // We use the phone number only as a way to determine the country
                 string phoneNumber = spans[1]?.InnerText;
@@ -53,36 +59,30 @@ namespace AzureFunctions
 
                 coordinates = Regex.Replace(coordinates, @"\s+", " ");
                 coordinates = Regex.Replace(coordinates, "Koordinaten: ", "");
+                hut.Coordinates = coordinates;
 
-                bool hutEnabled = !httpBody.Contains("Diese Hütte ist nicht freigeschaltet");
+                hut.Enabled = !httpBody.Contains("Diese Hütte ist nicht freigeschaltet");
 
                 string country = GetCountry(hutName, phoneNumber, httpBody);
                 string region = null;
 
-                // Only search if the hutname exists
-                var latLong = !string.IsNullOrEmpty(hutName) ? await SearchHutCoordinates(hutName, log) : (null, null);
+                var latLong = await SearchHutCoordinates(hutName, log);
 
                 if (latLong.latitude != null && latLong.longitude != null)
                 {
+                    hut.Latitude = latLong.latitude;
+                    hut.Longitude = latLong.longitude;
+
                     var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
                     country = countryRegion.country ?? country;
                     region = countryRegion.region;
                 }
 
-                Hut hut = new Hut()
-                {
-                    Name = hutName,
-                    Enabled = hutEnabled,
-                    Coordinates = coordinates,
-                    Country = country,
-                    Region = region,
-                    LastUpdated = DateTime.UtcNow,
-                    Latitude = latLong.latitude,
-                    Longitude = latLong.longitude
-                };
+                hut.Country = country;
+                hut.Region = region;
+                hut.LastUpdated = DateTime.UtcNow;
 
-                log.LogInformation($"Hut info parsed: name={hutName} country={country} hutEnabled={hutEnabled} lat={latLong.latitude} long={latLong.longitude} coordinates={coordinates}");
-
+                log.LogInformation($"Hut info parsed: name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude} coordinates={hut.Coordinates}");
                 return hut;
             }
 

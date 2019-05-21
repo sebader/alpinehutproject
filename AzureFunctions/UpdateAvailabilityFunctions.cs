@@ -103,18 +103,18 @@ namespace AzureFunctions
                             {
                                 foreach (var room in day.Rooms)
                                 {
-                                    var existingAvailability = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
-                                    if (existingAvailability != null)
+                                    var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
+                                    if (existingAva != null)
                                     {
-                                        existingAvailability.FreeRoom = room.FreeRoom;
-                                        existingAvailability.TotalRoom = room.TotalRoom;
-                                        existingAvailability.LastUpdated = DateTime.UtcNow;
+                                        existingAva.FreeRoom = room.FreeRoom;
+                                        existingAva.TotalRoom = room.TotalRoom;
+                                        existingAva.LastUpdated = DateTime.UtcNow;
                                         log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId}");
-                                        dbContext.Update(existingAvailability);
+                                        dbContext.Update(existingAva);
                                     }
                                     else
                                     {
-                                        var a = new Availability()
+                                        var newAva = new Availability()
                                         {
                                             BedCategoryId = (int)room.BedCategoryId,
                                             Date = (DateTime)day.Date,
@@ -123,8 +123,8 @@ namespace AzureFunctions
                                             Hutid = hutId,
                                             LastUpdated = DateTime.UtcNow
                                         };
-                                        log.LogDebug($"Adding new availability for hutid={hutId} date={a.Date} bedCategoryId={a.BedCategoryId}");
-                                        dbContext.Availability.Add(a);
+                                        log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
+                                        dbContext.Availability.Add(newAva);
                                     }
                                 }
                             }

@@ -126,6 +126,7 @@ namespace AzureFunctions
                     {
                         hut.Id = hutId;
                         hut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";
+                        return new Tuple<int, Hut>(hutId, hut);
                     }
                     else
                     {
@@ -161,6 +162,7 @@ namespace AzureFunctions
                         existingHut.Link = !string.IsNullOrEmpty(hut.Link) ? hut.Link : existingHut.Link;
                         existingHut.Coordinates = !string.IsNullOrEmpty(hut.Coordinates) ? hut.Coordinates : existingHut.Coordinates;
                         existingHut.Country = !string.IsNullOrEmpty(hut.Country) ? hut.Country : existingHut.Country;
+                        existingHut.Region = !string.IsNullOrEmpty(hut.Region) ? hut.Region : existingHut.Region;
                         existingHut.Enabled = hut.Enabled ?? existingHut.Enabled;
                         existingHut.Latitude = hut.Latitude ?? existingHut.Latitude;
                         existingHut.Longitude = hut.Longitude ?? existingHut.Longitude;

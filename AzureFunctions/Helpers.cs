@@ -57,9 +57,17 @@ namespace AzureFunctions
                 bool hutEnabled = !httpBody.Contains("Diese Hütte ist nicht freigeschaltet");
 
                 string country = GetCountry(hutName, phoneNumber, httpBody);
+                string region = null;
 
                 // Only search if the hutname exists
                 var latLong = !string.IsNullOrEmpty(hutName) ? await SearchHutCoordinates(hutName, log) : (null, null);
+
+                if (latLong.latitude != null && latLong.longitude != null)
+                {
+                    var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                    country = countryRegion.country ?? country;
+                    region = countryRegion.region;
+                }
 
                 Hut hut = new Hut()
                 {
@@ -67,6 +75,7 @@ namespace AzureFunctions
                     Enabled = hutEnabled,
                     Coordinates = coordinates,
                     Country = country,
+                    Region = region,
                     LastUpdated = DateTime.UtcNow,
                     Latitude = latLong.latitude,
                     Longitude = latLong.longitude
@@ -206,6 +215,41 @@ namespace AzureFunctions
             {
                 log.LogError(default, e, $"Exception while calling coordinate search for hut={hutName}");
             }
+            return (null, null);
+        }
+
+        public static async Task<(string country, string region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
+        {
+            const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0";
+
+            string apiKey = config["AzureMapsApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new ArgumentException("AzureMapsApiKey missing in AppSettings");
+            }
+
+            try
+            {
+                string searchUrl = $"{baseSearchUrl}&subscription-key={apiKey}&query={latitude.ToString("##.#####", CultureInfo.InvariantCulture)},{longitude.ToString("##.#####", CultureInfo.InvariantCulture)}";
+                var result = await _httpClient.GetAsync(searchUrl);
+                result.EnsureSuccessStatusCode();
+
+                var searchResult = await result.Content.ReadAsAsync<AzureMapsResult>();
+                if (searchResult?.addresses?.Length > 0)
+                {
+                    var address = searchResult.addresses.First().address;
+                    return (address.country, address.countrySubdivision);
+                }
+                else
+                {
+                    log.LogWarning($"No result for reverse address lookup on Azure maps for coordinates={latitude},{longitude}");
+                }
+            }
+            catch (Exception e)
+            {
+                log.LogError(default, e, $"Exception while calling reverse address lookup on Azure maps for coordinates={latitude},{longitude}");
+            }
+
             return (null, null);
         }
     }

@@ -17,7 +17,6 @@ namespace AzureFunctions
     public static class UpdateHutsFunctions
     {
         private const int MaxHutId = 300;
-        private const int ParallelTasks = 100;
 
         private static HttpClient _httpClient = new HttpClient();
 
@@ -26,7 +25,7 @@ namespace AzureFunctions
             ILogger log,
             [OrchestrationClient] DurableOrchestrationClient starter)
         {
-            if(Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
+            if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
             {
                 return;
             }
@@ -77,31 +76,17 @@ namespace AzureFunctions
             {
                 log.LogInformation($"Starting orchestrator with startHutId={startHutId}");
             }
-            var tasks = new Task[ParallelTasks];
+            var tasks = new Task[MaxHutId + 1];
 
             // Fan-out
-            for (int i = 0; i < ParallelTasks; i++)
+            for (int i = startHutId; i <= MaxHutId; i++)
             {
-                tasks[i] = context.CallActivityAsync("GetHutFromProvider", i + startHutId);
+                tasks[i] = context.CallActivityAsync("GetHutFromProvider", i);
             }
 
             await Task.WhenAll(tasks);
 
-            if (!context.IsReplaying)
-            {
-                log.LogInformation($"Update hut orchestrator finished batch from {startHutId} to {startHutId + ParallelTasks}");
-            }
-
-            int nextStartId = startHutId + ParallelTasks;
-
-            if (nextStartId <= MaxHutId)
-            {
-                context.ContinueAsNew(nextStartId);
-            }
-            else
-            {
-                log.LogInformation($"MaxHutId {MaxHutId} reached. Ending hut updating now.");
-            }
+            log.LogInformation($"MaxHutId {MaxHutId} reached. Ending hut updating now.");
         }
 
 

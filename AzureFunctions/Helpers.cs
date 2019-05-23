@@ -87,7 +87,7 @@ namespace AzureFunctions
                 hut.Region = region;
                 hut.LastUpdated = DateTime.UtcNow;
 
-                log.LogInformation($"Hut info parsed: name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude} coordinates={hut.Coordinates}");
+                log.LogInformation($"Hut info parsed: id={hutId} name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude} coordinates={hut.Coordinates}");
                 return hut;
             }
 

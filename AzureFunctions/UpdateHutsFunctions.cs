@@ -16,7 +16,7 @@ namespace AzureFunctions
 {
     public static class UpdateHutsFunctions
     {
-        private const int MaxHutId = 300;
+        private const int MaxHutId = 320;
 
         private static HttpClient _httpClient = new HttpClient();
 
@@ -103,11 +103,18 @@ namespace AzureFunctions
                 {
                     log.LogInformation($"No hut yet in the database for id={hutId}");
                 }
+                else
+                {
+                    log.LogDebug($"Found existing hut for in={hutId} in the database. name={existingHut.Name}");
+                }
 
-                var response = await _httpClient.GetAsync($"{Helpers.HutProviderBaseUrl}{hutId}");
+                var url = $"{Helpers.HutProviderBaseUrl}{hutId}";
+                log.LogDebug($"Executing http GET against {url}");
+                var response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync();
+                log.LogTrace($"HTTP Response body:\n {responseBody}");
                 if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
                 {
                     var parsedHut = await Helpers.ParseHutInformation(hutId, responseBody, (existingHut == null), log);

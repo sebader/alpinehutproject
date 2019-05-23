@@ -1,0 +1,98 @@
+﻿@page
+@model WebUI.Pages.MapModel
+
+@{
+    ViewData["Title"] = "Map";
+}
+
+@section Scripts{
+
+    <script>
+        function onFeatureHighlighted(evt) {
+            // Needed only for interaction, not for the display.
+            var onPopupClose = function (evt) {
+                // 'this' is the popup.
+                var feature = this.feature;
+                if (feature.layer) {
+                    selectControl.unselect(feature);
+                }
+                this.destroy();
+            }
+
+            feature = evt.feature;
+            popup = new ol.Popup.FramedCloud("featurePopup",
+                feature.geometry.getBounds().getCenterLonLat(),
+                new OpenLayers.Size(100, 100),
+                "<h2>" + feature.attributes.station_na + "</h2>" +
+                "Location: " + feature.attributes.location + '<br/>' +
+                "Elevation: " + feature.attributes.elev_,
+                null, true, onPopupClose);
+            feature.popup = popup;
+            popup.feature = feature;
+            map.addPopup(popup, true);
+        }
+
+        var popup;
+        var marker;
+        var map;
+        var vectorSource;
+        var markerVectorLayer;
+        var selectControl;
+
+        $(document).ready(function () {
+            map = new ol.Map({
+                target: 'map',
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                    })
+                ],
+                view: new ol.View({
+                    center: ol.proj.fromLonLat([9.83, 46.90]),
+                    zoom: 7
+                })
+            });
+            marker = new ol.Feature({
+                geometry: new ol.geom.Point(
+                    ol.proj.fromLonLat([12.86949, 47.58687])
+                ),
+            });
+
+            vectorSource = new ol.source.Vector({
+                features: [marker]
+            });
+
+            markerVectorLayer = new ol.layer.Vector({
+                source: vectorSource,
+            });
+            
+            //here add mouseover event
+            marker.events.register('mouseover', marker, function (evt) {
+                popup = new ol.Popup.FramedCloud("Popup",
+                    new ol.LonLat(5.6, 50.6),
+                    null,
+                    '<div>Hello World! Put your html here</div>',
+                    null,
+                    false);
+                map.addPopup(popup);
+            });
+
+            //here add mouseout event
+            marker.events.register('mouseout', marker, function (evt) {
+                popup.hide();
+            }
+            );
+            
+            /*
+            selectControl = new ol.Control.SelectFeature(markerVectorLayer, {
+                hover: true
+            });
+            selectControl.events.register('featurehighlighted', null, onFeatureHighlighted);
+            */
+            map.addLayer(markerVectorLayer);
+        })
+    </script>
+}
+
+<h1>Map</h1>
+<div id="map" class="map"></div>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -18,7 +19,8 @@ namespace AzureFunctions
     {
         private const int MaxHutId = 320;
 
-        private static HttpClient _httpClient = new HttpClient();
+        private static HttpClientHandler hch = new HttpClientHandler() { AllowAutoRedirect = false, MaxAutomaticRedirections = 0 };
+        private static HttpClient _httpClient = new HttpClient(hch);
 
         [FunctionName("UpdateHutsTimerTriggered")]
         public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = false)]TimerInfo myTimer,
@@ -110,14 +112,23 @@ namespace AzureFunctions
 
                 var url = $"{Helpers.HutProviderBaseUrl}{hutId}";
                 log.LogDebug($"Executing http GET against {url}");
-                var response = await _httpClient.GetAsync(url);
+
+                var web = new HtmlWeb();
+                web.UsingCache = false;
+                web.CaptureRedirect = false;
+                var doc = await web.LoadFromWebAsync(url);
+
+                /*var response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync();
-                log.LogTrace($"HTTP Response body:\n {responseBody}");
-                if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
+                */
+                log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
+
+
+                if (!doc.ParsedText.Contains("kann nicht gefunden werden"))
                 {
-                    var parsedHut = await Helpers.ParseHutInformation(hutId, responseBody, (existingHut == null), log);
+                    var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), log);
                     if (parsedHut != null)
                     {
                         parsedHut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";

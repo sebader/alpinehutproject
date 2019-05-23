@@ -35,11 +35,8 @@ namespace AzureFunctions
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }
-        public static async Task<Hut> ParseHutInformation(int hutId, string httpBody, bool isNewHut, ILogger log)
+        public static async Task<Hut> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, ILogger log)
         {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(httpBody);
-
             var infoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "info").FirstOrDefault();
             if (infoDiv != null)
             {
@@ -61,7 +58,7 @@ namespace AzureFunctions
                 coordinates = Regex.Replace(coordinates, "Koordinaten: ", "");
                 hut.Coordinates = coordinates;
 
-                hut.Enabled = !httpBody.Contains("Diese Hütte ist nicht freigeschaltet");
+                hut.Enabled = !doc.ParsedText.Contains("Diese Hütte ist nicht freigeschaltet");
 
                 string country = null;
                 string region = null;
@@ -69,7 +66,7 @@ namespace AzureFunctions
                 // Only call the external services, if the hut is a new one for us
                 if (isNewHut)
                 {
-                    country = GetCountry(hutName, phoneNumber, httpBody);
+                    country = GetCountry(hutName, phoneNumber, doc.ParsedText);
 
                     var latLong = await SearchHutCoordinates(hutName, log);
 

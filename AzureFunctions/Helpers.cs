@@ -35,7 +35,7 @@ namespace AzureFunctions
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }
-        public static async Task<Hut> ParseHutInformation(int hutId, string httpBody, ILogger log)
+        public static async Task<Hut> ParseHutInformation(int hutId, string httpBody, bool isNewHut, ILogger log)
         {
             var doc = new HtmlDocument();
             doc.LoadHtml(httpBody);
@@ -63,21 +63,26 @@ namespace AzureFunctions
 
                 hut.Enabled = !httpBody.Contains("Diese Hütte ist nicht freigeschaltet");
 
-                string country = GetCountry(hutName, phoneNumber, httpBody);
+                string country = null;
                 string region = null;
 
-                var latLong = await SearchHutCoordinates(hutName, log);
-
-                if (latLong.latitude != null && latLong.longitude != null)
+                // Only call the external services, if the hut is a new one for us
+                if (isNewHut)
                 {
-                    hut.Latitude = latLong.latitude;
-                    hut.Longitude = latLong.longitude;
+                    country = GetCountry(hutName, phoneNumber, httpBody);
 
-                    var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
-                    country = countryRegion.country ?? country;
-                    region = countryRegion.region;
+                    var latLong = await SearchHutCoordinates(hutName, log);
+
+                    if (latLong.latitude != null && latLong.longitude != null)
+                    {
+                        hut.Latitude = latLong.latitude;
+                        hut.Longitude = latLong.longitude;
+
+                        var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                        country = countryRegion.country ?? country;
+                        region = countryRegion.region;
+                    }
                 }
-
                 hut.Country = country;
                 hut.Region = region;
                 hut.LastUpdated = DateTime.UtcNow;
@@ -218,6 +223,13 @@ namespace AzureFunctions
             return (null, null);
         }
 
+        /// <summary>
+        /// Looks up the country and region for a given coordinate using Azure Maps API
+        /// </summary>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         public static async Task<(string country, string region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
         {
             const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0";

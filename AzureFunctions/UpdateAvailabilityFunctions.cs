@@ -22,6 +22,11 @@ namespace AzureFunctions
             ILogger log,
             [OrchestrationClient] DurableOrchestrationClient starter)
         {
+            if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
+            {
+                return;
+            }
+
             log.LogInformation($"UpdateAvailabilityFunctions Timer trigger function executed at: {DateTime.Now}");
 
             var dbContext = Helpers.GetDbContext();
@@ -63,7 +68,7 @@ namespace AzureFunctions
         }
 
         [FunctionName("UpdateHutAvailability")]
-        public static async Task UpsertHuts([ActivityTrigger] int hutId, ILogger log)
+        public static async Task UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
         {
             try
             {

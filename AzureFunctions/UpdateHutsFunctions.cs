@@ -26,6 +26,10 @@ namespace AzureFunctions
             ILogger log,
             [OrchestrationClient] DurableOrchestrationClient starter)
         {
+            if(Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
+            {
+                return;
+            }
             string instanceId = await starter.StartNewAsync("UpdateHutsOrchestrator", 1);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
         }
@@ -50,7 +54,7 @@ namespace AzureFunctions
 
             var result = new List<Hut>();
 
-            foreach(var hutId in hutIds.Split(','))
+            foreach (var hutId in hutIds.Split(','))
             {
                 int parsedId;
                 if (!int.TryParse(hutId, out parsedId))
@@ -59,8 +63,7 @@ namespace AzureFunctions
                 }
 
                 var res = await GetHutFromProviderActivity(parsedId, log);
-                await UpsertHuts(new List<Hut>() { res.Item2 }, log);
-                result.Add(res.Item2);
+                result.Add(res);
             }
             return new OkObjectResult(result);
         }
@@ -74,28 +77,19 @@ namespace AzureFunctions
             {
                 log.LogInformation($"Starting orchestrator with startHutId={startHutId}");
             }
-            var tasks = new Task<Tuple<int, Hut>>[ParallelTasks];
+            var tasks = new Task[ParallelTasks];
 
             // Fan-out
             for (int i = 0; i < ParallelTasks; i++)
             {
-                tasks[i] = context.CallActivityAsync<Tuple<int, Hut>>("GetHutFromProvider", i + startHutId);
+                tasks[i] = context.CallActivityAsync("GetHutFromProvider", i + startHutId);
             }
 
             await Task.WhenAll(tasks);
 
-            var hutList = tasks.Select(t => t.Result).Where(r => r.Item2 != null).Select(i => i.Item2).ToList();
-
-            var notFoundIds = tasks.Select(t => t.Result).Where(r => r.Item2 == null).Select(i => i.Item1).ToList();
-            if (!context.IsReplaying && notFoundIds.Count > 0)
-            {
-                log.LogWarning($"Did not find huts for the following IDs={string.Join(',', notFoundIds)}");
-            }
-
-            var databaseUpdates = await context.CallActivityAsync<int>("UpsertHuts", hutList);
             if (!context.IsReplaying)
             {
-                log.LogDebug($"Database entries written={databaseUpdates}");
+                log.LogInformation($"Update hut orchestrator finished batch from {startHutId} to {startHutId + ParallelTasks}");
             }
 
             int nextStartId = startHutId + ParallelTasks;
@@ -112,20 +106,64 @@ namespace AzureFunctions
 
 
         [FunctionName("GetHutFromProvider")]
-        public static async Task<Tuple<int, Hut>> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
+        public static async Task<Hut> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
         {
             try
             {
+                log.LogInformation($"Executing GetHutFromProviderActivity for hutid={hutId}");
+                var dbContext = Helpers.GetDbContext();
+
+                var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
+                if (existingHut == null)
+                {
+                    log.LogInformation($"No hut yet in the database for id={hutId}");
+                }
+
                 var response = await _httpClient.GetAsync($"{Helpers.HutProviderBaseUrl}{hutId}");
+                response.EnsureSuccessStatusCode();
 
                 var responseBody = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(responseBody) && !responseBody.Contains("kann nicht gefunden werden"))
                 {
-                    var hut = await Helpers.ParseHutInformation(hutId, responseBody, log);
-                    if (hut != null)
+                    var parsedHut = await Helpers.ParseHutInformation(hutId, responseBody, (existingHut == null), log);
+                    if (parsedHut != null)
                     {
-                        hut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";
-                        return new Tuple<int, Hut>(hutId, hut);
+                        parsedHut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";
+                        parsedHut.LastUpdated = DateTime.UtcNow;
+
+                        if (existingHut != null)
+                        {
+                            // We only call out to the external services (MapQuest and Azure Maps) if the name changed or if country/region are null yet (searches are based on the name)
+                            if (existingHut.Name != parsedHut.Name || existingHut.Country == null || existingHut.Region == null)
+                            {
+                                var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, log);
+                                if (latLong.latitude != null && latLong.longitude != null)
+                                {
+                                    parsedHut.Latitude = latLong.latitude;
+                                    parsedHut.Longitude = latLong.longitude;
+
+                                    var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                                    parsedHut.Country = countryRegion.country ?? parsedHut.Country;
+                                    parsedHut.Region = countryRegion.region;
+                                }
+                            }
+                            existingHut.Name = parsedHut.Name;
+                            existingHut.Enabled = parsedHut.Enabled;
+                            existingHut.Latitude = parsedHut.Latitude ?? existingHut.Latitude;
+                            existingHut.Longitude = parsedHut.Longitude ?? existingHut.Longitude;
+                            existingHut.Country = parsedHut.Country ?? existingHut.Country;
+                            existingHut.Region = parsedHut.Region ?? existingHut.Region;
+                            existingHut.LastUpdated = DateTime.UtcNow;
+                            dbContext.Update(existingHut);
+                        }
+                        else
+                        {
+                            dbContext.Huts.Add(parsedHut);
+                        }
+
+                        await dbContext.SaveChangesAsync();
+
+                        return existingHut ?? parsedHut;
                     }
                     else
                     {
@@ -141,7 +179,8 @@ namespace AzureFunctions
             {
                 log.LogError(default, e, "Exception in http call to provider");
             }
-            return new Tuple<int, Hut>(hutId, null);
+
+            return null;
         }
 
         [FunctionName("UpsertHuts")]

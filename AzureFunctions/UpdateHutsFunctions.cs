@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
@@ -18,9 +17,6 @@ namespace AzureFunctions
     public static class UpdateHutsFunctions
     {
         private const int MaxHutId = 320;
-
-        private static HttpClientHandler hch = new HttpClientHandler() { AllowAutoRedirect = false, MaxAutomaticRedirections = 0 };
-        private static HttpClient _httpClient = new HttpClient(hch);
 
         [FunctionName("UpdateHutsTimerTriggered")]
         public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = false)]TimerInfo myTimer,
@@ -45,7 +41,7 @@ namespace AzureFunctions
         public static async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("Update Hut HTTP trigger function received a request");
 
             string hutIds = req.Query["hutid"];
             if (string.IsNullOrEmpty(hutIds))
@@ -107,31 +103,31 @@ namespace AzureFunctions
                 }
                 else
                 {
-                    log.LogDebug($"Found existing hut for in={hutId} in the database. name={existingHut.Name}");
+                    log.LogDebug($"Found existing hut for id={hutId} in the database. name={existingHut.Name}");
                 }
 
                 var url = $"{Helpers.HutProviderBaseUrl}{hutId}";
                 log.LogDebug($"Executing http GET against {url}");
 
+                // Load the hut web page for parsing using HtmlAgilityPack
                 var web = new HtmlWeb();
                 web.UsingCache = false;
                 web.CaptureRedirect = false;
                 var doc = await web.LoadFromWebAsync(url);
 
-                /*var response = await _httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                var responseBody = await response.Content.ReadAsStringAsync();
-                */
                 log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
 
-
-                if (!doc.ParsedText.Contains("kann nicht gefunden werden"))
+                if (doc.ParsedText.Contains("kann nicht gefunden werden"))
+                {
+                    // Means there is no hut (yet) in the booking system with this id
+                    log.LogInformation($"Hut with ID={hutId} not found");
+                }
+                else
                 {
                     var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), log);
                     if (parsedHut != null)
                     {
-                        parsedHut.Link = $"{Helpers.HutProviderBaseUrl}{hutId}";
+                        parsedHut.Link = url;
                         parsedHut.LastUpdated = DateTime.UtcNow;
 
                         if (existingHut != null)
@@ -173,10 +169,6 @@ namespace AzureFunctions
                         log.LogError($"Error parsing hut page for ID={hutId}");
                     }
                 }
-                else
-                {
-                    log.LogInformation($"Hut with ID={hutId} not found");
-                }
             }
             catch (Exception e)
             {
@@ -184,46 +176,6 @@ namespace AzureFunctions
             }
 
             return null;
-        }
-
-        [FunctionName("UpsertHuts")]
-        public static async Task<int> UpsertHuts([ActivityTrigger] IList<Hut> huts, ILogger log)
-        {
-            try
-            {
-                var dbContext = Helpers.GetDbContext();
-
-                foreach (var hut in huts)
-                {
-                    var existingHut = await dbContext.Huts.FirstOrDefaultAsync(h => h.Id == hut.Id);
-                    if (existingHut != null)
-                    {
-                        log.LogInformation($"Updating existing hut ID={hut.Id} name={hut.Name}");
-                        existingHut.Name = !string.IsNullOrEmpty(hut.Name) ? hut.Name : existingHut.Name;
-                        existingHut.Link = !string.IsNullOrEmpty(hut.Link) ? hut.Link : existingHut.Link;
-                        existingHut.Coordinates = !string.IsNullOrEmpty(hut.Coordinates) ? hut.Coordinates : existingHut.Coordinates;
-                        existingHut.Country = !string.IsNullOrEmpty(hut.Country) ? hut.Country : existingHut.Country;
-                        existingHut.Region = !string.IsNullOrEmpty(hut.Region) ? hut.Region : existingHut.Region;
-                        existingHut.Enabled = hut.Enabled ?? existingHut.Enabled;
-                        existingHut.Latitude = hut.Latitude ?? existingHut.Latitude;
-                        existingHut.Longitude = hut.Longitude ?? existingHut.Longitude;
-                        existingHut.LastUpdated = hut.LastUpdated;
-                        dbContext.Update(existingHut);
-                    }
-                    else
-                    {
-                        log.LogInformation($"Adding new hut ID={hut.Id} name={hut.Name}");
-                        dbContext.Huts.Add(hut);
-                    }
-                }
-
-                return await dbContext.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                log.LogError(default, e, "Exception in writing hut updates to database");
-                return -1;
-            }
-        }
+        }  
     }
 }

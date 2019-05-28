@@ -75,7 +75,7 @@ namespace AzureFunctions
                 log.LogInformation($"Executing UpdateHutAvailability for hutid={hutId}");
                 var dbContext = Helpers.GetDbContext();
 
-                var hut = await dbContext.Huts.Where(h => h.Id == hutId).Include(h => h.Availability).ThenInclude(a => a.BedCategory).FirstOrDefaultAsync();
+                var hut = await dbContext.Huts.Where(h => h.Id == hutId).Include(h => h.Availability).ThenInclude(a => a.BedCategory).SingleOrDefaultAsync();
                 if (hut == null || hut.Enabled != true)
                 {
                     log.LogError($"No hut found for id={hutId} or hut not enabled");
@@ -92,15 +92,16 @@ namespace AzureFunctions
                     {
                         httpClient.DefaultRequestHeaders.Add("Cookie", cookie);
 
-                        var startDate = DateTime.Today;
+                        var startDate = DateTime.UtcNow;
                         // Each selectDate query gives a 14 day window, so we increment by 14
                         // 112 = 16 weeks
                         for (int dateOffset = 0; dateOffset < 112; dateOffset += 14)
                         {
                             var date = startDate.AddDays(dateOffset).ToString("dd.MM.yyyy");
-                            log.LogDebug($"Calling selectDate for hutid={hutId} and date={date}");
                             var dateUrl = $"{Helpers.SelectDateBaseUrl}{date}";
+                            log.LogDebug($"Calling selectDate for hutid={hutId} and date={date} ({dateUrl})");
                             var dateResponse = await httpClient.GetStringAsync(dateUrl);
+                            var updateTime = DateTime.UtcNow;
 
                             var daysAvailability = ParseAvailability(dateResponse);
 
@@ -113,7 +114,7 @@ namespace AzureFunctions
                                     {
                                         existingAva.FreeRoom = room.FreeRoom;
                                         existingAva.TotalRoom = room.TotalRoom;
-                                        existingAva.LastUpdated = DateTime.UtcNow;
+                                        existingAva.LastUpdated = updateTime;
                                         log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId}");
                                         dbContext.Update(existingAva);
                                     }
@@ -126,7 +127,7 @@ namespace AzureFunctions
                                             FreeRoom = room.FreeRoom,
                                             TotalRoom = room.TotalRoom,
                                             Hutid = hutId,
-                                            LastUpdated = DateTime.UtcNow
+                                            LastUpdated = updateTime
                                         };
                                         log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
                                         dbContext.Availability.Add(newAva);

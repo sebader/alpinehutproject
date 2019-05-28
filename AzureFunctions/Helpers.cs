@@ -35,6 +35,7 @@ namespace AzureFunctions
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }
+
         public static async Task<Hut> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, ILogger log)
         {
             var infoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "info").FirstOrDefault();

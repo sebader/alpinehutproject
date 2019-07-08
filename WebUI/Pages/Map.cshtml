@@ -8,7 +8,7 @@
 @section Scripts{
     <script>
         var map;
-        var ajaxRequest;
+        var ajaxRequest= new XMLHttpRequest();
         var plotlist;
         var plotlayers = [];
 
@@ -25,17 +25,16 @@
             map.setView(new L.LatLng(46.90, 9.83), 7);
             map.addLayer(osm);
 
+            // Initial load of huts to plot
             askForPlots();
+            // Create event handler on map moved
             map.on('moveend', onMapMove);
         }
 
-        // then add this as a new function...
         function onMapMove(e) { askForPlots(); }
 
-        ajaxRequest = new XMLHttpRequest();
-
         function askForPlots() {
-            // request the marker info with AJAX for the current bounds
+            // request the huts info with AJAX for the current bounds
             var bounds = map.getBounds();
             var minll = bounds.getSouthWest();
             var maxll = bounds.getNorthEast();
@@ -59,9 +58,27 @@
                         var plotmark = new L.Marker(plotll);
                         plotmark.data = plotlist[i];
                         map.addLayer(plotmark);
-                        var popupHtml = "<h6>" + plotlist[i].name + "</h6><a target=\"_blank\" href=\"HutAvailability/" + plotlist[i].id + "\">Details</a>";
+
+                        var toolTip = "<b>" + plotlist[i].name + "</b>";
+                        if (plotlist[i].freeBeds != null)
+                        {
+                            toolTip = toolTip.concat("<br />Freie Plätze: " + plotlist[i].freeBeds);
+                        }
+
+                        plotmark.bindTooltip(toolTip);
+
+                        var popupHtml = "<h6>" + plotlist[i].name + "</h6>";
                         if (plotlist[i].enabled == true) {
-                            popupHtml = popupHtml.concat("<br /><a target=\"_blank\" href=\"" + plotlist[i].link + "\">Buchung</a>");
+                            if (plotlist[i].freeBeds != null)
+                            {
+                                popupHtml = popupHtml.concat("Freie Plätze: " + plotlist[i].freeBeds);
+                            }
+                            popupHtml = popupHtml.concat("<br /><a target=\"_blank\" href=\"HutAvailability/" + plotlist[i].id + "\">Verfügbarkeitsübersicht</a>");                         
+                            popupHtml = popupHtml.concat("<br /><a target=\"_blank\" href=\"" + plotlist[i].link + "\">Onlinebuchung</a>");
+                        }
+                        else
+                        {
+                            popupHtml = popupHtml.concat("<br />[Buchung inaktiv]");
                         }
                         plotmark.bindPopup(popupHtml);
                         plotlayers.push(plotmark);

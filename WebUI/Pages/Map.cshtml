@@ -21,6 +21,7 @@
             var osmAttrib = 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
             var osm = new L.TileLayer(osmUrl, { minZoom: 6, attribution: osmAttrib });
 
+            // Initial view on the Alps
             map.setView(new L.LatLng(46.90, 9.83), 7);
             map.addLayer(osm);
 
@@ -39,17 +40,14 @@
             var minll = bounds.getSouthWest();
             var maxll = bounds.getNorthEast();
             var url = 'api/Map?llLon=' + minll.lng + '&llLat=' + minll.lat + '&urLon=' + maxll.lng + '&urLat=' + maxll.lat;
-            @if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
-            {
-               @: url = url.concat("&dateFilter=@Model.DateFilter?.ToString("yyyy-MM-dd")");
-            }
+            url = url.concat("&dateFilter=" + document.getElementById('DateFilter').value);
 
-            ajaxRequest.onreadystatechange = stateChanged;
+            ajaxRequest.onreadystatechange = mapRequestHandler;
             ajaxRequest.open('GET', url, true);
             ajaxRequest.send(null);
         }
 
-        function stateChanged() {
+        function mapRequestHandler() {
             // if AJAX returned a list of markers, add them to the map
             if (ajaxRequest.readyState == 4) {
                 //use the info here that was returned
@@ -61,13 +59,18 @@
                         var plotmark = new L.Marker(plotll);
                         plotmark.data = plotlist[i];
                         map.addLayer(plotmark);
-                        plotmark.bindPopup("<h5>" + plotlist[i].name + "</h5>" + plotlist[i].details);
+                        var popupHtml = "<h6>" + plotlist[i].name + "</h6><a target=\"_blank\" href=\"HutAvailability/" + plotlist[i].id + "\">Details</a>";
+                        if (plotlist[i].enabled == true) {
+                            popupHtml = popupHtml.concat("<br /><a target=\"_blank\" href=\"" + plotlist[i].link + "\">Buchung</a>");
+                        }
+                        plotmark.bindPopup(popupHtml);
                         plotlayers.push(plotmark);
                     }
                 }
             }
         }
 
+        // Function to clear all markers
         function removeMarkers() {
             for (i = 0; i < plotlayers.length; i++) {
                 map.removeLayer(plotlayers[i]);
@@ -75,23 +78,29 @@
             plotlayers = [];
         }
 
+        // On change of the date field, reload the map
+        $("#dateForm")
+            .on("input", function () {
+                askForPlots();
+            });
+
         $(document).ready(function () {
             initmap();
         })
-    </script>
+
+/**/</script>
 }
 
 <h1>Map</h1>
 <div class="form-group">
     <div class="col-md-3">
-        <form asp-action="Map" method="get">
+        <form id="dateForm">
             <div>
                 <label asp-for="DateFilter">Verfügbarkeit an Datum</label>
                 <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
             </div>
             <div>
-                <input type="submit" class="btn btn-primary" value="Abschicken" />
-                <a asp-route-Huts="" asp-route-SearchString="" class="btn btn-primary">Reset</a>
+                <button class="btn btn-primary" onclick="document.getElementById('DateFilter').value = ''">Reset</button>
             </div>
         </form>
     </div>

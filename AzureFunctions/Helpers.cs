@@ -59,6 +59,16 @@ namespace AzureFunctions
                 coordinates = Regex.Replace(coordinates, "Koordinaten: ", "");
                 hut.Coordinates = coordinates;
 
+                var logoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "logo").FirstOrDefault();
+                var hutWebsiteUrl = logoDiv?.Descendants("a").Where(d => d.Attributes.Contains("href")).Select(a => a.Attributes["href"].Value).FirstOrDefault();
+                if (!string.IsNullOrEmpty(hutWebsiteUrl))
+                {
+                    if (!hutWebsiteUrl.ToLower().StartsWith("http"))
+                    {
+                        hutWebsiteUrl = "http://" + hutWebsiteUrl;
+                    }
+                    hut.HutWebsite = hutWebsiteUrl;
+                }
                 hut.Enabled = !doc.ParsedText.Contains("Diese Hütte ist nicht freigeschaltet");
 
                 string country = null;

@@ -13,6 +13,7 @@ namespace Shared.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Link { get; set; }
+        public string HutWebsite { get; set; }
         public string Language { get; set; }
         public string Country { get; set; }
         public string Region { get; set; }

@@ -107,15 +107,7 @@ namespace AzureFunctions
                 }
 
                 var url = $"{Helpers.HutProviderBaseUrl}{hutId}";
-                log.LogDebug($"Executing http GET against {url}");
-
-                // Load the hut web page for parsing using HtmlAgilityPack
-                var web = new HtmlWeb();
-                web.UsingCache = false;
-                web.CaptureRedirect = false;
-                var doc = await web.LoadFromWebAsync(url);
-
-                log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
+                HtmlDocument doc = await LoadWebsite(url, log);
 
                 if (doc.ParsedText.Contains("kann nicht gefunden werden"))
                 {
@@ -124,11 +116,23 @@ namespace AzureFunctions
                 }
                 else
                 {
+                    // Check if the hut page is actually for a different german locale than de_DE. If so, we reload it with the correct locale
+                    var languageSelector = doc.DocumentNode.SelectSingleNode("//body").Descendants("ul").Where(d => d.Id == "langSelector").FirstOrDefault();
+                    var germanLocale = languageSelector?.Descendants("li").Where(d => d.InnerText == "Deutsch").Select(d => d.Id).FirstOrDefault();
+                    if (!string.IsNullOrEmpty(germanLocale))
+                    {
+                        var newUrl = $"https://www.alpsonline.org/reservation/calendar?lang={germanLocale}&hut_id={hutId}";
+                        if (newUrl != url)
+                        {
+                            url = newUrl;
+                            doc = await LoadWebsite(url, log);
+                        }
+                    }
+
                     var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), log);
                     if (parsedHut != null)
                     {
                         parsedHut.Link = url;
-                        parsedHut.LastUpdated = DateTime.UtcNow;
 
                         if (existingHut != null)
                         {
@@ -148,6 +152,8 @@ namespace AzureFunctions
                             }
                             existingHut.Name = parsedHut.Name;
                             existingHut.Enabled = parsedHut.Enabled;
+                            existingHut.Link = parsedHut.Link;
+                            existingHut.HutWebsite = parsedHut.HutWebsite;
                             existingHut.Latitude = parsedHut.Latitude ?? existingHut.Latitude;
                             existingHut.Longitude = parsedHut.Longitude ?? existingHut.Longitude;
                             existingHut.Country = parsedHut.Country ?? existingHut.Country;
@@ -176,6 +182,19 @@ namespace AzureFunctions
             }
 
             return null;
-        }  
+        }
+
+        private static async Task<HtmlDocument> LoadWebsite(string url, ILogger log)
+        {
+            log.LogDebug($"Executing http GET against {url}");
+            // Load the hut web page for parsing using HtmlAgilityPack
+            var web = new HtmlWeb();
+            web.UsingCache = false;
+            web.CaptureRedirect = false;
+            var doc = await web.LoadFromWebAsync(url);
+
+            log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
+            return doc;
+        }
     }
 }

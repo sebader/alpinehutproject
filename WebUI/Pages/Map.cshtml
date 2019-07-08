@@ -6,93 +6,94 @@
 }
 
 @section Scripts{
-
     <script>
-        function onFeatureHighlighted(evt) {
-            // Needed only for interaction, not for the display.
-            var onPopupClose = function (evt) {
-                // 'this' is the popup.
-                var feature = this.feature;
-                if (feature.layer) {
-                    selectControl.unselect(feature);
-                }
-                this.destroy();
-            }
+        var map;
+        var ajaxRequest;
+        var plotlist;
+        var plotlayers = [];
 
-            feature = evt.feature;
-            popup = new ol.Popup.FramedCloud("featurePopup",
-                feature.geometry.getBounds().getCenterLonLat(),
-                new OpenLayers.Size(100, 100),
-                "<h2>" + feature.attributes.station_na + "</h2>" +
-                "Location: " + feature.attributes.location + '<br/>' +
-                "Elevation: " + feature.attributes.elev_,
-                null, true, onPopupClose);
-            feature.popup = popup;
-            popup.feature = feature;
-            map.addPopup(popup, true);
+        function initmap() {
+            // set up the map
+            map = new L.Map('map');
+
+            // create the tile layer with correct attribution
+            var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+            var osmAttrib = 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+            var osm = new L.TileLayer(osmUrl, { minZoom: 6, attribution: osmAttrib });
+
+            map.setView(new L.LatLng(46.90, 9.83), 7);
+            map.addLayer(osm);
+
+            askForPlots();
+            map.on('moveend', onMapMove);
         }
 
-        var popup;
-        var marker;
-        var map;
-        var vectorSource;
-        var markerVectorLayer;
-        var selectControl;
+        // then add this as a new function...
+        function onMapMove(e) { askForPlots(); }
+
+        ajaxRequest = new XMLHttpRequest();
+
+        function askForPlots() {
+            // request the marker info with AJAX for the current bounds
+            var bounds = map.getBounds();
+            var minll = bounds.getSouthWest();
+            var maxll = bounds.getNorthEast();
+            var url = 'api/Map?llLon=' + minll.lng + '&llLat=' + minll.lat + '&urLon=' + maxll.lng + '&urLat=' + maxll.lat;
+            @if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
+            {
+               @: url = url.concat("&dateFilter=@Model.DateFilter?.ToString("yyyy-MM-dd")");
+            }
+
+            ajaxRequest.onreadystatechange = stateChanged;
+            ajaxRequest.open('GET', url, true);
+            ajaxRequest.send(null);
+        }
+
+        function stateChanged() {
+            // if AJAX returned a list of markers, add them to the map
+            if (ajaxRequest.readyState == 4) {
+                //use the info here that was returned
+                if (ajaxRequest.status == 200) {
+                    plotlist = eval("(" + ajaxRequest.responseText + ")");
+                    removeMarkers();
+                    for (i = 0; i < plotlist.length; i++) {
+                        var plotll = new L.LatLng(plotlist[i].latitude, plotlist[i].longitude, true);
+                        var plotmark = new L.Marker(plotll);
+                        plotmark.data = plotlist[i];
+                        map.addLayer(plotmark);
+                        plotmark.bindPopup("<h5>" + plotlist[i].name + "</h5>" + plotlist[i].details);
+                        plotlayers.push(plotmark);
+                    }
+                }
+            }
+        }
+
+        function removeMarkers() {
+            for (i = 0; i < plotlayers.length; i++) {
+                map.removeLayer(plotlayers[i]);
+            }
+            plotlayers = [];
+        }
 
         $(document).ready(function () {
-            map = new ol.Map({
-                target: 'map',
-                layers: [
-                    new ol.layer.Tile({
-                        source: new ol.source.OSM()
-                    })
-                ],
-                view: new ol.View({
-                    center: ol.proj.fromLonLat([9.83, 46.90]),
-                    zoom: 7
-                })
-            });
-            marker = new ol.Feature({
-                geometry: new ol.geom.Point(
-                    ol.proj.fromLonLat([12.86949, 47.58687])
-                ),
-            });
-
-            vectorSource = new ol.source.Vector({
-                features: [marker]
-            });
-
-            markerVectorLayer = new ol.layer.Vector({
-                source: vectorSource,
-            });
-            
-            //here add mouseover event
-            marker.events.register('mouseover', marker, function (evt) {
-                popup = new ol.Popup.FramedCloud("Popup",
-                    new ol.LonLat(5.6, 50.6),
-                    null,
-                    '<div>Hello World! Put your html here</div>',
-                    null,
-                    false);
-                map.addPopup(popup);
-            });
-
-            //here add mouseout event
-            marker.events.register('mouseout', marker, function (evt) {
-                popup.hide();
-            }
-            );
-            
-            /*
-            selectControl = new ol.Control.SelectFeature(markerVectorLayer, {
-                hover: true
-            });
-            selectControl.events.register('featurehighlighted', null, onFeatureHighlighted);
-            */
-            map.addLayer(markerVectorLayer);
+            initmap();
         })
     </script>
 }
 
 <h1>Map</h1>
+<div class="form-group">
+    <div class="col-md-3">
+        <form asp-action="Map" method="get">
+            <div>
+                <label asp-for="DateFilter">Verfügbarkeit an Datum</label>
+                <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div>
+                <input type="submit" class="btn btn-primary" value="Abschicken" />
+                <a asp-route-Huts="" asp-route-SearchString="" class="btn btn-primary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
 <div id="map" class="map"></div>

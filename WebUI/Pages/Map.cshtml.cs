@@ -28,12 +28,16 @@ namespace WebUI.Pages
 
         public async Task OnGetAsync(bool onlyEnabled = true, DateTime? DateFilter = null)
         {
-            /*
             this.DateFilter = DateFilter?.Date;
-            var huts = _context.Huts.Where(h => h.Enabled == true || h.Enabled == onlyEnabled);
+            /*
+            IQueryable<Hut> huts;
             if (this.DateFilter != null)
             {
-                huts = huts.Where(h => h.Availability.Any(a => a.Date == this.DateFilter && a.FreeRoom > 0));
+                huts = _context.Huts.Where(h => h.Enabled == true && h.Availability.Any(a => a.Date == this.DateFilter && a.FreeRoom > 0));
+            }
+            else
+            {
+                huts = _context.Huts.Where(h => h.Enabled == true || h.Enabled == onlyEnabled);
             }
             Huts = await huts.Include(h => h.Availability).ThenInclude(a => a.BedCategory).ToListAsync();
             */

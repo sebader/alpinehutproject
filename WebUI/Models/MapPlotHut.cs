@@ -11,7 +11,8 @@ namespace WebUI.Models
         public string Name { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public string Link { get; set; }
+        public string OnlineBookingLink { get; set; }
+        public string HutWebsiteLink { get; set; }
         public bool Enabled { get; set; }
         public int? FreeBeds { get; set; }
     }

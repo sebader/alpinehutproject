@@ -18,9 +18,5 @@ namespace WebUI.Pages
         {
             _context = context;
         }
-
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
-        public DateTime? DateFilter { get; set; }
     }
 }

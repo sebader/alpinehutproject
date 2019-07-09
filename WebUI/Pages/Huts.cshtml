@@ -1,10 +1,10 @@
-﻿@page "/"
+﻿@page
 @model AlpinHutsDashboard.Pages.HutsModel
 
 @using System.Globalization;
 
 @{
-    ViewData["Title"] = "Alpenvereinshütten mit Onlinebuchung";
+    ViewData["Title"] = "Hüttenliste";
 }
 
 @section Scripts{
@@ -94,7 +94,7 @@
             </th>
             <th></th>
         </tr>
-    </thead> 
+    </thead>
     <tbody>
         @foreach (var item in Model.Huts)
         {
@@ -113,18 +113,17 @@
                 <td>
                     @if (item.Latitude != null && item.Longitude != null)
                     {
-                        <a target="_blank" href="https://www.openstreetmap.org/#map=15/@item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)">
-                            @item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
-                        </a>
+                    <a asp-page="./Map" asp-route-lat="@item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)" asp-route-lon="@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)" >
+                       @item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
+                    </a>
                     }
-                </td>
+                    </td>
                 <td>
                     @if (item.Enabled == true)
                     {
                         if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
                         {
                             var rooms = item.Availability.Where(a => a.Date == Model.DateFilter).OrderBy(a => a.BedCategoryId).Select(a => $"{a.BedCategory?.Name} - {a.FreeRoom}").ToList();
-                            //@string.Join("<br />", rooms)
                             foreach (var room in rooms)
                             {
                                 @room<br />

@@ -108,39 +108,39 @@ namespace AzureFunctions
             string[] swissNames = { "SAC", "CAS", "AACZ" };
             if (swissNames.Any(n => hutName.Contains(n) || phoneNumber.Contains("+41") || phoneNumber.Contains("0041")))
             {
-                return "Switzerland";
+                return "Schweiz";
             }
 
             string[] southTyrolNames = { "AVS" };
             if (southTyrolNames.Any(n => hutName.Contains(n) || phoneNumber.Contains("+39") || phoneNumber.Contains("0039")))
             {
-                return "Italy";
+                return "Italien";
             }
 
             if (phoneNumber.Contains("+43") || phoneNumber.Contains("0043"))
             {
-                return "Austria";
+                return "Österreich";
             }
 
             if (phoneNumber.Contains("+49") || phoneNumber.Contains("0049"))
             {
-                return "Germany";
+                return "Deutschland";
             }
 
             if (requestBody.Contains("de_CH"))
             {
-                return "Switzerland";
+                return "Schweiz";
             }
             else if (requestBody.Contains("de_AT"))
             {
-                return "Austria";
+                return "Österreich";
             }
             else if (requestBody.Contains("de_DE"))
             {
-                return "Germany/Austria";
+                return "Deutschland/Österreich";
             }
 
-            return "Germany/Austria";
+            return "Deutschland/Österreich";
         }
 
         /// <summary>

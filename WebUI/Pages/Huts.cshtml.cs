@@ -31,13 +31,13 @@ namespace AlpinHutsDashboard.Pages
             IQueryable<Hut> huts; 
             if(this.DateFilter != null)
             {
-                huts = _context.Huts.Where(h => h.Enabled == true && h.Availability.Any(a => a.Date == this.DateFilter && a.FreeRoom > 0));
+                huts = _context.Huts.Where(h => h.Enabled == true && h.Availability.Any(a => a.Date == this.DateFilter && a.FreeRoom > 0)).Include(h => h.Availability).ThenInclude(a => a.BedCategory);
             }
             else
             {
                 huts = _context.Huts.Where(h => h.Enabled == true || h.Enabled == onlyEnabled);
             }
-            Huts = await huts.Include(h => h.Availability).ThenInclude(a => a.BedCategory).ToListAsync();
+            Huts = await huts.ToListAsync();
         }
     }
 }

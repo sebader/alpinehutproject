@@ -118,13 +118,13 @@
 
                         var icon;
                         if (hutlist[i].enabled === false) {
-                            icon = greyIcon;
+                            icon = greyIcon; // grey=booking not active
                         } else if (hutlist[i].freeBeds === 0) {
-                            icon = redIcon;
+                            icon = redIcon; // red=full
                         } else if (hutlist[i].freeBeds > 0) {
-                            icon = greenIcon;
+                            icon = greenIcon; // green=beds available
                         } else {
-                            icon = blueIcon;
+                            icon = blueIcon; // fallback
                         }
 
                         var plotmark = new L.Marker(plotll, { icon: icon });
@@ -138,25 +138,25 @@
 
                         plotmark.bindTooltip(toolTip);
 
-                        var popup = [];
+                        var popupBody = [];
 
                         var popupHeader = "<h6>" + hutlist[i].name + "</h6>";
                         if (hutlist[i].enabled == true) {
                             if (hutlist[i].freeBeds !== null) {
                                 var d = new Date(document.getElementById('DateFilter').value);
                                 var formatted = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
-                                popup.push("[" + formatted + "] Freie Plätze: " + hutlist[i].freeBeds);
+                                popupBody.push("[" + formatted + "] Freie Plätze: " + hutlist[i].freeBeds);
                             }
-                            popup.push("<a target=\"_blank\" href=\"" + hutlist[i].onlineBookingLink + "\">Onlinebuchung</a>");
+                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].onlineBookingLink + "\">Onlinebuchung</a>");
                         }
                         else {
-                            popup.push("<i>Onlinebuchung nicht aktiv</i>");
+                            popupBody.push("<i>Onlinebuchung nicht aktiv</i>");
                         }
 
                         if (hutlist[i].hutWebsiteLink !== null) {
-                            popup.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">Hüttenwebsite</a>");
+                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">Hüttenwebsite</a>");
                         }
-                        plotmark.bindPopup(popupHeader.concat(popup.join("<br />")));
+                        plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
                         plotlayers.push(plotmark);
                     }
                 }

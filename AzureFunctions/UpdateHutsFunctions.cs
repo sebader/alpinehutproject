@@ -106,7 +106,8 @@ namespace AzureFunctions
                     log.LogDebug($"Found existing hut for id={hutId} in the database. name={existingHut.Name}");
                 }
 
-                var url = $"{Helpers.HutProviderBaseUrl}{hutId}";
+                // First we try to use locale de_DE, we might switch below
+                var url = $"{Helpers.HutProviderBaseUrl}lang=de_DE&hut_id={hutId}";
                 HtmlDocument doc = await LoadWebsite(url, log);
 
                 if (doc.ParsedText.Contains("kann nicht gefunden werden"))
@@ -121,7 +122,7 @@ namespace AzureFunctions
                     var germanLocale = languageSelector?.Descendants("li").Where(d => d.InnerText == "Deutsch").Select(d => d.Id).FirstOrDefault();
                     if (!string.IsNullOrEmpty(germanLocale))
                     {
-                        var newUrl = $"https://www.alpsonline.org/reservation/calendar?lang={germanLocale}&hut_id={hutId}";
+                        var newUrl = $"{Helpers.HutProviderBaseUrl}lang={germanLocale}&hut_id={hutId}";
                         if (newUrl != url)
                         {
                             url = newUrl;
@@ -193,7 +194,7 @@ namespace AzureFunctions
             web.CaptureRedirect = false;
             var doc = await web.LoadFromWebAsync(url);
 
-            log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
+            //log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
             return doc;
         }
     }

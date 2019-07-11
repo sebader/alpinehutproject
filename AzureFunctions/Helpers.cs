@@ -17,7 +17,7 @@ namespace AzureFunctions
 {
     public static class Helpers
     {
-        public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?lang=de_DE&hut_id=";
+        public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
 
         public static IConfigurationRoot config = new ConfigurationBuilder()
@@ -36,6 +36,14 @@ namespace AzureFunctions
             return alpinehutsDbContext;
         }
 
+        /// <summary>
+        /// Parse the html content from the hut booking page to scrape information like name, location, and hut website
+        /// </summary>
+        /// <param name="hutId"></param>
+        /// <param name="doc"></param>
+        /// <param name="isNewHut"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         public static async Task<Hut> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, ILogger log)
         {
             var infoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "info").FirstOrDefault();
@@ -77,8 +85,6 @@ namespace AzureFunctions
                 // Only call the external services, if the hut is a new one for us
                 if (isNewHut)
                 {
-                    country = GetCountry(hutName, phoneNumber, doc.ParsedText);
-
                     var latLong = await SearchHutCoordinates(hutName, log);
 
                     if (latLong.latitude != null && latLong.longitude != null)
@@ -89,6 +95,12 @@ namespace AzureFunctions
                         var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
                         country = countryRegion.country ?? country;
                         region = countryRegion.region;
+                    }
+
+                    if (string.IsNullOrEmpty(country))
+                    {
+                        // Fallback solution to roughly determine the country a hut is based in. This is not alway accurate
+                        country = GetCountry(hutName, phoneNumber, doc.ParsedText);
                     }
                 }
                 hut.Country = country;
@@ -114,7 +126,7 @@ namespace AzureFunctions
             string[] southTyrolNames = { "AVS" };
             if (southTyrolNames.Any(n => hutName.Contains(n) || phoneNumber.Contains("+39") || phoneNumber.Contains("0039")))
             {
-                return "Italien";
+                return "Italia";
             }
 
             if (phoneNumber.Contains("+43") || phoneNumber.Contains("0043"))

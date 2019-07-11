@@ -5,7 +5,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AzureFunctions.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -32,10 +35,41 @@ namespace AzureFunctions
             var dbContext = Helpers.GetDbContext();
             var hutIds = dbContext.Huts.Where(h => h.Enabled == true).Select(h => h.Id).ToList();
 
-            //var hutIds = new List<int>() { 9 };
-
             string instanceId = await starter.StartNewAsync("UpdateAvailabilityOrchestrator", hutIds);
             log.LogInformation($"UpdateAvailability orchestrator started. Instance ID={instanceId}");
+        }
+
+        /// <summary>
+        /// This function can update the availability for a single hut. More for debugging.
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("UpdateAvailabilityHttpTriggered")]
+        public static async Task<IActionResult> UpdateAvailabilityHttpTriggered(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
+        {
+            log.LogInformation("Update Hut HTTP trigger function received a request");
+
+            string hutIds = req.Query["hutid"];
+            if (string.IsNullOrEmpty(hutIds))
+            {
+                return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");
+            }
+
+            int numRowsWritten = 0;
+
+            foreach (var hutId in hutIds.Split(','))
+            {
+                int parsedId;
+                if (!int.TryParse(hutId, out parsedId))
+                {
+                    log.LogWarning($"Could not parse '{hutId}'. Ignoring");
+                }
+
+                numRowsWritten += await UpdateHutAvailability(parsedId, log);
+            }
+            return new OkObjectResult(numRowsWritten);
         }
 
         [FunctionName("UpdateAvailabilityOrchestrator")]
@@ -68,8 +102,9 @@ namespace AzureFunctions
         }
 
         [FunctionName("UpdateHutAvailability")]
-        public static async Task UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
+        public static async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
         {
+            int numRowsWritten = 0;
             try
             {
                 log.LogInformation($"Executing UpdateHutAvailability for hutid={hutId}");
@@ -79,7 +114,7 @@ namespace AzureFunctions
                 if (hut == null || hut.Enabled != true)
                 {
                     log.LogError($"No hut found for id={hutId} or hut not enabled");
-                    return;
+                    return numRowsWritten;
                 }
 
                 using (HttpClient httpClient = new HttpClient())
@@ -134,7 +169,7 @@ namespace AzureFunctions
                                     }
                                 }
                             }
-                            await dbContext.SaveChangesAsync();
+                            numRowsWritten += await dbContext.SaveChangesAsync();
                         }
                         log.LogInformation($"Finished updating availability for hutId={hut.Id} ({hut.Name})");
                     }
@@ -143,15 +178,14 @@ namespace AzureFunctions
             catch (Exception e)
             {
                 log.LogError(default, e, "Exception in writing availability updates to database for hutid=" + hutId);
-                return;
             }
+            return numRowsWritten;
         }
 
         private static List<DayAvailability> ParseAvailability(string requestBody)
         {
             JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
 
-            string hutLanguage = "";
             var resultList = new List<DayAvailability>();
 
             foreach (var day in json.Children())
@@ -175,12 +209,6 @@ namespace AzureFunctions
                             parsedDay.Date = DateTime.ParseExact(roomDayAvailabilty.ReservationDate, "dd.MM.yyyy", CultureInfo.InvariantCulture);
                         }
                     }
-
-                    if (hutLanguage == "")
-                    {
-                        hutLanguage = roomDayAvailabilty.HutDefaultLanguage;
-                    }
-
                 }
                 if (parsedDay.Date != null)
                 {

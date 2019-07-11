@@ -46,7 +46,9 @@ namespace Shared.Models
 
                 entity.Property(e => e.Country).HasMaxLength(100);
 
-                entity.Property(e => e.Language).HasMaxLength(100);
+                entity.Property(e => e.Region).HasMaxLength(100);
+
+                entity.Property(e => e.HutWebsite).HasMaxLength(100);
 
                 entity.Property(e => e.Link).HasMaxLength(100);
 

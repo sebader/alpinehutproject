@@ -48,9 +48,6 @@ namespace AzureFunctions.Models
         [JsonProperty("totalRoom")]
         public int TotalRoom { get; set; }
 
-        [JsonProperty("hutDefaultLanguage")]
-        public string HutDefaultLanguage { get; set; }
-
         [JsonProperty("reservedRoomsRatio")]
         public double ReservedRoomsRatio { get; set; }
     }

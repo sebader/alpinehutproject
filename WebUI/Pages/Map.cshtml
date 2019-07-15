@@ -18,16 +18,20 @@
         var hutlist;
         var plotlayers = [];
 
-        function initmap() {
-            // set up the map
-            map = new L.Map('map');
+        function initmap() {        
 
-            // create the tile layer with correct attribution
+            // create the tile layer with correct attribution for OSM
             var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
             var osmAttrib = 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
-            var osm = new L.TileLayer(osmUrl, { minZoom: 6, attribution: osmAttrib });
+            var osmLayer = new L.TileLayer(osmUrl, { minZoom: 6, attribution: osmAttrib });
 
-            var zoom = 7;
+            // create the tile layer with correct attribution for opentopomaps
+            var otmUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+            var otmAttrib = osmAttrib.concat(' | Map visualization: © <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)');
+            var otmLayer = new L.TileLayer(otmUrl, { minZoom: 6, maxZoom: 17, attribution: otmAttrib });
+
+            var zoom = 7;          
+            // Default= Initial view on the Alps
             var lat = 46.90;
             var lon = 11.33;
 
@@ -37,10 +41,20 @@
                 lon = params["lon"];
                 zoom = 15;
             }
+            
+            // set up the map
+            map = new L.Map('map', {
+                center: [lat, lon],
+                zoom: zoom,
+                layers: [osmLayer]
+            });
 
-            // Initial view on the Alps
-            map.setView(new L.LatLng(lat, lon), zoom);
-            map.addLayer(osm);
+            var baseMaps = {
+                "OpenStreetMap": osmLayer,
+                "OpenTopoMap": otmLayer
+            };
+
+            L.control.layers(baseMaps).addTo(map);
 
             // Initial load of huts to plot
             askForPlots();
@@ -286,7 +300,8 @@
             });
         }
 
-    </script>
+
+/**/</script>
 }
 
 <h1>Karte</h1>

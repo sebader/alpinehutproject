@@ -37,7 +37,7 @@ namespace AlpinHutsDashboard.Pages
             {
                 huts = _context.Huts.Where(h => h.Enabled == true || h.Enabled == onlyEnabled);
             }
-            Huts = await huts.ToListAsync();
+            Huts = await huts.AsNoTracking().ToListAsync();
         }
     }
 }

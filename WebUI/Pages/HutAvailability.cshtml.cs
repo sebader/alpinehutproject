@@ -23,11 +23,11 @@ namespace AlpinHutsDashboard.Pages
 
         public async Task<IActionResult> OnGetAsync(int? hutId)
         {
-            if (hutId == null || (Hut = _context.Huts.SingleOrDefault(h => h.Id == hutId)) == null)
+            if (hutId == null || (Hut = _context.Huts.AsNoTracking().SingleOrDefault(h => h.Id == hutId)) == null)
                 return NotFound();
 
             Availability = await _context.Availability.Where(a => a.Hutid == hutId && a.Date >= DateTime.Today)
-                .Include(a => a.Hut).Include(a => a.BedCategory).OrderBy(a => a.Date).ToListAsync();
+                .Include(a => a.Hut).Include(a => a.BedCategory).OrderBy(a => a.Date).AsNoTracking().ToListAsync();
 
             return Page();
         } 

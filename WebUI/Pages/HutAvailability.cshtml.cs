@@ -18,11 +18,12 @@ namespace AlpinHutsDashboard.Pages
             _context = context;
         }
 
+        public Hut Hut { get; set; }
         public IList<Availability> Availability { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int? hutId)
         {
-            if (hutId == null)
+            if (hutId == null || (Hut = _context.Huts.SingleOrDefault(h => h.Id == hutId)) == null)
                 return NotFound();
 
             Availability = await _context.Availability.Where(a => a.Hutid == hutId && a.Date >= DateTime.Today)

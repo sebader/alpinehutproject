@@ -1,11 +1,13 @@
 ﻿using AzureFunctions.Models;
 using HtmlAgilityPack;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -28,10 +30,16 @@ namespace AzureFunctions
 
         private static HttpClient _httpClient = new HttpClient();
 
-        public static AlpinehutsDbContext GetDbContext()
+        public static async Task<AlpinehutsDbContext> GetDbContext()
         {
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
-            optionsBuilder.UseSqlServer(config["DatabaseConnectionString"], options => options.EnableRetryOnFailure());
+
+            // Using managed AAD identity to connect to the database
+            var dbConnection = new SqlConnection(config["DatabaseConnectionString"])
+            {
+                AccessToken = await new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/")
+            };
+            optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }

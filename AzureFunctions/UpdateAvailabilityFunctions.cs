@@ -32,7 +32,7 @@ namespace AzureFunctions
 
             log.LogInformation($"UpdateAvailabilityFunctions Timer trigger function executed at: {DateTime.Now}");
 
-            var dbContext = Helpers.GetDbContext();
+            var dbContext = await Helpers.GetDbContext();
             var hutIds = dbContext.Huts.Where(h => h.Enabled == true).Select(h => h.Id).ToList();
 
             string instanceId = await starter.StartNewAsync("UpdateAvailabilityOrchestrator", hutIds);
@@ -108,7 +108,7 @@ namespace AzureFunctions
             try
             {
                 log.LogInformation($"Executing UpdateHutAvailability for hutid={hutId}");
-                var dbContext = Helpers.GetDbContext();
+                var dbContext = await Helpers.GetDbContext();
 
                 var hut = await dbContext.Huts.Where(h => h.Id == hutId).Include(h => h.Availability).ThenInclude(a => a.BedCategory).SingleOrDefaultAsync();
                 if (hut == null || hut.Enabled != true)
@@ -150,7 +150,7 @@ namespace AzureFunctions
                                         existingAva.FreeRoom = room.FreeRoom;
                                         existingAva.TotalRoom = room.TotalRoom;
                                         existingAva.LastUpdated = updateTime;
-                                        log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId}");
+                                        log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
                                         dbContext.Update(existingAva);
                                     }
                                     else
@@ -231,7 +231,7 @@ namespace AzureFunctions
             try
             {
                 log.LogInformation("Executing stored procedure to update availability reporting");
-                var dbContext = Helpers.GetDbContext();
+                var dbContext = await Helpers.GetDbContext();
                 var rowsAffected = await dbContext.Database.ExecuteSqlCommandAsync("dbo.UpdateAvailabilityReporting");
                 log.LogInformation($"Inserted {rowsAffected} new rows into reporting table");
             }

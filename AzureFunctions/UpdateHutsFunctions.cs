@@ -94,7 +94,7 @@ namespace AzureFunctions
             try
             {
                 log.LogInformation($"Executing GetHutFromProviderActivity for hutid={hutId}");
-                var dbContext = Helpers.GetDbContext();
+                var dbContext = await Helpers.GetDbContext();
 
                 var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
                 if (existingHut == null)

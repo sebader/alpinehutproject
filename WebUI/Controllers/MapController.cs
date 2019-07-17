@@ -53,7 +53,8 @@ namespace WebUI.Cotrollers
                 HutWebsiteLink = hut.HutWebsite,
                 Latitude = (double)hut.Latitude,
                 Longitude = (double)hut.Longitude,
-                FreeBeds = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Sum(a => (int)a.FreeRoom) : (int?)null
+                FreeBeds = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Sum(a => (int)a.FreeRoom) : (int?)null,
+                LastUpdated = hut.Availability.FirstOrDefault(a => a.Date >= DateTime.Today).LastUpdated ?? (DateTime) hut.LastUpdated
             });
 
             _logger.LogInformation($"GetHuts returned {result.Count()} huts");

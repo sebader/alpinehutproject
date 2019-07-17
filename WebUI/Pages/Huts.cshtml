@@ -45,6 +45,12 @@
                 }
             });
         });
+
+        // On change of the date field, reload the map
+        $("#dateForm")
+            .on("input", function () {
+                $("#dateForm").submit();
+            });
     </script>
 
 }
@@ -54,13 +60,12 @@
 
 <div class="form-group">
     <div class="col-md-3">
-        <form asp-action="Huts" method="get">
+        <form asp-action="Huts" method="get" id="dateForm">
             <div>
                 <label asp-for="DateFilter">Verfügbarkeit an Datum</label>
                 <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
             </div>
             <div>
-                <input type="submit" class="btn btn-primary" value="Abschicken" />
                 <a asp-route-Huts="" asp-route-SearchString="" class="btn btn-primary">Reset</a>
             </div>
         </form>
@@ -103,7 +108,7 @@
                     @Html.DisplayFor(modelItem => item.Id)
                 </td>
                 <td>
-                    <a asp-page="./HutAvailability" asp-route-hutid="@item.Id" asp-fragment="@Model.DateFilter?.ToString("yyyy-MM-dd")">
+                    <a asp-page="./HutDetail" asp-route-hutid="@item.Id" asp-fragment="@Model.DateFilter?.ToString("yyyy-MM-dd")">
                         @Html.DisplayFor(modelItem => item.Name)
                     </a>
                 </td>

@@ -9,11 +9,11 @@ using Shared.Models;
 
 namespace AlpinHutsDashboard.Pages
 {
-    public class HutAvailabilityModel : PageModel
+    public class HutDetailModel : PageModel
     {
         private readonly AlpinehutsDbContext _context;
 
-        public HutAvailabilityModel(AlpinehutsDbContext context)
+        public HutDetailModel(AlpinehutsDbContext context)
         {
             _context = context;
         }

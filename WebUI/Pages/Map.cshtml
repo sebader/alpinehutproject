@@ -18,7 +18,7 @@
         var hutlist;
         var plotlayers = [];
 
-        function initmap() {        
+        function initmap() {
 
             // create the tile layer with correct attribution for OSM
             var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -30,7 +30,7 @@
             var otmAttrib = osmAttrib.concat(' | Map visualization: © <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)');
             var otmLayer = new L.TileLayer(otmUrl, { minZoom: 6, maxZoom: 17, attribution: otmAttrib });
 
-            var zoom = 7;          
+            var zoom = 7;
             // Default= Initial view on the Alps
             var lat = 46.90;
             var lon = 11.33;
@@ -41,7 +41,7 @@
                 lon = params["lon"];
                 zoom = 15;
             }
-            
+
             // set up the map
             map = new L.Map('map', {
                 center: [lat, lon],
@@ -155,6 +155,7 @@
                         var popupBody = [];
 
                         var popupHeader = "<h6>" + hutlist[i].name + "</h6>";
+
                         if (hutlist[i].enabled == true) {
                             if (hutlist[i].freeBeds !== null) {
                                 var d = new Date(document.getElementById('DateFilter').value);
@@ -170,6 +171,15 @@
                         if (hutlist[i].hutWebsiteLink !== null) {
                             popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">Hüttenwebsite</a>");
                         }
+
+                        var lu = new Date(hutlist[i].lastUpdated);
+                        let options = {
+                            year: "numeric", month: "numeric",
+                            day: "numeric", hour: "2-digit", minute: "2-digit"
+                        };
+
+                        popupBody.push("<br />Stand: " + lu.toLocaleTimeString("de-de", options));
+
                         plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
                         plotlayers.push(plotmark);
                     }
@@ -317,7 +327,6 @@
             <div>
                 <button class="btn btn-primary" onclick="resetDateFilter();">Reset</button>
             </div>
-
         </div>
     </div>
     <div class="col-md-3">

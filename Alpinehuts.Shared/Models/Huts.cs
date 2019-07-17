@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Shared.Models
 {
@@ -23,5 +24,18 @@ namespace Shared.Models
         public DateTime? LastUpdated { get; set; }
 
         public virtual ICollection<Availability> Availability { get; set; }
+
+        public string ShortHutWebsite()
+        {
+            if (!string.IsNullOrEmpty(HutWebsite))
+            {
+                Regex r = new Regex(@"http[s]{0,1}://(www){0,1}\.*");
+                return r.Replace(HutWebsite.ToLower(), "");
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

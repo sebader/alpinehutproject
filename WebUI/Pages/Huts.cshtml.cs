@@ -25,7 +25,7 @@ namespace AlpinHutsDashboard.Pages
 
         public IList<Hut> Huts { get;set; }
 
-        public async Task OnGetAsync(bool onlyEnabled = true, DateTime? DateFilter = null)
+        public async Task OnGetAsync(DateTime? DateFilter = null)
         {
             this.DateFilter = DateFilter?.Date;
             IQueryable<Hut> huts; 
@@ -35,7 +35,7 @@ namespace AlpinHutsDashboard.Pages
             }
             else
             {
-                huts = _context.Huts.Where(h => h.Enabled == true || h.Enabled == onlyEnabled);
+                huts = _context.Huts;
             }
             Huts = await huts.AsNoTracking().ToListAsync();
         }

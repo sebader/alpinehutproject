@@ -260,7 +260,7 @@ namespace AzureFunctions
         /// <returns></returns>
         public static async Task<(string country, string region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
         {
-            const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0";
+            const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0&language=de";
 
             string apiKey = config["AzureMapsApiKey"];
             if (string.IsNullOrEmpty(apiKey))

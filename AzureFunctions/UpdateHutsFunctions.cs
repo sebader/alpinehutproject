@@ -137,19 +137,15 @@ namespace AzureFunctions
 
                         if (existingHut != null)
                         {
-                            // We only call out to the external services (MapQuest and Azure Maps) if the name changed or if country/region are null yet (searches are based on the name)
-                            if (existingHut.Name != parsedHut.Name || existingHut.Country == null || existingHut.Region == null)
+                            var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, log);
+                            if (latLong.latitude != null && latLong.longitude != null)
                             {
-                                var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, log);
-                                if (latLong.latitude != null && latLong.longitude != null)
-                                {
-                                    parsedHut.Latitude = latLong.latitude;
-                                    parsedHut.Longitude = latLong.longitude;
+                                parsedHut.Latitude = latLong.latitude;
+                                parsedHut.Longitude = latLong.longitude;
 
-                                    var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
-                                    parsedHut.Country = countryRegion.country ?? parsedHut.Country;
-                                    parsedHut.Region = countryRegion.region;
-                                }
+                                var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                                parsedHut.Country = countryRegion.country ?? parsedHut.Country;
+                                parsedHut.Region = countryRegion.region ?? parsedHut.Region;
                             }
                             existingHut.Name = parsedHut.Name;
                             existingHut.Enabled = parsedHut.Enabled;

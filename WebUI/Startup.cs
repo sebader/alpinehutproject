@@ -35,12 +35,20 @@ namespace AlpinHutsDashboard
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            /*
             var dbConnection = new SqlConnection(Configuration["DatabaseConnectionString"])
             {
                 AccessToken = new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/").Result
             };
 
             services.AddDbContext<AlpinehutsDbContext>(options => options.UseSqlServer(dbConnection));
+            */
+
+            services.AddDbContextPool<AlpinehutsDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration["DatabaseConnectionString"]);
+                options.UseAzureAccessToken();
+            });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

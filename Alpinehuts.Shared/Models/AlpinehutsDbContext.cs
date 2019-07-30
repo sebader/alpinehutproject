@@ -5,10 +5,6 @@ namespace Shared.Models
 {
     public partial class AlpinehutsDbContext : DbContext
     {
-        public AlpinehutsDbContext()
-        {
-        }
-
         public AlpinehutsDbContext(DbContextOptions<AlpinehutsDbContext> options)
             : base(options)
         {

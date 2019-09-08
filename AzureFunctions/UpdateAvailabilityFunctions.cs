@@ -147,25 +147,40 @@ namespace AzureFunctions
                                     var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
                                     if (existingAva != null)
                                     {
-                                        existingAva.FreeRoom = room.FreeRoom;
-                                        existingAva.TotalRoom = room.TotalRoom;
-                                        existingAva.LastUpdated = updateTime;
-                                        log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
-                                        dbContext.Update(existingAva);
+                                        if (room.Closed)
+                                        {
+                                            // Was not closed before, so we delete the row
+                                            dbContext.Remove(existingAva);
+                                        }
+                                        else
+                                        {
+                                            existingAva.FreeRoom = room.FreeRoom;
+                                            existingAva.TotalRoom = room.TotalRoom;
+                                            existingAva.LastUpdated = updateTime;
+                                            log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
+                                            dbContext.Update(existingAva);
+                                        }
                                     }
                                     else
                                     {
-                                        var newAva = new Availability()
+                                        if (room.Closed)
                                         {
-                                            BedCategoryId = (int)room.BedCategoryId,
-                                            Date = (DateTime)day.Date,
-                                            FreeRoom = room.FreeRoom,
-                                            TotalRoom = room.TotalRoom,
-                                            Hutid = hutId,
-                                            LastUpdated = updateTime
-                                        };
-                                        log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
-                                        dbContext.Availability.Add(newAva);
+                                            log.LogDebug($"Skipping availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} because closed on that date");
+                                        }
+                                        else
+                                        {
+                                            var newAva = new Availability()
+                                            {
+                                                BedCategoryId = (int)room.BedCategoryId,
+                                                Date = (DateTime)day.Date,
+                                                FreeRoom = room.FreeRoom,
+                                                TotalRoom = room.TotalRoom,
+                                                Hutid = hutId,
+                                                LastUpdated = updateTime
+                                            };
+                                            log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
+                                            dbContext.Availability.Add(newAva);
+                                        }
                                     }
                                 }
                             }
@@ -194,20 +209,18 @@ namespace AzureFunctions
                 foreach (var room in day.First?.Children())
                 {
                     var roomDayAvailabilty = JsonConvert.DeserializeObject<RoomDayAvailability>(room.ToString());
-                    if (!roomDayAvailabilty.Closed)
+                    var a = new RoomAvailability
                     {
-                        var a = new RoomAvailability
-                        {
-                            BedCategoryId = roomDayAvailabilty.BedCategoryId,
-                            FreeRoom = roomDayAvailabilty.FreeRoom,
-                            TotalRoom = roomDayAvailabilty.TotalRoom
-                        };
-                        parsedDay.Rooms.Add(a);
+                        BedCategoryId = roomDayAvailabilty.BedCategoryId,
+                        FreeRoom = roomDayAvailabilty.FreeRoom,
+                        TotalRoom = roomDayAvailabilty.TotalRoom,
+                        Closed = roomDayAvailabilty.Closed
+                    };
+                    parsedDay.Rooms.Add(a);
 
-                        if (parsedDay.Date == null)
-                        {
-                            parsedDay.Date = DateTime.ParseExact(roomDayAvailabilty.ReservationDate, "dd.MM.yyyy", CultureInfo.InvariantCulture);
-                        }
+                    if (parsedDay.Date == null)
+                    {
+                        parsedDay.Date = DateTime.ParseExact(roomDayAvailabilty.ReservationDate, "dd.MM.yyyy", CultureInfo.InvariantCulture);
                     }
                 }
                 if (parsedDay.Date != null)

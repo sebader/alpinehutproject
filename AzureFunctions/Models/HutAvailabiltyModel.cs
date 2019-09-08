@@ -21,6 +21,8 @@ namespace AzureFunctions.Models
         [JsonProperty("totalRoom")]
         public int? TotalRoom { get; set; }
 
+        public bool Closed { get; set; }
+
     }
     public class RoomDayAvailability
     {

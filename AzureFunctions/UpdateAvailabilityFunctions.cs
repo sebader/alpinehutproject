@@ -90,6 +90,7 @@ namespace AzureFunctions
                 tasks[i] = context.CallActivityAsync("UpdateHutAvailability", hutIds[i]);
             }
 
+            // Fan-in (wait for all tasks to be completed)
             await Task.WhenAll(tasks);
 
             // Call stored proc to update reporting table
@@ -117,77 +118,75 @@ namespace AzureFunctions
                     return numRowsWritten;
                 }
 
-                using (HttpClient httpClient = new HttpClient())
+                var httpClient = new HttpClient();
+                // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
+                var initialResponse = await httpClient.GetAsync(hut.Link, HttpCompletionOption.ResponseHeadersRead);
+
+                var cookie = initialResponse.Headers.GetValues("Set-Cookie").FirstOrDefault();
+                if (!string.IsNullOrEmpty(cookie))
                 {
-                    // Call the base page for the hut once to get a cookie which we then need for the selectDate query
-                    var initialResponse = await httpClient.GetAsync(hut.Link);
+                    httpClient.DefaultRequestHeaders.Add("Cookie", cookie);
 
-                    var cookie = initialResponse.Headers.GetValues("Set-Cookie").FirstOrDefault();
-                    if (!string.IsNullOrEmpty(cookie))
+                    var startDate = DateTime.UtcNow;
+                    // Each selectDate query gives a 14 day window, so we increment by 14
+                    // 112 = 16 weeks
+                    for (int dateOffset = 0; dateOffset < 112; dateOffset += 14)
                     {
-                        httpClient.DefaultRequestHeaders.Add("Cookie", cookie);
+                        var date = startDate.AddDays(dateOffset).ToString("dd.MM.yyyy");
+                        var dateUrl = $"{Helpers.SelectDateBaseUrl}{date}";
+                        log.LogDebug($"Calling selectDate for hutid={hutId} and date={date} ({dateUrl})");
+                        var dateResponse = await httpClient.GetStringAsync(dateUrl);
+                        var updateTime = DateTime.UtcNow;
 
-                        var startDate = DateTime.UtcNow;
-                        // Each selectDate query gives a 14 day window, so we increment by 14
-                        // 112 = 16 weeks
-                        for (int dateOffset = 0; dateOffset < 112; dateOffset += 14)
+                        var daysAvailability = ParseAvailability(dateResponse);
+
+                        foreach (var day in daysAvailability)
                         {
-                            var date = startDate.AddDays(dateOffset).ToString("dd.MM.yyyy");
-                            var dateUrl = $"{Helpers.SelectDateBaseUrl}{date}";
-                            log.LogDebug($"Calling selectDate for hutid={hutId} and date={date} ({dateUrl})");
-                            var dateResponse = await httpClient.GetStringAsync(dateUrl);
-                            var updateTime = DateTime.UtcNow;
-
-                            var daysAvailability = ParseAvailability(dateResponse);
-
-                            foreach (var day in daysAvailability)
+                            foreach (var room in day.Rooms)
                             {
-                                foreach (var room in day.Rooms)
+                                var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
+                                if (existingAva != null)
                                 {
-                                    var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
-                                    if (existingAva != null)
+                                    if (room.Closed)
                                     {
-                                        if (room.Closed)
-                                        {
-                                            // Was not closed before, so we delete the row
-                                            dbContext.Remove(existingAva);
-                                        }
-                                        else
-                                        {
-                                            existingAva.FreeRoom = room.FreeRoom;
-                                            existingAva.TotalRoom = room.TotalRoom;
-                                            existingAva.LastUpdated = updateTime;
-                                            log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
-                                            dbContext.Update(existingAva);
-                                        }
+                                        // Was not closed before, so we delete the row
+                                        dbContext.Remove(existingAva);
                                     }
                                     else
                                     {
-                                        if (room.Closed)
+                                        existingAva.FreeRoom = room.FreeRoom;
+                                        existingAva.TotalRoom = room.TotalRoom;
+                                        existingAva.LastUpdated = updateTime;
+                                        log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
+                                        dbContext.Update(existingAva);
+                                    }
+                                }
+                                else
+                                {
+                                    if (room.Closed)
+                                    {
+                                        log.LogDebug($"Skipping availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} because closed on that date");
+                                    }
+                                    else
+                                    {
+                                        var newAva = new Availability()
                                         {
-                                            log.LogDebug($"Skipping availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} because closed on that date");
-                                        }
-                                        else
-                                        {
-                                            var newAva = new Availability()
-                                            {
-                                                BedCategoryId = (int)room.BedCategoryId,
-                                                Date = (DateTime)day.Date,
-                                                FreeRoom = room.FreeRoom,
-                                                TotalRoom = room.TotalRoom,
-                                                Hutid = hutId,
-                                                LastUpdated = updateTime
-                                            };
-                                            log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
-                                            dbContext.Availability.Add(newAva);
-                                        }
+                                            BedCategoryId = (int)room.BedCategoryId,
+                                            Date = (DateTime)day.Date,
+                                            FreeRoom = room.FreeRoom,
+                                            TotalRoom = room.TotalRoom,
+                                            Hutid = hutId,
+                                            LastUpdated = updateTime
+                                        };
+                                        log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
+                                        dbContext.Availability.Add(newAva);
                                     }
                                 }
                             }
-                            numRowsWritten += await dbContext.SaveChangesAsync();
                         }
-                        log.LogInformation($"Finished updating availability for hutId={hut.Id} ({hut.Name})");
+                        numRowsWritten += await dbContext.SaveChangesAsync();
                     }
+                    log.LogInformation($"Finished updating availability for hutId={hut.Id} ({hut.Name})");
                 }
             }
             catch (Exception e)

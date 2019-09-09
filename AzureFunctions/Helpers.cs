@@ -2,7 +2,6 @@
 using HtmlAgilityPack;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using System;
@@ -22,12 +21,6 @@ namespace AzureFunctions
         public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
 
-        public static IConfigurationRoot config = new ConfigurationBuilder()
-        .SetBasePath(Environment.CurrentDirectory)
-        .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-        .AddEnvironmentVariables()
-        .Build();
-
         private static HttpClient _httpClient = new HttpClient();
 
         public static async Task<AlpinehutsDbContext> GetDbContext()
@@ -35,7 +28,7 @@ namespace AzureFunctions
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
 
             // Using managed AAD identity to connect to the database
-            var dbConnection = new SqlConnection(config["DatabaseConnectionString"])
+            var dbConnection = new SqlConnection(Environment.GetEnvironmentVariable("DatabaseConnectionString"))
             {
                 AccessToken = await new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/")
             };
@@ -174,7 +167,7 @@ namespace AzureFunctions
         {
             const string baseSearchUrl = "https://open.mapquestapi.com/nominatim/v1/search.php?format=json&limit=5";
 
-            string apiKey = config["MapQuestApiKey"];
+            string apiKey = Environment.GetEnvironmentVariable("MapQuestApiKey");
             if (string.IsNullOrEmpty(apiKey))
             {
                 throw new ArgumentException("MapQuestApiKey missing in AppSettings");
@@ -262,7 +255,7 @@ namespace AzureFunctions
         {
             const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0&language=de";
 
-            string apiKey = config["AzureMapsApiKey"];
+            string apiKey = Environment.GetEnvironmentVariable("AzureMapsApiKey");
             if (string.IsNullOrEmpty(apiKey))
             {
                 throw new ArgumentException("AzureMapsApiKey missing in AppSettings");

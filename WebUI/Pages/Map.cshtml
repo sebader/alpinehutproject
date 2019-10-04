@@ -255,6 +255,9 @@
 
                             var hut = hutlist.find(poi => poi.name === inp.value);
                             map.setView(new L.LatLng(hut.latitude, hut.longitude), 15);
+                            // Open the popup
+                            plotlayers.find(l => l.data.id == hut.id).openPopup();
+
                             /*close the list of autocompleted values,
                             (or any other open lists of autocompleted values:*/
                             closeAllLists();

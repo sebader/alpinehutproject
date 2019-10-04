@@ -64,6 +64,7 @@
             //map.on('moveend', onMapMove);
         }
 
+        // Not used currently
         function onMapMove(e) { askForPlots(); }
 
         function askForPlots() {
@@ -178,10 +179,20 @@
                             day: "numeric", hour: "2-digit", minute: "2-digit"
                         };
 
-                        popupBody.push("<br />Stand: " + lu.toLocaleTimeString("de-de", options));
+                        popupBody.push("<br />Stand: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"?hutid=" + hutlist[i].id + "\">(Direktlink)</a>");
 
                         plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
                         plotlayers.push(plotmark);
+                    }
+
+                    // If URL parameter hutid was set, we jump to that hut and open its popup
+                    var params = getUrlVars();
+                    if (params["hutid"] !== undefined) {
+                        var hut = hutlist.find(hut => hut.id == params["hutid"]);
+                        if (hut !== undefined && hut !== null) {
+                            map.setView(new L.LatLng(hut.latitude, hut.longitude), 15);
+                            plotlayers.find(l => l.data.id == hut.id).openPopup();
+                        }
                     }
                 }
             }
@@ -311,7 +322,7 @@
         }
 
 
-/**/</script>
+        /**/</script>
 }
 
 <h1>Karte</h1>

@@ -118,7 +118,7 @@
                 <td>
                     @if (item.Latitude != null && item.Longitude != null)
                     {
-                    <a asp-page="./Map" asp-route-lat="@item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)" asp-route-lon="@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)" >
+                    <a asp-page="./Map" asp-route-hutid="@item.Id" >
                        @item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
                     </a>
                     }

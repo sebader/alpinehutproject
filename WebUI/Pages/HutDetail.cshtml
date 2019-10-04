@@ -63,7 +63,7 @@
             <tr>
                 <td>Koordinaten</td>
                 <td>
-                    <a asp-page="./Map" asp-route-lat="@Model.Hut.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)" asp-route-lon="@Model.Hut.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)">
+                    <a asp-page="./Map" asp-route-hutid="@Model.Hut.Id">
                         @Model.Hut.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@Model.Hut.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
                     </a>
                 </td>

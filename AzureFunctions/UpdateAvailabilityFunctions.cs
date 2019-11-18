@@ -8,6 +8,7 @@ using AzureFunctions.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,7 @@ namespace AzureFunctions
         [FunctionName("UpdateAvailabilityTimerTriggered")]
         public static async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 23 * * *")]TimerInfo myTimer,
             ILogger log,
-            [OrchestrationClient] DurableOrchestrationClient starter)
+            [DurableClient] IDurableOrchestrationClient starter)
         {
             if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
             {
@@ -74,7 +75,7 @@ namespace AzureFunctions
 
         [FunctionName("UpdateAvailabilityOrchestrator")]
         public static async Task UpdateAvailabilityOrchestrator(
-           [OrchestrationTrigger] DurableOrchestrationContext context, ILogger log)
+           [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
             var hutIds = context.GetInput<List<int>>();
             if (!context.IsReplaying)

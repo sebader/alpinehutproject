@@ -6,6 +6,7 @@ using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +22,13 @@ namespace AzureFunctions
         [FunctionName("UpdateHutsTimerTriggered")]
         public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = false)]TimerInfo myTimer,
             ILogger log,
-            [OrchestrationClient] DurableOrchestrationClient starter)
+            [DurableClient] IDurableOrchestrationClient starter)
         {
             if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
             {
                 return;
             }
-            string instanceId = await starter.StartNewAsync("UpdateHutsOrchestrator", 1);
+            string instanceId = await starter.StartNewAsync("UpdateHutsOrchestrator", null, 1);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
         }
 
@@ -67,7 +68,7 @@ namespace AzureFunctions
 
         [FunctionName("UpdateHutsOrchestrator")]
         public static async Task UpdateHutsOrchestrator(
-            [OrchestrationTrigger] DurableOrchestrationContext context, ILogger log)
+            [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
             int startHutId = context.GetInput<int>();
             if (!context.IsReplaying)

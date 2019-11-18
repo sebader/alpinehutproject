@@ -19,7 +19,7 @@ namespace AzureFunctions
     {
         private const int MaxHutId = 320;
 
-        [FunctionName("UpdateHutsTimerTriggered")]
+        [FunctionName(nameof(UpdateHutsTimerTriggered))]
         public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = false)]TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
@@ -28,18 +28,18 @@ namespace AzureFunctions
             {
                 return;
             }
-            string instanceId = await starter.StartNewAsync("UpdateHutsOrchestrator", null, 1);
+            string instanceId = await starter.StartNewAsync(nameof(UpdateHutsOrchestrator), null, 1);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
         }
 
         /// <summary>
-        /// This function can update a single hut. More for debugging.
+        /// This function can update a single hut. More for debugging than actual live use.
         /// </summary>
         /// <param name="req"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        [FunctionName("UpdateHutHttpTriggered")]
-        public static async Task<IActionResult> Run(
+        [FunctionName(nameof(UpdateHutHttpTriggered))]
+        public static async Task<IActionResult> UpdateHutHttpTriggered(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
         {
             log.LogInformation("Update Hut HTTP trigger function received a request");
@@ -66,35 +66,36 @@ namespace AzureFunctions
             return new OkObjectResult(result);
         }
 
-        [FunctionName("UpdateHutsOrchestrator")]
+        [FunctionName(nameof(UpdateHutsOrchestrator))]
         public static async Task UpdateHutsOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
+            log = context.CreateReplaySafeLogger(log);
             int startHutId = context.GetInput<int>();
-            if (!context.IsReplaying)
-            {
-                log.LogInformation($"Starting orchestrator with startHutId={startHutId}");
-            }
+
+            log.LogInformation($"Starting orchestrator with startHutId={startHutId}");
+
             var tasks = new Task[MaxHutId + 1];
 
             // Fan-out
             for (int i = startHutId; i <= MaxHutId; i++)
             {
-                tasks[i] = context.CallActivityAsync("GetHutFromProvider", i);
+                tasks[i] = context.CallActivityAsync(nameof(GetHutFromProviderActivity), i);
             }
 
+            // Fan in. Wait for all to be finished
             await Task.WhenAll(tasks);
 
             log.LogInformation($"MaxHutId {MaxHutId} reached. Ending hut updating now.");
         }
 
 
-        [FunctionName("GetHutFromProvider")]
+        [FunctionName(nameof(GetHutFromProviderActivity))]
         public static async Task<Hut> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
         {
             try
             {
-                log.LogInformation($"Executing GetHutFromProviderActivity for hutid={hutId}");
+                log.LogInformation($"Executing {nameof(GetHutFromProviderActivity)} for hutid={hutId}");
                 var dbContext = await Helpers.GetDbContext();
 
                 var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);

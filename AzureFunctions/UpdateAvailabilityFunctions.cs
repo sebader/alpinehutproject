@@ -21,7 +21,7 @@ namespace AzureFunctions
 {
     public static class UpdateAvailabilityFunctions
     {
-        [FunctionName("UpdateAvailabilityTimerTriggered")]
+        [FunctionName(nameof(UpdateAvailabilityTimerTriggered))]
         public static async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 23 * * *")]TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
@@ -34,10 +34,11 @@ namespace AzureFunctions
             log.LogInformation($"UpdateAvailabilityFunctions Timer trigger function executed at: {DateTime.Now}");
 
             var dbContext = await Helpers.GetDbContext();
+            // Fetch all hut ids which are in Enabled state from database
             var hutIds = dbContext.Huts.Where(h => h.Enabled == true).Select(h => h.Id).ToList();
 
-            string instanceId = await starter.StartNewAsync("UpdateAvailabilityOrchestrator", hutIds);
-            log.LogInformation($"UpdateAvailability orchestrator started. Instance ID={instanceId}");
+            string instanceId = await starter.StartNewAsync(nameof(UpdateAvailabilityOrchestrator), hutIds);
+            log.LogInformation($"{nameof(UpdateAvailabilityOrchestrator)} started. Instance ID={instanceId}");
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace AzureFunctions
         /// <param name="req"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        [FunctionName("UpdateAvailabilityHttpTriggered")]
+        [FunctionName(nameof(UpdateAvailabilityHttpTriggered))]
         public static async Task<IActionResult> UpdateAvailabilityHttpTriggered(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
         {
@@ -73,37 +74,34 @@ namespace AzureFunctions
             return new OkObjectResult(numRowsWritten);
         }
 
-        [FunctionName("UpdateAvailabilityOrchestrator")]
+        [FunctionName(nameof(UpdateAvailabilityOrchestrator))]
         public static async Task UpdateAvailabilityOrchestrator(
            [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
+            log = context.CreateReplaySafeLogger(log);
+
             var hutIds = context.GetInput<List<int>>();
-            if (!context.IsReplaying)
-            {
-                log.LogInformation($"Starting orchestrator with {hutIds.Count} hut IDs");
-            }
+
+            log.LogInformation($"Starting orchestrator with {hutIds.Count} hut IDs");
 
             var tasks = new Task[hutIds.Count];
 
             // Fan-out
             for (int i = 0; i < hutIds.Count; i++)
             {
-                tasks[i] = context.CallActivityAsync("UpdateHutAvailability", hutIds[i]);
+                tasks[i] = context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]);
             }
 
             // Fan-in (wait for all tasks to be completed)
             await Task.WhenAll(tasks);
 
             // Call stored proc to update reporting table
-            await context.CallActivityAsync("UpdateAvailabilityReporting", null);
+            await context.CallActivityAsync(nameof(UpdateAvailabilityReporting), null);
 
-            if (!context.IsReplaying)
-            {
-                log.LogInformation($"Update availability orchestrator finished");
-            }
+            log.LogInformation($"Update availability orchestrator finished");
         }
 
-        [FunctionName("UpdateHutAvailability")]
+        [FunctionName(nameof(UpdateHutAvailability))]
         public static async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
         {
             int numRowsWritten = 0;
@@ -238,7 +236,7 @@ namespace AzureFunctions
         /// <param name="input"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        [FunctionName("UpdateAvailabilityReporting")]
+        [FunctionName(nameof(UpdateAvailabilityReporting))]
         public static async Task UpdateAvailabilityReporting([ActivityTrigger] object input, ILogger log)
         {
             try

@@ -243,7 +243,7 @@ namespace AzureFunctions
             {
                 log.LogInformation("Executing stored procedure to update availability reporting");
                 var dbContext = await Helpers.GetDbContext();
-                var rowsAffected = await dbContext.Database.ExecuteSqlCommandAsync("dbo.UpdateAvailabilityReporting");
+                var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync("dbo.UpdateAvailabilityReporting");
                 log.LogInformation($"Inserted {rowsAffected} new rows into reporting table");
             }
             catch (Exception e)

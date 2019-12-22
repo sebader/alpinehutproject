@@ -139,15 +139,18 @@ namespace AzureFunctions
 
                         if (existingHut != null)
                         {
-                            var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, log);
-                            if (latLong.latitude != null && latLong.longitude != null)
+                            if (existingHut.Latitude == null || existingHut.Longitude == null || string.IsNullOrEmpty(existingHut.Country))
                             {
-                                parsedHut.Latitude = latLong.latitude;
-                                parsedHut.Longitude = latLong.longitude;
+                                var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, log);
+                                if (latLong.latitude != null && latLong.longitude != null)
+                                {
+                                    parsedHut.Latitude = latLong.latitude;
+                                    parsedHut.Longitude = latLong.longitude;
 
-                                var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
-                                parsedHut.Country = countryRegion.country ?? parsedHut.Country;
-                                parsedHut.Region = countryRegion.region ?? parsedHut.Region;
+                                    var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                                    parsedHut.Country = countryRegion.country ?? parsedHut.Country;
+                                    parsedHut.Region = countryRegion.region ?? parsedHut.Region;
+                                }
                             }
                             existingHut.Name = parsedHut.Name;
                             if(existingHut.Enabled == false && parsedHut.Enabled == true)

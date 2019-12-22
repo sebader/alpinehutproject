@@ -29,6 +29,12 @@
             <td>@Model.Hut.Id</td>
         </tr>
         <tr>
+            <td>Hütte hinzufgefügt</td>
+            <td>
+                @Model.Hut.Added?.ToString("dd.MM.yyyy")
+            </td>
+        </tr>
+        <tr>
             <td>Zuletzt aktualisiert</td>
             <td>
                 @if (Model.Availability.Count > 0)

@@ -22,6 +22,8 @@ namespace Shared.Models
         public double? Longitude { get; set; }
         public bool? Enabled { get; set; }
         public DateTime? LastUpdated { get; set; }
+        public DateTime? Added { get; set; }
+        public DateTime? Activated { get; set; }
 
         public virtual ICollection<Availability> Availability { get; set; }
 

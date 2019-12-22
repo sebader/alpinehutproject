@@ -84,12 +84,12 @@ namespace AzureFunctions
 
             log.LogInformation($"Starting orchestrator with {hutIds.Count} hut IDs");
 
-            var tasks = new Task[hutIds.Count];
+            var tasks = new List<Task>();
 
             // Fan-out
             for (int i = 0; i < hutIds.Count; i++)
             {
-                tasks[i] = context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]);
+                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]));
             }
 
             // Fan-in (wait for all tasks to be completed)

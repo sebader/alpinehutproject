@@ -29,7 +29,7 @@
             <td>@Model.Hut.Id</td>
         </tr>
         <tr>
-            <td>Hütte hinzufgefügt</td>
+            <td>Hütte hinzugefügt</td>
             <td>
                 @Model.Hut.Added?.ToString("dd.MM.yyyy")
             </td>
@@ -112,7 +112,7 @@
                         <td rowspan=@item.Availability.Count().ToString()>
                             <!-- because of the fixed header of the datatable, we need to jump a bit further up than the actual date. Thus we just add one day to each row-->
                             <a name="@item.Date.AddDays(1).ToString("yyyy-MM-dd")"></a>
-                            @item.Date.ToString("dddd, dd.MM.yyyy")
+                            @item.Date.ToString("dddd, dd.MM.yyyy",  new CultureInfo("de-DE"))
                         </td>
                     }
                     <td>

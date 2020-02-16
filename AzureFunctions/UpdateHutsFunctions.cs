@@ -57,7 +57,7 @@ namespace AzureFunctions
                 int parsedId;
                 if (!int.TryParse(hutId, out parsedId))
                 {
-                    log.LogWarning($"Could not parse '{hutId}'. Ignoring");
+                    log.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
 
                 var res = await GetHutFromProviderActivity(parsedId, log);
@@ -73,7 +73,7 @@ namespace AzureFunctions
             log = context.CreateReplaySafeLogger(log);
             int startHutId = context.GetInput<int>();
 
-            log.LogInformation($"Starting orchestrator with startHutId={startHutId}");
+            log.LogInformation("Starting orchestrator with startHutId={startHutId}", startHutId);
 
             var tasks = new List<Task>();
 
@@ -86,7 +86,7 @@ namespace AzureFunctions
             // Fan in. Wait for all to be finished
             await Task.WhenAll(tasks);
 
-            log.LogInformation($"MaxHutId {MaxHutId} reached. Ending hut updating now.");
+            log.LogInformation("MaxHutId {MaxHutId} reached. Ending hut updating now.", MaxHutId);
         }
 
 
@@ -95,17 +95,17 @@ namespace AzureFunctions
         {
             try
             {
-                log.LogInformation($"Executing {nameof(GetHutFromProviderActivity)} for hutid={hutId}");
+                log.LogInformation("Executing " + nameof(GetHutFromProviderActivity) + " for hutid={hutId}", hutId);
                 var dbContext = await Helpers.GetDbContext();
 
                 var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
                 if (existingHut == null)
                 {
-                    log.LogInformation($"No hut yet in the database for id={hutId}");
+                    log.LogInformation("No hut yet in the database for id={hutId}", hutId);
                 }
                 else
                 {
-                    log.LogDebug($"Found existing hut for id={hutId} in the database. name={existingHut.Name}");
+                    log.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
                 }
 
                 // First we try to use locale de_DE, we might switch below
@@ -115,7 +115,7 @@ namespace AzureFunctions
                 if (doc.ParsedText.Contains("kann nicht gefunden werden"))
                 {
                     // Means there is no hut (yet) in the booking system with this id
-                    log.LogInformation($"Hut with ID={hutId} not found");
+                    log.LogInformation("Hut with ID={hutId} not found", hutId);
                 }
                 else
                 {
@@ -183,7 +183,7 @@ namespace AzureFunctions
                     }
                     else
                     {
-                        log.LogError($"Error parsing hut page for ID={hutId}");
+                        log.LogError("Error parsing hut page for ID={hutId}", hutId);
                     }
                 }
             }
@@ -197,7 +197,7 @@ namespace AzureFunctions
 
         private static async Task<HtmlDocument> LoadWebsite(string url, ILogger log)
         {
-            log.LogDebug($"Executing http GET against {url}");
+            log.LogDebug("Executing http GET against {url}", url);
             // Load the hut web page for parsing using HtmlAgilityPack
             var web = new HtmlWeb();
             web.UsingCache = false;

@@ -66,7 +66,7 @@ namespace AzureFunctions
                 int parsedId;
                 if (!int.TryParse(hutId, out parsedId))
                 {
-                    log.LogWarning($"Could not parse '{hutId}'. Ignoring");
+                    log.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
 
                 numRowsWritten += await UpdateHutAvailability(parsedId, log);
@@ -107,13 +107,13 @@ namespace AzureFunctions
             int numRowsWritten = 0;
             try
             {
-                log.LogInformation($"Executing UpdateHutAvailability for hutid={hutId}");
+                log.LogInformation("Executing UpdateHutAvailability for hutid={hutId}", hutId);
                 var dbContext = await Helpers.GetDbContext();
 
                 var hut = await dbContext.Huts.Where(h => h.Id == hutId).Include(h => h.Availability).ThenInclude(a => a.BedCategory).SingleOrDefaultAsync();
                 if (hut == null || hut.Enabled != true)
                 {
-                    log.LogError($"No hut found for id={hutId} or hut not enabled");
+                    log.LogError("No hut found for id={hutId} or hut not enabled", hutId);
                     return numRowsWritten;
                 }
 
@@ -185,12 +185,12 @@ namespace AzureFunctions
                         }
                         numRowsWritten += await dbContext.SaveChangesAsync();
                     }
-                    log.LogInformation($"Finished updating availability for hutId={hut.Id} ({hut.Name})");
+                    log.LogInformation("Finished updating availability for hutId={hutId} ({hutName})", hut.Id, hut.Name);
                 }
             }
             catch (Exception e)
             {
-                log.LogError(default, e, "Exception in writing availability updates to database for hutid=" + hutId);
+                log.LogError(default, e, "Exception in writing availability updates to database for hutid={hutId}", hutId);
             }
             return numRowsWritten;
         }
@@ -244,7 +244,7 @@ namespace AzureFunctions
                 log.LogInformation("Executing stored procedure to update availability reporting");
                 var dbContext = await Helpers.GetDbContext();
                 var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync("dbo.UpdateAvailabilityReporting");
-                log.LogInformation($"Inserted {rowsAffected} new rows into reporting table");
+                log.LogInformation("Inserted {rowsAffected} new rows into reporting table", rowsAffected);
             }
             catch (Exception e)
             {

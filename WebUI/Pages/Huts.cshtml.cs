@@ -7,20 +7,23 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using Shared.Models;
+using Microsoft.Extensions.Logging;
 
 namespace AlpinHutsDashboard.Pages
 {
     public class HutsModel : PageModel
     {
         private readonly AlpinehutsDbContext _context;
+        private readonly ILogger<HutsModel> _logger;
 
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? DateFilter { get; set; }
 
-        public HutsModel(AlpinehutsDbContext context)
+        public HutsModel(AlpinehutsDbContext context, ILogger<HutsModel> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public IList<Hut> Huts { get;set; }
@@ -28,6 +31,9 @@ namespace AlpinHutsDashboard.Pages
         public async Task OnGetAsync(DateTime? DateFilter = null)
         {
             this.DateFilter = DateFilter?.Date;
+
+            _logger.LogInformation("Getting hut list for date filter={dateFilter}", this.DateFilter);
+
             IQueryable<Hut> huts; 
             if(this.DateFilter != null)
             {
@@ -38,6 +44,8 @@ namespace AlpinHutsDashboard.Pages
                 huts = _context.Huts;
             }
             Huts = await huts.AsNoTracking().ToListAsync();
+
+            _logger.LogInformation("Found {hutCount} huts with date filter={dateFilter}", Huts.Count, this.DateFilter);
         }
     }
 }

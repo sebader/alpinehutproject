@@ -44,6 +44,8 @@ namespace WebUI.Cotrollers
             }
             */
 
+            _logger.LogInformation("Received map request for coordinates llLat={llLat}, llLon={llLon}, urLat={urLat}, urLon={urLon}", llLat, llLon, urLat, urLon);
+
             var result = huts.Select(hut => new MapPlotHut
             {
                 Id = hut.Id,
@@ -57,7 +59,7 @@ namespace WebUI.Cotrollers
                 LastUpdated = hut.Availability.FirstOrDefault(a => a.Date >= DateTime.Today).LastUpdated ?? (DateTime) hut.LastUpdated
             });
 
-            _logger.LogInformation($"GetHuts returned {result.Count()} huts");
+            _logger.LogInformation($"GetHuts for map view returned {result.Count()} huts");
             return await result.AsNoTracking().ToListAsync();
         }
     }

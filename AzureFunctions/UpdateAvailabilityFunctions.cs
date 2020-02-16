@@ -128,7 +128,7 @@ namespace AzureFunctions
 
                     var startDate = DateTime.UtcNow;
                     // Each selectDate query gives a 14 day window, so we increment by 14
-                    // 112 = 16 weeks
+                    // 112 = 16 weeks in the future
                     for (int dateOffset = 0; dateOffset < 112; dateOffset += 14)
                     {
                         var date = startDate.AddDays(dateOffset).ToString("dd.MM.yyyy");
@@ -138,6 +138,8 @@ namespace AzureFunctions
                         var updateTime = DateTime.UtcNow;
 
                         var daysAvailability = ParseAvailability(dateResponse);
+
+                        log.LogInformation("Found {numberOfDay} days with availability for hut={hutId} starting with date={date}. Writing to database now", daysAvailability.Count, date, hutId);
 
                         foreach (var day in daysAvailability)
                         {
@@ -182,10 +184,10 @@ namespace AzureFunctions
                                     }
                                 }
                             }
+                            numRowsWritten += await dbContext.SaveChangesAsync();
                         }
-                        numRowsWritten += await dbContext.SaveChangesAsync();
                     }
-                    log.LogInformation("Finished updating availability for hutId={hutId} ({hutName})", hut.Id, hut.Name);
+                    log.LogInformation("Finished updating availability for hutId={hutId}. Number of rows written={numberOfRowsWritten}", hut.Id, numRowsWritten);
                 }
             }
             catch (Exception e)
@@ -195,9 +197,9 @@ namespace AzureFunctions
             return numRowsWritten;
         }
 
-        private static List<DayAvailability> ParseAvailability(string requestBody)
+        private static List<DayAvailability> ParseAvailability(string responseBody)
         {
-            JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
+            JObject json = JsonConvert.DeserializeObject<JObject>(responseBody);
 
             var resultList = new List<DayAvailability>();
 

@@ -9,120 +9,259 @@
 
 @section Scripts{
 
-    <script>
+
+    @if (Model.Hut.Latitude != null && Model.Hut.Longitude != null)
+    {
+        <script>
+
+        var map;
+        var ajaxRequest = new XMLHttpRequest();
+        var hutlist;
+        var plotlayers = [];
+
+        function initmap() {
+
+            // create the tile layer with correct attribution for OSM
+            var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+            var osmAttrib = 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+            var osmLayer = new L.TileLayer(osmUrl, { minZoom: 6, attribution: osmAttrib });
+
+            // create the tile layer with correct attribution for opentopomaps
+            var otmUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+            var otmAttrib = osmAttrib.concat(' | Map visualization: © <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)');
+            var otmLayer = new L.TileLayer(otmUrl, { minZoom: 6, maxZoom: 17, attribution: otmAttrib });
+
+            var zoom = 10;
+            // Default= Initial view on the Alps
+            var lat = @Model.Hut.Latitude?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+            var lon = @Model.Hut.Longitude?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+            // set up the map
+            map = new L.Map('map', {
+                center: [lat, lon],
+                zoom: zoom,
+                layers: [osmLayer]
+            });
+
+            var baseMaps = {
+                "OpenStreetMap": osmLayer,
+                "OpenTopoMap": otmLayer
+            };
+
+            L.control.layers(baseMaps).addTo(map);
+
+            // Initial load of huts to plot
+            askForPlots();
+        }
+
+        function askForPlots() {
+            // request the huts info with AJAX for the current bounds
+            var bounds = map.getBounds();
+            var url = '/api/Map/' +  @Model.Hut.Id;
+
+            ajaxRequest.onreadystatechange = mapRequestHandler;
+            ajaxRequest.open('GET', url, true);
+            ajaxRequest.send(null);
+        }
+
+        // Icons from here: https://github.com/pointhi/leaflet-color-markers
+
+        var greyIcon = new L.Icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+            //shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var blueIcon = new L.Icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            //shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        function mapRequestHandler() {
+            // if AJAX returned a list of markers, add them to the map
+            if (ajaxRequest.readyState == 4) {
+                //use the info here that was returned
+                if (ajaxRequest.status == 200) {
+                    hutlist = eval("(" + ajaxRequest.responseText + ")");
+                    for (i = 0; i < hutlist.length; i++) {
+                        var plotll = new L.LatLng(hutlist[i].latitude, hutlist[i].longitude, true);
+
+                        var icon;
+                        if (hutlist[i].enabled === false) {
+                            icon = greyIcon; // grey=booking not active
+                        } else {
+                            icon = blueIcon; // fallback
+                        }
+
+                        var plotmark = new L.Marker(plotll, { icon: icon });
+                        plotmark.data = hutlist[i];
+                        map.addLayer(plotmark);
+
+                        var toolTip = "<b>" + hutlist[i].name + "</b>";
+                        if (hutlist[i].freeBeds != null) {
+                            toolTip = toolTip.concat("<br />Freie Plätze: " + hutlist[i].freeBeds);
+                        }
+
+                        plotmark.bindTooltip(toolTip);
+
+                        plotlayers.push(plotmark);
+                    }
+
+                    var hut = hutlist.find(hut => hut.id == @Model.Hut.Id);
+                    if (hut !== undefined && hut !== null) {
+                        map.setView(new L.LatLng(hut.latitude, hut.longitude - 0.07), 10);
+                    }
+                }
+            }
+        }
+
         $(document).ready(function () {
+            initmap();
             $.fn.dataTable.moment('dddd, DD.MM.YYYY');
             $('#availabiltyTable').DataTable({
                 "paging": false,
                 "fixedHeader": true
             });
         });
-    </script>
+        </script>
+    }
+    else
+    {
+        <script>
+            $(document).ready(function () {
+                $.fn.dataTable.moment('dddd, DD.MM.YYYY');
+                $('#availabiltyTable').DataTable({
+                    "paging": false,
+                    "fixedHeader": true
+                });
+            });
+        </script>
+    }
 }
 
 <h1>@ViewData["Title"]</h1>
 
-<table class="display" id="hutInfoTable">
-    <tbody>
-        <tr>
-            <td style="min-width:200px;">ID</td>
-            <td>@Model.Hut.Id</td>
-        </tr>
-        <tr>
-            <td>Hütte hinzugefügt</td>
-            <td>
-                @Model.Hut.Added?.ToString("dd.MM.yyyy")
-            </td>
-        </tr>
-        <tr>
-            <td>Zuletzt aktualisiert</td>
-            <td>
-                @if (Model.Availability.Count > 0)
-                {
-                    @Model.Availability.First().LastUpdated?.ToString("dd.MM.yyyy HH:mm")
-                }
-                else
-                {
-                    @Model.Hut.LastUpdated?.ToString("dd.MM.yyyy")
-                }
-            </td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>
-                @if (!string.IsNullOrEmpty(Model.Hut.HutWebsite))
-                {
-                    <a target="_blank" href="@Model.Hut.HutWebsite">@Model.Hut.ShortHutWebsite()</a><br />
-                }
-                @if (Model.Hut.Enabled == true)
-                {
-                    <a target="_blank" href="@Model.Hut.Link">Onlinebuchung</a>
-                }
-                else
-                {
-                    <i>Buchung inaktiv</i>
-                }
-            </td>
-        </tr>
-        @if (Model.Hut.Latitude != null && Model.Hut.Longitude != null)
-        {
-            <tr>
-                <td>Koordinaten</td>
-                <td>
-                    <a asp-page="./Map" asp-route-hutid="@Model.Hut.Id">
-                        @Model.Hut.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@Model.Hut.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
-                    </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<br />
-<h3>Verfügbarkeit</h3>
-<table class="display" id="availabiltyTable">
-    <thead>
-        <tr>
-            <th>
-                Datum
-            </th>
-            <th>
-                Plätze
-            </th>
-            <th>
-                Unterbringung
-            </th>
-
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            // We have a page-level filter on hutid, so we only have entries here for one hut. So grouping just by date is fine.
-            var availabilityPerDate = Model.Availability.GroupBy(a => a.Date, (key, g) => new { Date = key, Availability = g });
-        }
-        @foreach (var item in availabilityPerDate)
-        {
-            bool isFirstRow = true;
-            @foreach (var room in item.Availability.OrderBy(a => a.Date).OrderBy(a => a.BedCategory.Name))
-            {
+<div class="row">
+    <div class="col-sm">
+        <table class="display" id="hutInfoTable">
+            <tbody>
                 <tr>
-                    @if (isFirstRow)
-                    {
-                        isFirstRow = false;
-                        <td rowspan=@item.Availability.Count().ToString()>
-                            <!-- because of the fixed header of the datatable, we need to jump a bit further up than the actual date. Thus we just add one day to each row-->
-                            <a name="@item.Date.AddDays(1).ToString("yyyy-MM-dd")"></a>
-                            @item.Date.ToString("dddd, dd.MM.yyyy",  new CultureInfo("de-DE"))
-                        </td>
-                    }
+                    <td style="min-width:200px;">ID</td>
+                    <td>@Model.Hut.Id</td>
+                </tr>
+                <tr>
+                    <td>Hütte hinzugefügt</td>
                     <td>
-                        @room.FreeRoom / @room.TotalRoom
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => room.BedCategory.Name)
+                        @Model.Hut.Added?.ToString("dd.MM.yyyy")
                     </td>
                 </tr>
-            }
-        }
-    </tbody>
-</table>
+                <tr>
+                    <td>Zuletzt aktualisiert</td>
+                    <td>
+                        @if (Model.Availability.Count > 0)
+                        {
+                            @Model.Availability.First().LastUpdated?.ToString("dd.MM.yyyy HH:mm")
+                        }
+                        else
+                        {
+                            @Model.Hut.LastUpdated?.ToString("dd.MM.yyyy")
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(Model.Hut.HutWebsite))
+                        {
+                            <a target="_blank" href="@Model.Hut.HutWebsite">@Model.Hut.ShortHutWebsite()</a><br />
+                        }
+                        @if (Model.Hut.Enabled == true)
+                        {
+                            <a target="_blank" href="@Model.Hut.Link">Onlinebuchung</a>
+                        }
+                        else
+                        {
+                            <i>Buchung inaktiv</i>
+                        }
+                    </td>
+                </tr>
+                @if (Model.Hut.Latitude != null && Model.Hut.Longitude != null)
+                {
+                    <tr>
+                        <td>Koordinaten</td>
+                        <td>
+                            <a asp-page="./Map" asp-route-hutid="@Model.Hut.Id">
+                                @Model.Hut.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@Model.Hut.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.Hut.Latitude != null && Model.Hut.Longitude != null)
+    {
+        <div class="col-sm">
+            <div id="map" class="map" style="height: 35vh;"></div>
+        </div>
+    }
+    </div>
+<div class="row">
+    <br />
+    <div class="col">
+        <h3>Verfügbarkeit</h3>
+        <table class="display" id="availabiltyTable">
+            <thead>
+                <tr>
+                    <th>
+                        Datum
+                    </th>
+                    <th>
+                        Plätze
+                    </th>
+                    <th>
+                        Unterbringung
+                    </th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    // We have a page-level filter on hutid, so we only have entries here for one hut. So grouping just by date is fine.
+                    var availabilityPerDate = Model.Availability.GroupBy(a => a.Date, (key, g) => new { Date = key, Availability = g });
+                }
+                @foreach (var item in availabilityPerDate)
+                {
+                    bool isFirstRow = true;
+                    @foreach (var room in item.Availability.OrderBy(a => a.Date).OrderBy(a => a.BedCategory.Name))
+                    {
+                        <tr>
+                            @if (isFirstRow)
+                            {
+                                isFirstRow = false;
+                                <td rowspan=@item.Availability.Count().ToString()>
+                                    <!-- because of the fixed header of the datatable, we need to jump a bit further up than the actual date. Thus we just add one day to each row-->
+                                    <a name="@item.Date.AddDays(1).ToString("yyyy-MM-dd")"></a>
+                                    @item.Date.ToString("dddd, dd.MM.yyyy", new CultureInfo("de-DE"))
+                                </td>
+                            }
+                            <td>
+                                @room.FreeRoom / @room.TotalRoom
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => room.BedCategory.Name)
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

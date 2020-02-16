@@ -72,7 +72,7 @@
             var bounds = map.getBounds();
             var minll = bounds.getSouthWest();
             var maxll = bounds.getNorthEast();
-            var url = 'api/Map?';
+            var url = '/api/Map?';
             url = url.concat("&dateFilter=" + document.getElementById('DateFilter').value);
 
             // We don't use a location filter for now and just load all the huts
@@ -155,7 +155,7 @@
 
                         var popupBody = [];
 
-                        var popupHeader = "<h6>" + hutlist[i].name + "</h6>";
+                        var popupHeader = "<h6><a href=\"/HutDetail/" + hutlist[i].id + "\">" + hutlist[i].name + "</a></h6>";
 
                         if (hutlist[i].enabled == true) {
                             if (hutlist[i].freeBeds !== null) {

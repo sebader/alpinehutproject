@@ -18,10 +18,13 @@ namespace AlpinHutsDashboard
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            Environment = environment;
         }
+
+        public IWebHostEnvironment Environment { get; }
 
         public IConfiguration Configuration { get; }
 
@@ -43,7 +46,12 @@ namespace AlpinHutsDashboard
                 options.UseAzureAccessToken();
             });
 
-            services.AddRazorPages();
+            IMvcBuilder builder = services.AddRazorPages();
+
+            if (Environment.EnvironmentName == "Development")
+            {
+                builder.AddRazorRuntimeCompilation();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

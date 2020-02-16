@@ -62,5 +62,32 @@ namespace WebUI.Cotrollers
             _logger.LogInformation($"GetHuts for map view returned {result.Count()} huts");
             return await result.AsNoTracking().ToListAsync();
         }
+
+        // GET: api/Map?hutid=123
+        [HttpGet("{hutid}")]
+        public async Task<ActionResult<IEnumerable<MapPlotHut>>> GetHut([FromRoute] int hutid)
+        {
+            _logger.LogInformation("Received map request hutid={hutId}", hutid);
+
+            var hut = await _context.Huts.FirstOrDefaultAsync(h => h.Id == hutid);
+            if (hut == null)
+                return NotFound();
+
+            var result = new List<MapPlotHut>
+            {
+                new MapPlotHut
+                {
+                    Id = hut.Id,
+                    Name = hut.Name,
+                    Enabled = (bool)hut.Enabled,
+                    OnlineBookingLink = hut.Link,
+                    HutWebsiteLink = hut.HutWebsite,
+                    Latitude = (double)hut.Latitude,
+                    Longitude = (double)hut.Longitude
+                }
+            };
+
+            return result;
+        }
     }
 }

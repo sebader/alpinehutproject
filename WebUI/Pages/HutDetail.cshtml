@@ -15,8 +15,6 @@
     <script>
 
         var map;
-        var ajaxRequest = new XMLHttpRequest();
-        var hutlist;
         var plotlayers = [];
 
         function initmap() {
@@ -50,18 +48,25 @@
 
             L.control.layers(baseMaps).addTo(map);
 
-            // Initial load of huts to plot
-            askForPlots();
-        }
+            var plotll = new L.LatLng(lat, lon, true);
 
-        function askForPlots() {
-            // request the huts info with AJAX for the current bounds
-            var bounds = map.getBounds();
-            var url = '/api/Map/' +  @Model.Hut.Id;
+            var icon;
+            @if(Model.Hut.Enabled == false)
+            {
+                @:icon = greyIcon; // grey=booking not active
+            } 
+            else
+            {
+                @:icon = blueIcon; // fallback
+            }
 
-            ajaxRequest.onreadystatechange = mapRequestHandler;
-            ajaxRequest.open('GET', url, true);
-            ajaxRequest.send(null);
+            var plotmark = new L.Marker(plotll, { icon: icon });
+            map.addLayer(plotmark);
+
+            var toolTip = "<b>@Model.Hut.Name</b>";
+            plotmark.bindTooltip(toolTip);
+
+            plotlayers.push(plotmark);
         }
 
         // Icons from here: https://github.com/pointhi/leaflet-color-markers
@@ -82,36 +87,7 @@
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
             shadowSize: [41, 41]
-        });
-
-        function mapRequestHandler() {
-            // if AJAX returned a list of markers, add them to the map
-            if (ajaxRequest.readyState == 4) {
-                //use the info here that was returned
-                if (ajaxRequest.status == 200) {
-                    hutlist = eval("(" + ajaxRequest.responseText + ")");
-                    for (i = 0; i < hutlist.length; i++) {
-                        var plotll = new L.LatLng(hutlist[i].latitude, hutlist[i].longitude, true);
-
-                        var icon;
-                        if (hutlist[i].enabled === false) {
-                            icon = greyIcon; // grey=booking not active
-                        } else {
-                            icon = blueIcon; // fallback
-                        }
-
-                        var plotmark = new L.Marker(plotll, { icon: icon });
-                        plotmark.data = hutlist[i];
-                        map.addLayer(plotmark);
-
-                        var toolTip = "<b>" + hutlist[i].name + "</b>";
-                        plotmark.bindTooltip(toolTip);
-
-                        plotlayers.push(plotmark);
-                    }
-                }
-            }
-        }
+        }); 
 
         $(document).ready(function () {
             initmap();

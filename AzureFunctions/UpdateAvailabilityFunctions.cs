@@ -139,7 +139,7 @@ namespace AzureFunctions
 
                         var daysAvailability = ParseAvailability(dateResponse);
 
-                        log.LogInformation("Found {numberOfDay} days with availability for hut={hutId} starting with date={date}. Writing to database now", daysAvailability.Count, date, hutId);
+                        log.LogInformation("Found {numberOfDay} days with availability for hut={hutId} starting with date={date}. Writing to database now", daysAvailability.Count, hutId, date);
 
                         foreach (var day in daysAvailability)
                         {
@@ -199,11 +199,11 @@ namespace AzureFunctions
 
         private static List<DayAvailability> ParseAvailability(string responseBody)
         {
-            JObject json = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var jObject = JsonConvert.DeserializeObject<JObject>(responseBody);
 
             var resultList = new List<DayAvailability>();
 
-            foreach (var day in json.Children())
+            foreach (var day in jObject.Children())
             {
                 var parsedDay = new DayAvailability();
                 foreach (var room in day.First?.Children())

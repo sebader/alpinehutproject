@@ -30,9 +30,8 @@
             var otmLayer = new L.TileLayer(otmUrl, { minZoom: 6, maxZoom: 17, attribution: otmAttrib });
 
             var zoom = 10;
-            // Default= Initial view on the Alps
-            var lat = @Model.Hut.Latitude?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-            var lon = @((Model.Hut.Longitude - 0.07)?.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+            var lat = @Model.Hut.Latitude?.ToString("0.00000", System.Globalization.CultureInfo.InvariantCulture);
+            var lon = @Model.Hut.Longitude?.ToString("0.00000", System.Globalization.CultureInfo.InvariantCulture);
 
             // set up the map
             map = new L.Map('map', {

@@ -31,7 +31,7 @@ namespace AzureFunctions
                 return;
             }
 
-            log.LogInformation($"UpdateAvailabilityFunctions Timer trigger function executed at: {DateTime.Now}");
+            log.LogInformation($"{nameof(UpdateAvailabilityTimerTriggered)} function executed at: {DateTime.Now}");
 
             var dbContext = await Helpers.GetDbContext();
             // Fetch all hut ids which are in Enabled state from database
@@ -235,7 +235,7 @@ namespace AzureFunctions
         /// Function calls UpdateAvailabilityReporting stored procedure in the database to write 
         /// new reporting rows for this day
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">Not used, but an activity function needs to have this parameter</param>
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName(nameof(UpdateAvailabilityReporting))]

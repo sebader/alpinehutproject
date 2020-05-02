@@ -96,7 +96,7 @@ namespace AzureFunctions
             await Task.WhenAll(tasks);
 
             // Call stored proc to update reporting table
-            await context.CallActivityAsync(nameof(UpdateAvailabilityReporting), null);
+            await context.CallActivityAsync(nameof(UpdateAvailabilityReporting), new object()); // using new object instead of null to satisfy analyzer warning
 
             log.LogInformation($"Update availability orchestrator finished");
         }

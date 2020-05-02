@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Models;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Options;
 
 namespace AlpinHutsDashboard
 {
@@ -33,12 +35,30 @@ namespace AlpinHutsDashboard
         {
             services.AddApplicationInsightsTelemetry();
 
+            /*
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            */
+
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("de"),
+                    new CultureInfo("en")
+                };
+                options.DefaultRequestCulture = new RequestCulture("de");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
+
+            services.AddMvc().AddViewLocalization();
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 
             services.AddDbContextPool<AlpinehutsDbContext>(options =>
             {
@@ -73,6 +93,24 @@ namespace AlpinHutsDashboard
             app.UseCookiePolicy();
 
             app.UseRouting();
+
+            // Source: https://forums.asp.net/t/2151316.aspx?Why+DefaultRequestCulture+does+not+work+in+ASP+NET+Core
+            var options = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
+            var cookieProvider = options.Value.RequestCultureProviders
+                .OfType<CookieRequestCultureProvider>()
+                .First();
+            var urlProvider = options.Value.RequestCultureProviders
+                .OfType<QueryStringRequestCultureProvider>().First();
+
+            cookieProvider.Options.DefaultRequestCulture = new RequestCulture("de");
+            urlProvider.Options.DefaultRequestCulture = new RequestCulture("de");
+
+            cookieProvider.CookieName = "UserCulture";
+
+            options.Value.RequestCultureProviders.Clear();
+            options.Value.RequestCultureProviders.Add(cookieProvider);
+            options.Value.RequestCultureProviders.Add(urlProvider);
+            app.UseRequestLocalization(options.Value);
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,9 +1,14 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Localization
+@inject IViewLocalizer Localizer
+@inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Alpenvereinshütten Onlinebuchungsübersicht</title>
+    <title>@SharedLocalizer["siteTitle"]</title>
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -26,7 +31,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Alpenvereinshütten Onlinebuchungsübersicht</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">@SharedLocalizer["siteTitle"]</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -34,17 +39,18 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Map">Karte</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Map">@SharedLocalizer["map"]</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Huts">Liste</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Huts">@SharedLocalizer["list"]</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Info">Info</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Info">@SharedLocalizer["info"]</a>
                         </li>
                     </ul>
                 </div>
             </div>
+            <vc:culture-switcher />
         </nav>
     </header>
     <div class="container">
@@ -55,7 +61,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; @DateTime.Now.Year - Alpenvereinshütten Onlinebuchungsübersicht - <a asp-area="" asp-page="/Info">Info</a>
+            &copy; @DateTime.Now.Year - @SharedLocalizer["siteTitle"] - <a asp-area="" asp-page="/Info">Info</a>
         </div>
     </footer>
 

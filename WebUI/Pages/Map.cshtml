@@ -1,8 +1,15 @@
 ﻿@page "/"
 @model WebUI.Pages.MapModel
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Localization
+@inject IViewLocalizer Localizer
+@inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
 
 @{
-    ViewData["Title"] = "Hüttenkarte";
+    ViewData["Title"] = Localizer["title"];
+    var requestCultureFeature = HttpContext.Features.Get<IRequestCultureFeature>();
+    var requestCulture = requestCultureFeature.RequestCulture;
 }
 
 @section Scripts{
@@ -148,7 +155,7 @@
 
                         var toolTip = "<b>" + hutlist[i].name + "</b>";
                         if (hutlist[i].freeBeds != null) {
-                            toolTip = toolTip.concat("<br />Freie Plätze: " + hutlist[i].freeBeds);
+                            toolTip = toolTip.concat("<br />@Localizer["freeBeds"]: " + hutlist[i].freeBeds);
                         }
 
                         plotmark.bindTooltip(toolTip);
@@ -161,16 +168,16 @@
                             if (hutlist[i].freeBeds !== null) {
                                 var d = new Date(document.getElementById('DateFilter').value);
                                 var formatted = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
-                                popupBody.push("[" + formatted + "] Freie Plätze: " + hutlist[i].freeBeds);
+                                popupBody.push("[" + formatted + "] @Localizer["freeBeds"]: " + hutlist[i].freeBeds);
                             }
-                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].onlineBookingLink + "\">Onlinebuchung</a>");
+                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].onlineBookingLink + "\">@SharedLocalizer["onlineBooking"]</a>");
                         }
                         else {
-                            popupBody.push("<i>Onlinebuchung nicht aktiv</i>");
+                            popupBody.push("<i>@Localizer["onlineBookingInactive"]</i>");
                         }
 
                         if (hutlist[i].hutWebsiteLink !== null) {
-                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">Hüttenwebsite</a>");
+                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">@SharedLocalizer["hutWebsite"]</a>");
                         }
 
                         var lu = new Date(hutlist[i].lastUpdated);
@@ -179,7 +186,7 @@
                             day: "numeric", hour: "2-digit", minute: "2-digit"
                         };
 
-                        popupBody.push("<br />Stand: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"?hutid=" + hutlist[i].id + "\">(Direktlink)</a>");
+                        popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"?hutid=" + hutlist[i].id + "\">(@Localizer["directLink"])</a>");
 
                         plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
                         plotlayers.push(plotmark);
@@ -328,24 +335,24 @@
         /**/</script>
 }
 
-<h1>Karte</h1>
+<h1>@SharedLocalizer["map"]</h1>
 <div class="row justify-content-between">
     <div class="col-md-3">
         <div class="form-group">
             <form id="dateForm">
                 <div>
-                    <label>Verfügbarkeit an Datum</label>
+                    <label>@SharedLocalizer["availabilityAtDate"]</label>
                     <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                 </div>
             </form>
             <div>
-                <button class="btn btn-primary" onclick="resetDateFilter();">Reset</button>
+                <button class="btn btn-primary" onclick="resetDateFilter();">@SharedLocalizer["reset"]</button>
             </div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="autocomplete">
-            <label>Hüttensuche</label>
+            <label>@Localizer["searchlabel"]</label>
             <input autocomplete="off" id="mapSearch" class="form-control" type="text" placeholder="Search">
         </div>
     </div>

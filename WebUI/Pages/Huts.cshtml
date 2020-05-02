@@ -1,10 +1,18 @@
 ﻿@page
 @model AlpinHutsDashboard.Pages.HutsModel
-
 @using System.Globalization;
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Localization
+@inject IViewLocalizer Localizer
+@inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
+
+@inject IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Hüttenliste";
+    ViewData["Title"] = Localizer["title"];
+    var requestCultureFeature = HttpContext.Features.Get<IRequestCultureFeature>();
+    var requestCulture = requestCultureFeature.RequestCulture;
 }
 
 @section Scripts{
@@ -62,11 +70,11 @@
     <div class="col-md-3">
         <form asp-action="Huts" method="get" id="dateForm">
             <div>
-                <label asp-for="DateFilter">Verfügbarkeit an Datum</label>
+                <label asp-for="DateFilter">@SharedLocalizer["availabilityAtDate"]</label>
                 <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
             </div>
             <div>
-                <a asp-route-Huts="" asp-route-SearchString="" class="btn btn-primary">Reset</a>
+                <a asp-route-Huts="" asp-route-SearchString="" class="btn btn-primary">@SharedLocalizer["reset"]</a>
             </div>
         </form>
     </div>
@@ -79,22 +87,22 @@
                 ID
             </th>
             <th>
-                Hütte
+                @SharedLocalizer["hut"]
             </th>
             <th>
-                Land / Region
+                @SharedLocalizer["countryRegion"]
             </th>
             <th>
-                Koordinaten
+                @SharedLocalizer["coordinates"]
             </th>
             <th>
                 @if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
                 {
-                    @: Verfügbarkeit am @Model.DateFilter?.ToString("dd.MM.yyyy")
+                    @: @SharedLocalizer["availabilityOn"] @Model.DateFilter?.ToString("dd.MM.yyyy")
                 }
                 else
                 {
-                    @: Status
+                    @: @SharedLocalizer["status"]
                 }
             </th>
             <th></th>
@@ -118,11 +126,11 @@
                 <td>
                     @if (item.Latitude != null && item.Longitude != null)
                     {
-                    <a asp-page="./Map" asp-route-hutid="@item.Id" >
-                       @item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
-                    </a>
+                        <a asp-page="./Map" asp-route-hutid="@item.Id">
+                            @item.Latitude?.ToString("##.#####", CultureInfo.InvariantCulture)/@item.Longitude?.ToString("##.#####", CultureInfo.InvariantCulture)
+                        </a>
                     }
-                    </td>
+                </td>
                 <td>
                     @if (item.Enabled == true)
                     {
@@ -131,23 +139,23 @@
                             var rooms = item.Availability.Where(a => a.Date == Model.DateFilter).OrderBy(a => a.BedCategoryId).Select(a => $"{a.BedCategory?.Name} - {a.FreeRoom}").ToList();
                             foreach (var room in rooms)
                             {
-                                @room<br />
+                                @SharedLocalizer[room]<br />
                             }
                         }
                         else
                         {
                             //@item.Availability.Where(a => a.FreeRoom > 0 && a.Date >= DateTime.Today).OrderBy(a => a.Date).FirstOrDefault()?.Date.ToString("ddd, dd.MM.yyyy")
-                            @: Buchung aktiv
+                            @Localizer["bookingActive"]
                         }
                     }
                     else
                     {
-                        @: Buchung inaktiv
+                        @Localizer["bookingInactive"]
                     }
                 </td>
                 <td>
                     <a target="_blank" href="@item.Link">
-                        Onlinebuchung
+                        @SharedLocalizer["onlineBooking"]
                     </a>
                 </td>
             </tr>

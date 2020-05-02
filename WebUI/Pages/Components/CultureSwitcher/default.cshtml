@@ -1,11 +1,12 @@
 ﻿@model WebUI.Models.CultureSwitcherModel
+@inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
 
 <div>
     <form id="culture-switcher">
         <select name="culture" id="culture-options">
             @foreach (var culture in Model.SupportedCultures)
             {
-                <option value="@culture.Name" selected="@(Model.CurrentUICulture.Name == culture.Name)">@culture.DisplayName</option>
+                <option value="@culture.Name" selected="@(Model.CurrentUICulture.Name == culture.Name)">@SharedLocalizer[culture.DisplayName]</option>
             }
         </select>
     </form>

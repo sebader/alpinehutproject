@@ -183,6 +183,9 @@
   <data name="reset" xml:space="preserve">
     <value>Reset</value>
   </data>
+  <data name="search" xml:space="preserve">
+    <value>Search</value>
+  </data>
   <data name="seats" xml:space="preserve">
     <value>Beds</value>
   </data>

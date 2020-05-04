@@ -23,6 +23,9 @@
             $('#hutTable').DataTable({
                 "paging": false,
                 "fixedHeader": true,
+                "language": {
+                    "search": "@SharedLocalizer["search"]:"
+                },
                 "columns": [
                     null,
                     null,
@@ -136,10 +139,10 @@
                     {
                         if (Model.DateFilter != null && Model.DateFilter >= DateTime.Today)
                         {
-                            var rooms = item.Availability.Where(a => a.Date == Model.DateFilter).OrderBy(a => a.BedCategoryId).Select(a => $"{a.BedCategory?.Name} - {a.FreeRoom}").ToList();
+                            var rooms = item.Availability.Where(a => a.Date == Model.DateFilter).OrderBy(a => a.BedCategoryId).Select(a => $"{SharedLocalizer[a.BedCategory?.Name]} - {a.FreeRoom}").ToList();
                             foreach (var room in rooms)
                             {
-                                @SharedLocalizer[room]<br />
+                                @room<br />
                             }
                         }
                         else

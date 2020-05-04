@@ -100,7 +100,10 @@
             $.fn.dataTable.moment('dddd, DD.MM.YYYY');
             $('#availabiltyTable').DataTable({
                 "paging": false,
-                "fixedHeader": true
+                "fixedHeader": true,
+                "language": {
+                    "search": "@SharedLocalizer["search"]:"
+                }
             });
         });
         </script>
@@ -112,7 +115,10 @@
                 $.fn.dataTable.moment('dddd, DD.MM.YYYY');
                 $('#availabiltyTable').DataTable({
                     "paging": false,
-                    "fixedHeader": true
+                    "fixedHeader": true,
+                    "language": {
+                        "search": "@SharedLocalizer["search"]:"
+                    }
                 });
             });
         </script>

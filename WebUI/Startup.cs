@@ -44,6 +44,7 @@ namespace AlpinHutsDashboard
             });
             */
 
+            
             services.Configure<RequestLocalizationOptions>(options =>
             {
                 var supportedCultures = new[]
@@ -55,6 +56,7 @@ namespace AlpinHutsDashboard
                 options.SupportedCultures = supportedCultures;
                 options.SupportedUICultures = supportedCultures;
             });
+            
 
             services.AddMvc().AddViewLocalization();
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -94,23 +96,24 @@ namespace AlpinHutsDashboard
 
             app.UseRouting();
 
-            // Source: https://forums.asp.net/t/2151316.aspx?Why+DefaultRequestCulture+does+not+work+in+ASP+NET+Core
-            var options = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
-            var cookieProvider = options.Value.RequestCultureProviders
-                .OfType<CookieRequestCultureProvider>()
-                .First();
-            var urlProvider = options.Value.RequestCultureProviders
-                .OfType<QueryStringRequestCultureProvider>().First();
-
-            cookieProvider.Options.DefaultRequestCulture = new RequestCulture("de");
-            urlProvider.Options.DefaultRequestCulture = new RequestCulture("de");
-
-            cookieProvider.CookieName = "UserCulture";
-
-            options.Value.RequestCultureProviders.Clear();
-            options.Value.RequestCultureProviders.Add(cookieProvider);
-            options.Value.RequestCultureProviders.Add(urlProvider);
-            app.UseRequestLocalization(options.Value);
+            #region Localization
+            // REMARK: you may refactor this into a separate method as it's better to avoid long methods with regions
+            var supportedCultures = new[]
+            {
+            new CultureInfo("de"),
+            new CultureInfo("en")
+            };
+            var localizationOptions = new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("de", "de"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures,
+                // you can change the list of providers, if you don't want the default behavior
+                // e.g. the following line enables to pick up culture ONLY from cookies
+                RequestCultureProviders = new[] { new CookieRequestCultureProvider() }
+            };
+            app.UseRequestLocalization(localizationOptions);
+            #endregion
 
             app.UseEndpoints(endpoints =>
             {

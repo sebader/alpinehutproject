@@ -186,7 +186,7 @@
                             day: "numeric", hour: "2-digit", minute: "2-digit"
                         };
 
-                        popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"?hutid=" + hutlist[i].id + "\">(@Localizer["directLink"])</a>");
+                        popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"?hutid=" + hutlist[i].id + "\">(Zoom in)</a>");
 
                         plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
                         plotlayers.push(plotmark);
@@ -353,7 +353,7 @@
     <div class="col-md-3">
         <div class="autocomplete">
             <label>@Localizer["searchlabel"]</label>
-            <input autocomplete="off" id="mapSearch" class="form-control" type="text" placeholder="Search">
+            <input autocomplete="off" id="mapSearch" class="form-control" type="text" placeholder="@SharedLocalizer["search"]">
         </div>
     </div>
 </div>

@@ -186,7 +186,7 @@
                             day: "numeric", hour: "2-digit", minute: "2-digit"
                         };
 
-                        popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"?hutid=" + hutlist[i].id + "\">(Zoom in)</a>");
+                        popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"javascript:centerOnHut(" + hutlist[i].id + ");\">(Zoom in)</a>");
 
                         plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
                         plotlayers.push(plotmark);
@@ -195,13 +195,17 @@
                     // If URL parameter hutid was set, we jump to that hut and open its popup
                     var params = getUrlVars();
                     if (params["hutid"] !== undefined) {
-                        var hut = hutlist.find(hut => hut.id == params["hutid"]);
-                        if (hut !== undefined && hut !== null) {
-                            map.setView(new L.LatLng(hut.latitude, hut.longitude), 15);
-                            plotlayers.find(l => l.data.id == hut.id).openPopup();
-                        }
+                        centerOnHut(params["hutid"]);
                     }
                 }
+            }
+        }
+
+        function centerOnHut(hutId) {
+            var hut = hutlist.find(hut => hut.id == hutId);
+            if (hut !== undefined && hut !== null) {
+                map.setView(new L.LatLng(hut.latitude, hut.longitude), 15);
+                plotlayers.find(l => l.data.id == hut.id).openPopup();
             }
         }
 

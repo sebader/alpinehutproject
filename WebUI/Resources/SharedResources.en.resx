@@ -144,8 +144,20 @@
   <data name="date" xml:space="preserve">
     <value>Date</value>
   </data>
+  <data name="Deutsch" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="Deutschland" xml:space="preserve">
+    <value>Germany</value>
+  </data>
   <data name="Doppelzimmer" xml:space="preserve">
     <value>Double rooms</value>
+  </data>
+  <data name="Dreibettzimmer" xml:space="preserve">
+    <value>Room with 3 places</value>
+  </data>
+  <data name="Englisch" xml:space="preserve">
+    <value>English</value>
   </data>
   <data name="English" xml:space="preserve">
     <value>English</value>
@@ -161,6 +173,9 @@
   </data>
   <data name="info" xml:space="preserve">
     <value>About</value>
+  </data>
+  <data name="Italien" xml:space="preserve">
+    <value>Italy</value>
   </data>
   <data name="list" xml:space="preserve">
     <value>List</value>
@@ -183,6 +198,9 @@
   <data name="reset" xml:space="preserve">
     <value>Reset</value>
   </data>
+  <data name="Schweiz" xml:space="preserve">
+    <value>Switzerland</value>
+  </data>
   <data name="search" xml:space="preserve">
     <value>Search</value>
   </data>
@@ -191,6 +209,9 @@
   </data>
   <data name="siteTitle" xml:space="preserve">
     <value>Alpine Huts - Online Booking Overview</value>
+  </data>
+  <data name="Slowenien" xml:space="preserve">
+    <value>Slowenia</value>
   </data>
   <data name="Spezialzimmer" xml:space="preserve">
     <value>Special room</value>
@@ -203,5 +224,8 @@
   </data>
   <data name="Zweierzimmer" xml:space="preserve">
     <value>Double rooms </value>
+  </data>
+  <data name="Österreich" xml:space="preserve">
+    <value>Austria</value>
   </data>
 </root>

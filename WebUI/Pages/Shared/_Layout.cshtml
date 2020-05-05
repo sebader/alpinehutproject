@@ -1,7 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
-@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Http.Extensions
 @inject IViewLocalizer Localizer
 @inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
+
+@{
+    var httpContext = ViewContext.HttpContext;
+    var currentCulture = httpContext.Features.Get<IRequestCultureFeature>().RequestCulture.UICulture;
+    var currentUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path, httpContext.Request.QueryString);
+}
 
 <!DOCTYPE html>
 <html>
@@ -50,7 +57,15 @@
                     </ul>
                 </div>
             </div>
-            <vc:culture-switcher />
+            <div>
+                <form asp-controller="Culture" asp-action="SetCulture" method="post" id="culture-switcher">
+                    <select name="culture" id="culture-options">
+                        <option value="de" selected="@(currentCulture.Name == "de")">@SharedLocalizer["Deutsch"]</option>
+                        <option value="en" selected="@(currentCulture.Name == "en")">@SharedLocalizer["Englisch"]</option>
+                    </select>
+                    <input type="hidden" name="returnUrl" value="@currentUrl" />
+                </form>
+            </div>
         </nav>
     </header>
     <div class="container">
@@ -91,6 +106,11 @@
             integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
             crossorigin=""></script>
 
+    <script>
+        document.getElementById("culture-options").addEventListener("change", () => {
+            document.getElementById("culture-switcher").submit();
+        });
+    </script>
 
     @RenderSection("Scripts", required: false)
 </body>

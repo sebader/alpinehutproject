@@ -24,15 +24,17 @@
                 "paging": false,
                 "fixedHeader": true,
                 "language": {
-                    "search": "@SharedLocalizer["search"]:"
+                    @if (requestCulture.Culture.Name == "de")
+                    {
+                        @: "url": "https://cdn.datatables.net/plug-ins/1.10.20/i18n/German.json"
+                    }
                 },
                 "columns": [
                     null,
                     null,
                     null,
                     null,
-                    null,
-                    { "searchable": false }
+                    null
                 ],
                 initComplete: function () {
                     this.api().columns().every(function () {
@@ -105,10 +107,9 @@
                 }
                 else
                 {
-                    @: @SharedLocalizer["status"]
+                    @: Link
                 }
             </th>
-            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -124,7 +125,7 @@
                     </a>
                 </td>
                 <td>
-                    @item.Country @(!string.IsNullOrEmpty(item.Region) ? "- " + item.Region : "")
+                    @SharedLocalizer[item.Country] @(!string.IsNullOrEmpty(item.Region) ? "- " + item.Region : "")
                 </td>
                 <td>
                     @if (item.Latitude != null && item.Longitude != null)
@@ -147,19 +148,15 @@
                         }
                         else
                         {
-                            //@item.Availability.Where(a => a.FreeRoom > 0 && a.Date >= DateTime.Today).OrderBy(a => a.Date).FirstOrDefault()?.Date.ToString("ddd, dd.MM.yyyy")
-                            @Localizer["bookingActive"]
+                            <a target="_blank" href="@item.Link">
+                                @SharedLocalizer["onlineBooking"]
+                            </a>
                         }
                     }
                     else
                     {
                         @Localizer["bookingInactive"]
                     }
-                </td>
-                <td>
-                    <a target="_blank" href="@item.Link">
-                        @SharedLocalizer["onlineBooking"]
-                    </a>
                 </td>
             </tr>
         }

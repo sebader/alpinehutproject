@@ -95,34 +95,27 @@
             shadowSize: [41, 41]
         });
 
-        $(document).ready(function () {
-            initmap();
-            $.fn.dataTable.moment('dddd, DD.MM.YYYY');
-            $('#availabiltyTable').DataTable({
-                "paging": false,
-                "fixedHeader": true,
-                "language": {
-                    "search": "@SharedLocalizer["search"]:"
-                }
-            });
-        });
         </script>
     }
-    else
-    {
-        <script>
+    <script>
             $(document).ready(function () {
+                @if (Model.Hut.Latitude != null && Model.Hut.Longitude != null)
+                {
+                    @: initmap();
+                }
                 $.fn.dataTable.moment('dddd, DD.MM.YYYY');
                 $('#availabiltyTable').DataTable({
                     "paging": false,
                     "fixedHeader": true,
                     "language": {
-                        "search": "@SharedLocalizer["search"]:"
+                        @if (requestCulture.Culture.Name == "de")
+                        {
+                            @: "url": "https://cdn.datatables.net/plug-ins/1.10.20/i18n/German.json"
+                        }
                     }
                 });
             });
-        </script>
-    }
+    </script>
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -167,7 +160,7 @@
                         }
                         else
                         {
-                            <i>@Localizer["bookingInactive"]</i>
+                            <i><a target="_blank" href="@Model.Hut.Link">@Localizer["bookingInactive"]</a></i>
                         }
                     </td>
                 </tr>

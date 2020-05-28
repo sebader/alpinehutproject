@@ -155,7 +155,7 @@ namespace AzureFunctions
                             existingHut.Name = parsedHut.Name;
                             if(existingHut.Enabled == false && parsedHut.Enabled == true)
                             {
-                                parsedHut.Activated = DateTime.Today;
+                                existingHut.Activated = DateTime.Today;
                             }
                             existingHut.Enabled = parsedHut.Enabled;
                             existingHut.Link = parsedHut.Link;

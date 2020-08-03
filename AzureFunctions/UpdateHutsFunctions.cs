@@ -20,7 +20,7 @@ namespace AzureFunctions
         private const int MaxHutId = 400;
 
         [FunctionName(nameof(UpdateHutsTimerTriggered))]
-        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 0 * * 0", RunOnStartup = false)]TimerInfo myTimer,
+        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)]TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -28,7 +28,9 @@ namespace AzureFunctions
             {
                 return;
             }
-            string instanceId = await starter.StartNewAsync<int>(nameof(UpdateHutsOrchestrator), null, 1);
+            // Start hutId should start at least with 1, not 0, thats why we add 1
+            int startHutId = (int) DateTime.UtcNow.DayOfWeek + 1;
+            string instanceId = await starter.StartNewAsync<int>(nameof(UpdateHutsOrchestrator), null, startHutId);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
         }
 
@@ -77,8 +79,8 @@ namespace AzureFunctions
 
             var tasks = new List<Task>();
 
-            // Fan-out
-            for (int i = startHutId; i <= MaxHutId; i++)
+            // Fan-out. Every day we check 1/7 of all hut IDs in the range
+            for (int i = startHutId; i <= MaxHutId; i = i + 7)
             {
                 tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivity), i));
             }

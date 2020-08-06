@@ -22,7 +22,7 @@ namespace AzureFunctions
     public static class UpdateAvailabilityFunctions
     {
         [FunctionName(nameof(UpdateAvailabilityTimerTriggered))]
-        public static async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 23 * * *")]TimerInfo myTimer,
+        public static async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")]TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -35,7 +35,7 @@ namespace AzureFunctions
 
             var dbContext = await Helpers.GetDbContext();
             // Fetch all hut ids which are in Enabled state from database
-            var hutIds = dbContext.Huts.Where(h => h.Enabled == true).Select(h => h.Id).ToList();
+            var hutIds = await dbContext.Huts.Where(h => h.Enabled == true).Select(h => h.Id).ToListAsync();
 
             string instanceId = await starter.StartNewAsync(nameof(UpdateAvailabilityOrchestrator), hutIds);
             log.LogInformation($"{nameof(UpdateAvailabilityOrchestrator)} started. Instance ID={instanceId}");

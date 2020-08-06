@@ -15,8 +15,9 @@
 @section Scripts{
     <script>
 
-        function resetDateFilter() {
+        function resetFormInputs() {
             document.getElementById('DateFilter').value = '';
+            document.getElementById('NumberOfPlaces').value = 1;
             askForPlots();
         }
 
@@ -141,9 +142,9 @@
                         var icon;
                         if (hutlist[i].enabled === false) {
                             icon = greyIcon; // grey=booking not active
-                        } else if (hutlist[i].freeBeds === 0) {
+                        } else if (document.getElementById('DateFilter').value != "" && hutlist[i].freeBeds < document.getElementById('NumberOfPlaces').value) {
                             icon = redIcon; // red=full
-                        } else if (hutlist[i].freeBeds > 0) {
+                        } else if (hutlist[i].freeBeds >= document.getElementById('NumberOfPlaces').value) {
                             icon = greenIcon; // green=beds available
                         } else {
                             icon = blueIcon; // fallback
@@ -343,15 +344,22 @@
 <div class="row justify-content-between">
     <div class="col-md-3">
         <div class="form-group">
-            <form id="dateForm">
-                <div>
-                    <label>@SharedLocalizer["availabilityAtDate"]</label>
-                    <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            <form id="dateForm" class="form-inline">
+                <div class="form-group">
+                    <div class="col-sm-5">
+                        <label style="width:200px">@SharedLocalizer["availabilityAtDate"]</label>
+                        <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" />
+                    </div>
+                    <div class="col-sm-3">
+                        <label style="width:130px">@SharedLocalizer["numberOfPlaces"]</label>
+                        <input id="NumberOfPlaces" type="number" class="form-control" min="1" value="1" style="width:130px" />
+                    </div>
+                    <div class="col-sm-1">
+                        <label style="width:100px; color:white">.</label>
+                        <button class="btn btn-primary" onclick="resetFormInputs();">@SharedLocalizer["reset"]</button>
+                    </div>
                 </div>
             </form>
-            <div>
-                <button class="btn btn-primary" onclick="resetDateFilter();">@SharedLocalizer["reset"]</button>
-            </div>
         </div>
     </div>
     <div class="col-md-3">

@@ -19,6 +19,7 @@ namespace AlpinHutsDashboard.Pages
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? DateFilter { get; set; }
+        public int NumberOfPlaces { get; set; } = 1;
 
         public HutsModel(AlpinehutsDbContext context, ILogger<HutsModel> logger)
         {
@@ -28,7 +29,7 @@ namespace AlpinHutsDashboard.Pages
 
         public IList<Hut> Huts { get;set; }
 
-        public async Task OnGetAsync(DateTime? DateFilter = null)
+        public async Task OnGetAsync(int NumberOfPlaces = 1, DateTime? DateFilter = null)
         {
             this.DateFilter = DateFilter?.Date;
 
@@ -37,7 +38,7 @@ namespace AlpinHutsDashboard.Pages
             IQueryable<Hut> huts; 
             if(this.DateFilter != null)
             {
-                huts = _context.Huts.Where(h => h.Enabled == true && h.Availability.Any(a => a.Date == this.DateFilter && a.FreeRoom > 0)).Include(h => h.Availability).ThenInclude(a => a.BedCategory);
+                huts = _context.Huts.Where(h => h.Enabled == true && h.Availability.Any(a => a.Date == this.DateFilter && a.FreeRoom >= NumberOfPlaces)).Include(h => h.Availability).ThenInclude(a => a.BedCategory);
             }
             else
             {

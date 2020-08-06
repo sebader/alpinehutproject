@@ -192,6 +192,9 @@
   <data name="Mehrbettzimmer" xml:space="preserve">
     <value>Shared bedrooms</value>
   </data>
+  <data name="numberOfPlaces" xml:space="preserve">
+    <value>Number of beds</value>
+  </data>
   <data name="onlineBooking" xml:space="preserve">
     <value>Online booking</value>
   </data>

@@ -159,6 +159,9 @@
   <data name="map" xml:space="preserve">
     <value>Karte</value>
   </data>
+  <data name="numberOfPlaces" xml:space="preserve">
+    <value>Anzahl Plätze</value>
+  </data>
   <data name="onlineBooking" xml:space="preserve">
     <value>Onlinebuchung</value>
   </data>

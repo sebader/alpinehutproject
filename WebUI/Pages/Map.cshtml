@@ -180,6 +180,14 @@
                         if (hutlist[i].hutWebsiteLink !== null) {
                             popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">@SharedLocalizer["hutWebsite"]</a>");
                         }
+                        var rooms = hutlist[i].rooms
+                        
+                        if (Array.isArray(rooms) && rooms.length) {   
+                            popupBody.push("")
+                            rooms.forEach(function (room) {
+                                popupBody.push(room);
+                            });
+                        }
 
                         var lu = new Date(hutlist[i].lastUpdated);
                         let options = {

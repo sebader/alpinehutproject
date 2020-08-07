@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using WebUI.Models;
@@ -17,11 +18,13 @@ namespace WebUI.Cotrollers
     {
         private readonly AlpinehutsDbContext _context;
         private readonly ILogger _logger;
+        private readonly IStringLocalizer _localizer;
 
-        public MapController(AlpinehutsDbContext context, ILogger<MapController> logger)
+        public MapController(AlpinehutsDbContext context, ILogger<MapController> logger, IStringLocalizer<WebUI.SharedResources> localizer)
         {
             _context = context;
             _logger = logger;
+            _localizer = localizer;
         }
 
         // GET: api/Map?llLat=1.2&llLon=89.23&urLat=2.3&urLon=78.3[&dateFilter=2019-11-16]
@@ -56,11 +59,13 @@ namespace WebUI.Cotrollers
                 Latitude = (double)hut.Latitude,
                 Longitude = (double)hut.Longitude,
                 FreeBeds = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Sum(a => (int)a.FreeRoom) : (int?)null,
-                LastUpdated = hut.Availability.FirstOrDefault(a => a.Date >= DateTime.Today).LastUpdated ?? (DateTime) hut.LastUpdated
+                LastUpdated = hut.Availability.FirstOrDefault(a => a.Date >= DateTime.Today).LastUpdated ?? (DateTime) hut.LastUpdated,
+                Rooms = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Select(a => $"{_localizer[a.BedCategory.Name].Value} - {a.FreeRoom}/{a.TotalRoom}").ToList() : null,
             });
 
             _logger.LogInformation($"GetHuts for map view returned {result.Count()} huts");
-            return await result.AsNoTracking().ToListAsync();
+            var finalList = await result.AsNoTracking().ToListAsync();
+            return finalList;
         }
 
         // GET: api/Map?hutid=123

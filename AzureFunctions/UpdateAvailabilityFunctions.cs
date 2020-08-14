@@ -35,7 +35,7 @@ namespace AzureFunctions
 
             var dbContext = await Helpers.GetDbContext();
             // Fetch all hut ids which are in Enabled state from database
-            var hutIds = await dbContext.Huts.Where(h => h.Enabled == true).Select(h => h.Id).ToListAsync();
+            var hutIds = await dbContext.Huts.Where(h => h.Enabled == true).AsNoTracking().Select(h => h.Id).ToListAsync();
 
             string instanceId = await starter.StartNewAsync(nameof(UpdateAvailabilityOrchestrator), hutIds);
             log.LogInformation($"{nameof(UpdateAvailabilityOrchestrator)} started. Instance ID={instanceId}");
@@ -68,8 +68,10 @@ namespace AzureFunctions
                 {
                     log.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
-
-                numRowsWritten += await UpdateHutAvailability(parsedId, log);
+                else
+                {
+                    numRowsWritten += await UpdateHutAvailability(parsedId, log);
+                }
             }
             return new OkObjectResult(numRowsWritten);
         }
@@ -110,13 +112,18 @@ namespace AzureFunctions
                 log.LogInformation("Executing UpdateHutAvailability for hutid={hutId}", hutId);
                 var dbContext = await Helpers.GetDbContext();
 
-                var hut = await dbContext.Huts.Where(h => h.Id == hutId).Include(h => h.Availability).ThenInclude(a => a.BedCategory).SingleOrDefaultAsync();
-                if (hut == null || hut.Enabled != true)
+                var hut = await dbContext.Huts.Include(h => h.Availability).ThenInclude(a => a.BedCategory).AsNoTracking().SingleOrDefaultAsync(h => h.Id == hutId);
+                if (hut == null)
                 {
-                    log.LogError("No hut found for id={hutId} or hut not enabled", hutId);
+                    log.LogError("No hut found for id={hutId}", hutId);
                     return numRowsWritten;
                 }
-
+                else if (hut.Enabled != true)
+                {
+                    log.LogError("Hut id={hutId} is not enabled", hutId);
+                    return numRowsWritten;
+                }
+                
                 var httpClient = new HttpClient();
                 // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
                 var initialResponse = await httpClient.GetAsync(hut.Link, HttpCompletionOption.ResponseHeadersRead);

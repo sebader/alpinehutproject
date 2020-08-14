@@ -14,13 +14,6 @@
 
 @section Scripts{
     <script>
-
-        function resetFormInputs() {
-            document.getElementById('DateFilter').value = '';
-            document.getElementById('NumberOfPlaces').value = 1;
-            askForPlots();
-        }
-
         var map;
         var ajaxRequest = new XMLHttpRequest();
         var hutlist;
@@ -135,77 +128,92 @@
                 //use the info here that was returned
                 if (ajaxRequest.status == 200) {
                     hutlist = eval("(" + ajaxRequest.responseText + ")");
-                    removeMarkers();
-                    for (i = 0; i < hutlist.length; i++) {
-                        var plotll = new L.LatLng(hutlist[i].latitude, hutlist[i].longitude, true);
-
-                        var icon;
-                        if (hutlist[i].enabled === false) {
-                            icon = greyIcon; // grey=booking not active
-                        } else if (document.getElementById('DateFilter').value != "" && hutlist[i].freeBeds < document.getElementById('NumberOfPlaces').value) {
-                            icon = redIcon; // red=full
-                        } else if (hutlist[i].freeBeds >= document.getElementById('NumberOfPlaces').value) {
-                            icon = greenIcon; // green=beds available
-                        } else {
-                            icon = blueIcon; // fallback
-                        }
-
-                        var plotmark = new L.Marker(plotll, { icon: icon });
-                        plotmark.data = hutlist[i];
-                        map.addLayer(plotmark);
-
-                        var toolTip = "<b>" + hutlist[i].name + "</b>";
-                        if (hutlist[i].freeBeds != null) {
-                            toolTip = toolTip.concat("<br />@Localizer["freeBeds"]: " + hutlist[i].freeBeds);
-                        }
-
-                        plotmark.bindTooltip(toolTip);
-
-                        var popupBody = [];
-
-                        var popupHeader = "<h6><a href=\"/HutDetail/" + hutlist[i].id + "\">" + hutlist[i].name + "</a></h6>";
-
-                        if (hutlist[i].enabled == true) {
-                            if (hutlist[i].freeBeds !== null) {
-                                var d = new Date(document.getElementById('DateFilter').value);
-                                var formatted = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
-                                popupBody.push("[" + formatted + "] @Localizer["freeBeds"]: " + hutlist[i].freeBeds);
-                            }
-                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].onlineBookingLink + "\">@SharedLocalizer["onlineBooking"]</a>");
-                        }
-                        else {
-                            popupBody.push("<i>@Localizer["onlineBookingInactive"]</i>");
-                        }
-
-                        if (hutlist[i].hutWebsiteLink !== null) {
-                            popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">@SharedLocalizer["hutWebsite"]</a>");
-                        }
-                        var rooms = hutlist[i].rooms
-                        
-                        if (Array.isArray(rooms) && rooms.length) {   
-                            popupBody.push("")
-                            rooms.forEach(function (room) {
-                                popupBody.push(room);
-                            });
-                        }
-
-                        var lu = new Date(hutlist[i].lastUpdated);
-                        let options = {
-                            year: "numeric", month: "numeric",
-                            day: "numeric", hour: "2-digit", minute: "2-digit"
-                        };
-
-                        popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"javascript:centerOnHut(" + hutlist[i].id + ");\">(Zoom in)</a>");
-
-                        plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
-                        plotlayers.push(plotmark);
-                    }
+                    plotHutMarkers()
 
                     // If URL parameter hutid was set, we jump to that hut and open its popup
                     var params = getUrlVars();
                     if (params["hutid"] !== undefined) {
                         centerOnHut(params["hutid"]);
                     }
+                }
+            }
+        }
+
+        function plotHutMarkers() {
+            if (hutlist) {
+                removeMarkers();
+                for (i = 0; i < hutlist.length; i++) {
+                    var plotll = new L.LatLng(hutlist[i].latitude, hutlist[i].longitude, true);
+
+                    var icon;
+                    if (hutlist[i].enabled === false) {
+                        icon = greyIcon; // grey=booking not active
+                    } else if (document.getElementById('DateFilter').value != "" && document.getElementById('SelectedBedCategory').value != "") {
+                        var selectedRoom = hutlist[i].rooms.filter(room => room.bedCategory == document.getElementById('SelectedBedCategory').value)
+                        if (Array.isArray(selectedRoom) && selectedRoom.length == 1 && selectedRoom[0].freeBeds >= document.getElementById('NumberOfPlaces').value) {
+                            icon = greenIcon;
+                        }
+                        else
+                        {
+                            icon = redIcon; // red=full
+                        }
+                    } else if (document.getElementById('DateFilter').value != "" && hutlist[i].freeBeds < document.getElementById('NumberOfPlaces').value) {
+                        icon = redIcon; // red=full
+                    } else if (hutlist[i].freeBeds >= document.getElementById('NumberOfPlaces').value) {
+                        icon = greenIcon; // green=beds available
+                    } else {
+                        icon = blueIcon; // fallback
+                    }
+
+                    var plotmark = new L.Marker(plotll, { icon: icon });
+                    plotmark.data = hutlist[i];
+                    map.addLayer(plotmark);
+
+                    var toolTip = "<b>" + hutlist[i].name + "</b>";
+                    if (hutlist[i].freeBeds != null) {
+                        toolTip = toolTip.concat("<br />@Localizer["freeBeds"]: " + hutlist[i].freeBeds);
+                    }
+
+                    plotmark.bindTooltip(toolTip);
+
+                    var popupBody = [];
+
+                    var popupHeader = "<h6><a href=\"/HutDetail/" + hutlist[i].id + "\">" + hutlist[i].name + "</a></h6>";
+
+                    if (hutlist[i].enabled == true) {
+                        if (hutlist[i].freeBeds !== null) {
+                            var d = new Date(document.getElementById('DateFilter').value);
+                            var formatted = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+                            popupBody.push("[" + formatted + "] @Localizer["freeBeds"]: " + hutlist[i].freeBeds);
+                        }
+                        popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].onlineBookingLink + "\">@SharedLocalizer["onlineBooking"]</a>");
+                    }
+                    else {
+                        popupBody.push("<i>@Localizer["onlineBookingInactive"]</i>");
+                    }
+
+                    if (hutlist[i].hutWebsiteLink !== null) {
+                        popupBody.push("<a target=\"_blank\" href=\"" + hutlist[i].hutWebsiteLink + "\">@SharedLocalizer["hutWebsite"]</a>");
+                    }
+                    var rooms = hutlist[i].rooms
+
+                    if (Array.isArray(rooms) && rooms.length) {
+                        popupBody.push("")
+                        rooms.forEach(function (room) {
+                            popupBody.push(room.bedCategory + ": " + room.freeBeds + "/" + room.totalBeds);
+                        });
+                    }
+
+                    var lu = new Date(hutlist[i].lastUpdated);
+                    let options = {
+                        year: "numeric", month: "numeric",
+                        day: "numeric", hour: "2-digit", minute: "2-digit"
+                    };
+
+                    popupBody.push("<br />@Localizer["updateDate"]: " + lu.toLocaleTimeString("de-de", options) + " <a href=\"javascript:centerOnHut(" + hutlist[i].id + ");\">(Zoom in)</a>");
+
+                    plotmark.bindPopup(popupHeader.concat(popupBody.join("<br />")));
+                    plotlayers.push(plotmark);
                 }
             }
         }
@@ -226,11 +234,19 @@
             plotlayers = [];
         }
 
-        // On change of the date field, reload the map
-        $("#dateForm")
-            .on("input", function () {
+        function resetFormInputs() {
+            document.getElementById('DateFilter').value = '';
+            document.getElementById('NumberOfPlaces').disabled = true
+            document.getElementById('SelectedBedCategory').disabled = true
+        }
+
+        function dateChanged() {
+            if (document.getElementById('DateFilter').value != '') {
                 askForPlots();
-            });
+                document.getElementById('SelectedBedCategory').disabled = false
+                document.getElementById('NumberOfPlaces').disabled = false
+            }
+        }
 
         $(document).ready(function () {
             initmap();
@@ -344,8 +360,7 @@
             });
         }
 
-
-        /**/</script>
+    </script>
 }
 
 <h1>@SharedLocalizer["map"]</h1>
@@ -354,13 +369,18 @@
         <div class="form-group">
             <form id="dateForm" class="form-inline">
                 <div class="form-group">
-                    <div class="col-sm-5">
+                    <div class="col-sm-4">
                         <label style="width:200px">@SharedLocalizer["availabilityAtDate"]</label>
-                        <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" />
+                        <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" onchange="dateChanged()" />
+                    </div>
+                    <div class="col-sm-2">
+                        <label style="width:100px">@SharedLocalizer["numberOfPlaces"]</label>
+                        <input id="NumberOfPlaces" type="number" class="form-control" min="1" value="1" style="width:100px" onchange="plotHutMarkers()" disabled/>
                     </div>
                     <div class="col-sm-3">
-                        <label style="width:130px">@SharedLocalizer["numberOfPlaces"]</label>
-                        <input id="NumberOfPlaces" type="number" class="form-control" min="1" value="1" style="width:130px" />
+                        <label style="width:100px">@SharedLocalizer["bedCategories"]</label>
+                        <select id="SelectedBedCategory" class="form-control" asp-items="Model.BedCategories" onchange="plotHutMarkers()" disabled></select>
+
                     </div>
                     <div class="col-sm-1">
                         <label style="width:100px; color:white">.</label>

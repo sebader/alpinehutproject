@@ -126,6 +126,9 @@
   <data name="availabilityOn" xml:space="preserve">
     <value>Verfügbarkeit am</value>
   </data>
+  <data name="bedCategories" xml:space="preserve">
+    <value>Zimmertyp</value>
+  </data>
   <data name="bedType" xml:space="preserve">
     <value>Unterbringung</value>
   </data>

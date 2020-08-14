@@ -34,6 +34,14 @@ namespace Shared.Models
 
             });
 
+            modelBuilder.Entity<BedCategory>(entity =>
+            {
+                entity.HasOne(a => a.SharesNameWith)
+                .WithMany(b => b.SameNamesAsThis)
+                .HasForeignKey(c => c.SharesNameWithBedCateogryId)
+                .HasConstraintName("FK_BedCategory_SameAs");
+            });
+
             modelBuilder.Entity<Hut>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();

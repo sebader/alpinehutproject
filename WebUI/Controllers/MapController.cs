@@ -59,12 +59,26 @@ namespace WebUI.Cotrollers
                 Latitude = (double)hut.Latitude,
                 Longitude = (double)hut.Longitude,
                 FreeBeds = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Sum(a => (int)a.FreeRoom) : (int?)null,
-                LastUpdated = hut.Availability.FirstOrDefault(a => a.Date >= DateTime.Today).LastUpdated ?? (DateTime) hut.LastUpdated,
-                Rooms = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Select(a => $"{_localizer[a.BedCategory.Name].Value} - {a.FreeRoom}/{a.TotalRoom}").ToList() : null,
+                LastUpdated = hut.Availability.FirstOrDefault(a => a.Date >= DateTime.Today).LastUpdated ?? (DateTime)hut.LastUpdated,
+                Rooms = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Select(a => new RoomAvailability { BedCategoryId = a.BedCategoryId, FreeBeds = (int)a.FreeRoom, TotalBeds = (int)a.TotalRoom }).ToList() : null,
             });
 
             _logger.LogInformation($"GetHuts for map view returned {result.Count()} huts");
             var finalList = await result.AsNoTracking().ToListAsync();
+            if (dateFilter != null)
+            {
+                var beds = await _context.BedCategories.Include(b => b.SharesNameWith).AsNoTracking().ToListAsync();
+                foreach (var h in finalList)
+                {
+                    if (h.Rooms?.Count > 0)
+                    {
+                        foreach(var room in h.Rooms)
+                        {
+                            room.BedCategory = beds.SingleOrDefault(b => room.BedCategoryId == b.Id)?.CommonName;
+                        }
+                    }
+                }
+            }
             return finalList;
         }
 

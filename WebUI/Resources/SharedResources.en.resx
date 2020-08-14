@@ -132,6 +132,9 @@
   <data name="availabilityOn" xml:space="preserve">
     <value>Availability on</value>
   </data>
+  <data name="bedCategories" xml:space="preserve">
+    <value>Room type</value>
+  </data>
   <data name="bedType" xml:space="preserve">
     <value>Type of accommodation</value>
   </data>

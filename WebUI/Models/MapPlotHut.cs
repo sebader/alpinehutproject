@@ -15,7 +15,15 @@ namespace WebUI.Models
         public string HutWebsiteLink { get; set; }
         public bool Enabled { get; set; }
         public int? FreeBeds { get; set; }
-        public List<string> Rooms { get; set; }
+        public List<RoomAvailability> Rooms { get; set; }
         public DateTime LastUpdated { get; set; }
+    }
+
+    public class RoomAvailability
+    {
+        public int BedCategoryId { get; set; }
+        public string BedCategory { get; set; }
+        public int FreeBeds { get; set; }
+        public int TotalBeds { get; set; }
     }
 }

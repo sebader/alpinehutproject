@@ -148,6 +148,8 @@
                     var icon;
                     if (hutlist[i].enabled === false) {
                         icon = greyIcon; // grey=booking not active
+                    } else if (Array.isArray(hutlist[i].rooms) && hutlist[i].rooms.length == 0) {
+                        icon = blueIcon;
                     } else if (document.getElementById('DateFilter').value != "" && document.getElementById('SelectedBedCategory').value != "") {
                         var selectedRoom = hutlist[i].rooms.filter(room => room.bedCategory == document.getElementById('SelectedBedCategory').value)
                         if (Array.isArray(selectedRoom) && selectedRoom.length == 1 && selectedRoom[0].freeBeds >= document.getElementById('NumberOfPlaces').value) {

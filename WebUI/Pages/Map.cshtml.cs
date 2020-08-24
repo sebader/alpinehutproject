@@ -28,7 +28,7 @@ namespace WebUI.Pages
 
         public async Task OnGet()
         {
-            BedCategories.Add(new SelectListItem("-", "", true));
+            BedCategories.Add(new SelectListItem($"({_localizer["egal"].Value})", "", true));
             var categories = await _context.BedCategories.Include(b => b.SharesNameWith).AsNoTracking().Select(b => _localizer[b.CommonName].Value).ToListAsync();
             categories = categories.Distinct().ToList();
             BedCategories.AddRange(categories.Select(s => new SelectListItem(s, s)).ToList());

@@ -132,6 +132,12 @@
   <data name="bedType" xml:space="preserve">
     <value>Unterbringung</value>
   </data>
+  <data name="bookingActive" xml:space="preserve">
+    <value>Buchung aktiv</value>
+  </data>
+  <data name="bookingInactive" xml:space="preserve">
+    <value>Buchung inaktiv</value>
+  </data>
   <data name="coordinates" xml:space="preserve">
     <value>Koordinaten</value>
   </data>
@@ -141,8 +147,14 @@
   <data name="date" xml:space="preserve">
     <value>Datum</value>
   </data>
+  <data name="directLink" xml:space="preserve">
+    <value>Direktlink</value>
+  </data>
   <data name="English" xml:space="preserve">
     <value>English</value>
+  </data>
+  <data name="freeBeds" xml:space="preserve">
+    <value>Freie Plätze</value>
   </data>
   <data name="German" xml:space="preserve">
     <value>Deutsch</value>
@@ -150,11 +162,24 @@
   <data name="hut" xml:space="preserve">
     <value>Hütte</value>
   </data>
+  <data name="hutAdded" xml:space="preserve">
+    <value>Hütte hinzugefügt</value>
+  </data>
   <data name="hutWebsite" xml:space="preserve">
     <value>Hüttenwebsite</value>
   </data>
   <data name="info" xml:space="preserve">
     <value>Info</value>
+  </data>
+  <data name="infoParagraph1" xml:space="preserve">
+    <value>Diese Übersicht listet alle Alpenvereinshütten, die aktuell über das offizielle Online-Buchungsportal der Alpenvereine gebucht werden können.
+    Die Hütten befinden sich hauptsächlich in Deutschland, Österreich und der Schweiz. Außerdem sind einige Hütten in Südtirol und Slowenien angebunden.</value>
+  </data>
+  <data name="infoParagraph2" xml:space="preserve">
+    <value>Wichtig: Diese Seite ist ein privates Projekt und steht in keiner Verbindung zum offiziellen Portal der Alpenvereine. Alle Angaben hier sind ohne Gewähr.</value>
+  </data>
+  <data name="lastUpdated" xml:space="preserve">
+    <value>Zuletzt aktualisiert</value>
   </data>
   <data name="list" xml:space="preserve">
     <value>Liste</value>
@@ -162,17 +187,26 @@
   <data name="map" xml:space="preserve">
     <value>Karte</value>
   </data>
+  <data name="mapTitle" xml:space="preserve">
+    <value>Hüttenkarte</value>
+  </data>
   <data name="numberOfPlaces" xml:space="preserve">
     <value>Anzahl Plätze</value>
   </data>
   <data name="onlineBooking" xml:space="preserve">
     <value>Onlinebuchung</value>
   </data>
+  <data name="onlineBookingInactive" xml:space="preserve">
+    <value>Onlinebuchung nicht aktiv</value>
+  </data>
   <data name="reset" xml:space="preserve">
     <value>Zurücksetzen</value>
   </data>
   <data name="search" xml:space="preserve">
     <value>Suche</value>
+  </data>
+  <data name="searchlabel" xml:space="preserve">
+    <value>Hüttensuche</value>
   </data>
   <data name="seats" xml:space="preserve">
     <value>Plätze</value>
@@ -182,5 +216,14 @@
   </data>
   <data name="status" xml:space="preserve">
     <value>Status</value>
+  </data>
+  <data name="titleHutlist" xml:space="preserve">
+    <value>Hüttenliste</value>
+  </data>
+  <data name="titleInfo" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="updateDate" xml:space="preserve">
+    <value>Stand</value>
   </data>
 </root>

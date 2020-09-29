@@ -6,8 +6,6 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
 
-@inject IViewLocalizer Localizer
-
 @{
     ViewData["Title"] = SharedLocalizer["titleHutlist"];
     var requestCultureFeature = HttpContext.Features.Get<IRequestCultureFeature>();
@@ -167,7 +165,7 @@
                     }
                     else
                     {
-                        @Localizer["bookingInactive"]
+                        @SharedLocalizer["bookingInactive"]
                     }
                 </td>
             </tr>

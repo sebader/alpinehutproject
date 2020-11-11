@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Shared;
 
 namespace AzureFunctions
 {
@@ -23,15 +24,15 @@ namespace AzureFunctions
 
         private static HttpClient _httpClient = new HttpClient();
 
-        public static async Task<AlpinehutsDbContext> GetDbContext()
+        public static AlpinehutsDbContext GetDbContext()
         {
+            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, new AzureIdentitySqlAuthenticationProvider());
+            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new AzureIdentitySqlAuthenticationProvider());
+
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
 
             // Using managed AAD identity to connect to the database
-            var dbConnection = new SqlConnection(Environment.GetEnvironmentVariable("DatabaseConnectionString"))
-            {
-                AccessToken = await new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/")
-            };
+            var dbConnection = new SqlConnection(Environment.GetEnvironmentVariable("DatabaseConnectionString"));
             optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;

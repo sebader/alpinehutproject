@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared.Models;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.Data.SqlClient;
 
 namespace AlpinHutsDashboard
 {
@@ -47,11 +47,12 @@ namespace AlpinHutsDashboard
             services.AddMvc().AddViewLocalization();
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, new AzureIdentitySqlAuthenticationProvider());
+            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new AzureIdentitySqlAuthenticationProvider());
 
             services.AddDbContextPool<AlpinehutsDbContext>(options =>
             {
                 options.UseSqlServer(Configuration["DatabaseConnectionString"]);
-                options.UseAzureAccessToken();
             });
 
             IMvcBuilder builder = services.AddRazorPages();

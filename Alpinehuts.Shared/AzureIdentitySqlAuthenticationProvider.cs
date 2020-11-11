@@ -3,7 +3,7 @@ using Microsoft.Data.SqlClient;
 using Azure.Identity;
 using Azure.Core;
 
-namespace AlpinHutsDashboard
+namespace Shared
 {
     public class AzureIdentitySqlAuthenticationProvider : SqlAuthenticationProvider
     {

@@ -15,6 +15,7 @@ using Shared.Models;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Data.SqlClient;
+using Shared;
 
 namespace AlpinHutsDashboard
 {

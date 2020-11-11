@@ -366,33 +366,31 @@
 
 <h1>@SharedLocalizer["map"]</h1>
 <div class="row justify-content-between">
-    <div class="col-md-3">
-        <div class="form-group">
-            <form id="dateForm" class="form-inline">
-                <div class="form-group">
-                    <div class="col-sm-4">
-                        <label style="width:200px">@SharedLocalizer["availabilityAtDate"]</label>
-                        <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" onchange="dateChanged()" />
-                    </div>
-                    <div class="col-sm-2">
-                        <label style="width:100px">@SharedLocalizer["numberOfPlaces"]</label>
-                        <input id="NumberOfPlaces" type="number" class="form-control" min="1" value="1" style="width:100px" onchange="plotHutMarkers()" disabled/>
-                    </div>
-                    <div class="col-sm-3">
-                        <label style="width:100px">@SharedLocalizer["bedCategories"]</label>
-                        <select id="SelectedBedCategory" class="form-control" asp-items="Model.BedCategories" onchange="plotHutMarkers()" disabled></select>
-
-                    </div>
-                    <div class="col-sm-1">
-                        <label style="width:100px; color:white">.</label>
-                        <button class="btn btn-primary" onclick="resetFormInputs();">@SharedLocalizer["reset"]</button>
-                    </div>
+    <div class="col">
+        <form id="dateForm" class="form-inline">
+            <div class="form-group">
+                <div class="col-sm-4">
+                    <label style="width:200px">@SharedLocalizer["availabilityAtDate"]</label>
+                    <input id="DateFilter" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" onchange="dateChanged()" />
                 </div>
-            </form>
-        </div>
+                <div class="col-sm-2">
+                    <label style="width:100px">@SharedLocalizer["numberOfPlaces"]</label>
+                    <input id="NumberOfPlaces" type="number" class="form-control" min="1" value="1" style="width:100px" onchange="plotHutMarkers()" disabled />
+                </div>
+                <div class="col-sm-3">
+                    <label style="width:100px">@SharedLocalizer["bedCategories"]</label>
+                    <select id="SelectedBedCategory" class="form-control" asp-items="Model.BedCategories" onchange="plotHutMarkers()" disabled></select>
+                </div>
+                <div class="col-sm-1">
+                    <label style="color:white">.</label>
+                    <button class="btn btn-primary" onclick="resetFormInputs();">@SharedLocalizer["reset"]</button>
+                </div>
+            </div>
+        </form>
     </div>
-    <div class="col-md-3">
-        <div class="autocomplete">
+    <div class="col"></div>
+    <div class="col">
+        <div class="form-group">
             <label>@SharedLocalizer["searchlabel"]</label>
             <input autocomplete="off" id="mapSearch" class="form-control" type="text" placeholder="@SharedLocalizer["search"]">
         </div>

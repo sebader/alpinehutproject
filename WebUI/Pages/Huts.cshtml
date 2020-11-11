@@ -75,23 +75,22 @@
 
 <div class="row justify-content-between">
     <div class="col-md-3">
-        <div class="form-group">
-            <form asp-action="Huts" method="get" id="dateForm" class="form-inline">
-                <div class="form-group">
-                    <div class="col-sm-6">
-                        <label style="width:200px">@SharedLocalizer["availabilityAtDate"]</label>
-                        <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" />
-                    </div>
-                    <div class="col-sm-4">
-                        <label style="width:100px">@SharedLocalizer["numberOfPlaces"]</label>
-                        <input asp-for="NumberOfPlaces" class="form-control" min="1" style="width:100px" />
-                    </div>
-                    <div class="col-sm-4">
-                        <button class="btn btn-primary" onclick="resetFormInputs();">@SharedLocalizer["reset"]</button>
-                    </div>
+        <form asp-action="Huts" method="get" id="dateForm" class="form-inline">
+            <div class="form-group">
+                <div class="col">
+                    <label style="width:200px">@SharedLocalizer["availabilityAtDate"]</label>
+                    <input asp-for="DateFilter" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" style="width:200px" />
                 </div>
-            </form>
-        </div>
+                <div class="col">
+                    <label style="width:100px">@SharedLocalizer["numberOfPlaces"]</label>
+                    <input asp-for="NumberOfPlaces" class="form-control" min="1" style="width:100px" />
+                </div>
+                <div class="col">
+                    <label style="color:white">.</label>
+                    <button class="btn btn-primary" onclick="resetFormInputs();">@SharedLocalizer["reset"]</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 

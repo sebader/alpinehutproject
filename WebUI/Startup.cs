@@ -48,8 +48,11 @@ namespace AlpinHutsDashboard
             services.AddMvc().AddViewLocalization();
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            //SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, new AzureIdentitySqlAuthenticationProvider());
-            //SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new AzureIdentitySqlAuthenticationProvider());
+            if (Environment.EnvironmentName == "Development")
+            {
+                SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, new AzureIdentitySqlAuthenticationProvider());
+                SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new AzureIdentitySqlAuthenticationProvider());
+            }
 
             services.AddDbContextPool<AlpinehutsDbContext>(options =>
             {

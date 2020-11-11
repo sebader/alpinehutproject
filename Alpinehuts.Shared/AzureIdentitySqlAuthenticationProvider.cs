@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Azure.Identity;
 using Azure.Core;
+using System;
 
 namespace Shared
 {
@@ -9,11 +10,18 @@ namespace Shared
     {
         public override async Task<SqlAuthenticationToken> AcquireTokenAsync(SqlAuthenticationParameters parameters)
         {
+            Console.WriteLine($"Sql Auth UserId={parameters.UserId}");
             TokenCredential tokenCredential;
             if (parameters.UserId == "LOCALDEV")
             {
                 tokenCredential = new InteractiveBrowserCredential();
             }
+            /*
+            else if (!string.IsNullOrEmpty(parameters.UserId))
+            {
+                tokenCredential = new ManagedIdentityCredential(parameters.UserId);
+            }
+            */
             else
             {
                 tokenCredential = new DefaultAzureCredential();

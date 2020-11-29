@@ -27,10 +27,10 @@ namespace AzureFunctions.Models
     public class RoomDayAvailability
     {
         [JsonProperty("hutBedCategoryId")]
-        public int HutBedCategoryId { get; set; }
+        public int? HutBedCategoryId { get; set; }
 
         [JsonProperty("bedCategoryId")]
-        public int BedCategoryId { get; set; }
+        public int? BedCategoryId { get; set; }
 
         [JsonProperty("bookingEnabled")]
         public bool BookingEnabled { get; set; }

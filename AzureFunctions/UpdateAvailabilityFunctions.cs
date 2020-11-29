@@ -144,7 +144,7 @@ namespace AzureFunctions
                         var dateResponse = await httpClient.GetStringAsync(dateUrl);
                         var updateTime = DateTime.UtcNow;
 
-                        var daysAvailability = ParseAvailability(dateResponse);
+                        var daysAvailability = ParseAvailability(dateResponse, log);
 
                         log.LogInformation("Found {numberOfDay} days with availability for hut={hutId} starting with date={date}. Writing to database now", daysAvailability.Count, hutId, date);
 
@@ -204,7 +204,7 @@ namespace AzureFunctions
             return numRowsWritten;
         }
 
-        private static List<DayAvailability> ParseAvailability(string responseBody)
+        private static List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
         {
             var jObject = JsonConvert.DeserializeObject<JObject>(responseBody);
 
@@ -216,6 +216,12 @@ namespace AzureFunctions
                 foreach (var room in day.First?.Children())
                 {
                     var roomDayAvailabilty = JsonConvert.DeserializeObject<RoomDayAvailability>(room.ToString());
+                    if(roomDayAvailabilty.BedCategoryId == null || roomDayAvailabilty.HutBedCategoryId == null)
+                    {
+                        log.LogWarning("Parsed JSON has BedCategoryId=null or HutBedCategoryId=null. Raw JSON={json}", room.ToString());
+                        continue;
+                    }
+
                     var a = new RoomAvailability
                     {
                         BedCategoryId = roomDayAvailabilty.BedCategoryId,

@@ -1,6 +1,5 @@
 ﻿using AzureFunctions.Models;
 using HtmlAgilityPack;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Models;

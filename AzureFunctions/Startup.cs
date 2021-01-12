@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
+using Polly.Timeout;
 using System;
 using System.Net.Http;
 
@@ -24,6 +25,7 @@ namespace AzureFunctions
 
             var retryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
+                .Or<TimeoutRejectedException>()
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
             return retryPolicy.WrapAsync(timeoutPerCall);

@@ -15,20 +15,19 @@ namespace AzureFunctions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services
-                .AddHttpClient<HttpClient>("HttpClient")
+                .AddHttpClient<HttpClient>("HttpClient", client => client.Timeout = TimeSpan.FromSeconds(120)) // default overall request request timeout (includes all polly retries)
                 .AddPolicyHandler(GetRetryWithTimeoutPolicy());
         }
 
         static IAsyncPolicy<HttpResponseMessage> GetRetryWithTimeoutPolicy()
         {
-            var timeoutPerCall = Policy.TimeoutAsync(30);
-
             var retryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .Or<TimeoutRejectedException>()
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+                .WrapAsync(Policy.TimeoutAsync(30)); // per request timeout
 
-            return retryPolicy.WrapAsync(timeoutPerCall);
+            return retryPolicy;
         }
     }
 }

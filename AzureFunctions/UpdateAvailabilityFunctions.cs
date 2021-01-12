@@ -19,10 +19,16 @@ using Shared.Models;
 
 namespace AzureFunctions
 {
-    public static class UpdateAvailabilityFunctions
+    public class UpdateAvailabilityFunctions
     {
+        private IHttpClientFactory _clientFactory;
+        public UpdateAvailabilityFunctions(IHttpClientFactory clientFactory)
+        {
+            _clientFactory = clientFactory;
+        }
+
         [FunctionName(nameof(UpdateAvailabilityTimerTriggered))]
-        public static async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")]TimerInfo myTimer,
+        public async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")]TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -48,7 +54,7 @@ namespace AzureFunctions
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName(nameof(UpdateAvailabilityHttpTriggered))]
-        public static async Task<IActionResult> UpdateAvailabilityHttpTriggered(
+        public async Task<IActionResult> UpdateAvailabilityHttpTriggered(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
         {
             log.LogInformation("Update Hut HTTP trigger function received a request");
@@ -77,7 +83,7 @@ namespace AzureFunctions
         }
 
         [FunctionName(nameof(UpdateAvailabilityOrchestrator))]
-        public static async Task UpdateAvailabilityOrchestrator(
+        public async Task UpdateAvailabilityOrchestrator(
            [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
             log = context.CreateReplaySafeLogger(log);
@@ -104,7 +110,7 @@ namespace AzureFunctions
         }
 
         [FunctionName(nameof(UpdateHutAvailability))]
-        public static async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
+        public async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
         {
             int numRowsWritten = 0;
             try
@@ -123,8 +129,8 @@ namespace AzureFunctions
                     log.LogError("Hut id={hutId} is not enabled", hutId);
                     return numRowsWritten;
                 }
-                
-                var httpClient = new HttpClient();
+
+                var httpClient = _clientFactory.CreateClient("HttpClient");
                 // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
                 var initialResponse = await httpClient.GetAsync(hut.Link, HttpCompletionOption.ResponseHeadersRead);
 
@@ -197,14 +203,18 @@ namespace AzureFunctions
                     log.LogInformation("Finished updating availability for hutId={hutId}. Number of rows written={numberOfRowsWritten}", hut.Id, numRowsWritten);
                 }
             }
+            catch (DbUpdateException e)
+            {
+                log.LogError(default, e, "DbUpdateException in writing availability updates to database for hutid={hutId}", hutId);
+            }
             catch (Exception e)
             {
-                log.LogError(default, e, "Exception in writing availability updates to database for hutid={hutId}", hutId);
+                log.LogError(default, e, "Exception in getting availability updates from website for hutid={hutId}", hutId);
             }
             return numRowsWritten;
         }
 
-        private static List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
+        private List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
         {
             var jObject = JsonConvert.DeserializeObject<JObject>(responseBody);
 
@@ -252,7 +262,7 @@ namespace AzureFunctions
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName(nameof(UpdateAvailabilityReporting))]
-        public static async Task UpdateAvailabilityReporting([ActivityTrigger] object input, ILogger log)
+        public async Task UpdateAvailabilityReporting([ActivityTrigger] object input, ILogger log)
         {
             try
             {

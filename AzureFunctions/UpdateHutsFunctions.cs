@@ -17,7 +17,7 @@ namespace AzureFunctions
 {
     public static class UpdateHutsFunctions
     {
-        private const int MaxHutId = 400;
+        private const int MaxHutId = 450;
 
         [FunctionName(nameof(UpdateHutsTimerTriggered))]
         public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)]TimerInfo myTimer,

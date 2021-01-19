@@ -18,7 +18,7 @@ namespace AzureFunctions
 {
     public class UpdateHutsFunctions
     {
-        private const int MaxHutId = 400;
+        private const int MaxHutId = 450;
 
         private IHttpClientFactory _clientFactory;
         public UpdateHutsFunctions(IHttpClientFactory clientFactory)

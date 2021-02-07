@@ -101,9 +101,9 @@ namespace AzureFunctions
                 tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
-                if(i % 10 == 0)
+                if(i % 10 == 0 && i < hutIds.Count -1)
                 {
-                    log.LogInformation("Delaying next batch for 1 minute. i={i}", i);
+                    log.LogInformation("Delaying next batch for 1 minute. i={i}, last hutId={hutid}", i, hutIds[i]);
                     await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
                 }
             }

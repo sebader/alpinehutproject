@@ -196,6 +196,17 @@ namespace AzureFunctions
                                         dbContext.Availability.Add(newAva);
                                     }
                                 }
+                                var allBedcategories = day.Rooms.Select(r => (int) r.BedCategoryId).ToList();
+                                var oldEntries = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !allBedcategories.Contains(a.BedCategoryId)).ToListAsync();
+                                if(oldEntries.Count > 0)
+                                {
+                                    log.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.Date);
+                                    foreach(var entry in oldEntries)
+                                    {
+                                        log.LogInformation("Deleting entry with bedCategoryId={bed}", entry.BedCategoryId);
+                                        dbContext.Availability.Remove(entry);
+                                    }
+                                }
                             }
                             numRowsWritten += await dbContext.SaveChangesAsync();
                         }

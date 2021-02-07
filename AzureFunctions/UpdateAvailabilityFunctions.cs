@@ -103,6 +103,7 @@ namespace AzureFunctions
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
                 if(i % 10 == 0)
                 {
+                    log.LogInformation("Delaying next batch for 1 minute. i={i}", i);
                     await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
                 }
             }

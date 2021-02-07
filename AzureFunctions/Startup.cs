@@ -23,6 +23,7 @@ namespace AzureFunctions
         {
             var retryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.Forbidden) // Retry 403 as it seems to be some rate limiting error
                 .Or<TimeoutRejectedException>()
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
                 .WrapAsync(Policy.TimeoutAsync(30)); // per request timeout

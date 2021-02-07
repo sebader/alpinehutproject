@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using AzureFunctions.Models;
 using Microsoft.AspNetCore.Http;
@@ -98,6 +99,12 @@ namespace AzureFunctions
             for (int i = 0; i < hutIds.Count; i++)
             {
                 tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]));
+
+                // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
+                if(i % 10 == 0)
+                {
+                    await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
+                }
             }
 
             // Fan-in (wait for all tasks to be completed)

@@ -18,7 +18,17 @@ namespace AzureFunctions
 {
     public class UpdateHutsFunctions
     {
-        private const int MaxHutId = 450;
+        private int MaxHutId
+        {
+            get
+            {
+                if (int.TryParse(Environment.GetEnvironmentVariable("MAX_HUT_ID"), out int value))
+                {
+                    return value;
+                }
+                return 500;
+            }
+        }
 
         private IHttpClientFactory _clientFactory;
         public UpdateHutsFunctions(IHttpClientFactory clientFactory)
@@ -27,7 +37,7 @@ namespace AzureFunctions
         }
 
         [FunctionName(nameof(UpdateHutsTimerTriggered))]
-        public async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)]TimerInfo myTimer,
+        public async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)] TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -36,7 +46,7 @@ namespace AzureFunctions
                 return;
             }
             // Start hutId should start at least with 1, not 0, thats why we add 1
-            int startHutId = (int) DateTime.UtcNow.DayOfWeek + 1;
+            int startHutId = (int)DateTime.UtcNow.DayOfWeek + 1;
             string instanceId = await starter.StartNewAsync<int>(nameof(UpdateHutsOrchestrator), null, startHutId);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
         }
@@ -162,7 +172,7 @@ namespace AzureFunctions
                                 }
                             }
                             existingHut.Name = parsedHut.Name;
-                            if(existingHut.Enabled == false && parsedHut.Enabled == true)
+                            if (existingHut.Enabled == false && parsedHut.Enabled == true)
                             {
                                 existingHut.Activated = DateTime.Today;
                             }
@@ -179,8 +189,8 @@ namespace AzureFunctions
                         else
                         {
                             parsedHut.Added = DateTime.Today;
-                            if (parsedHut.Enabled == true) 
-                            { 
+                            if (parsedHut.Enabled == true)
+                            {
                                 parsedHut.Activated = DateTime.Today;
                             }
                             dbContext.Huts.Add(parsedHut);

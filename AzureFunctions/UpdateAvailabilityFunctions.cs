@@ -112,6 +112,8 @@ namespace AzureFunctions
                     log.LogInformation("Waiting for batch to finishing UpdateHutAvailability Activity Functions");
                     // Fan-in (wait for all tasks to be completed)
                     await Task.WhenAll(tasks);
+                    log.LogInformation("Finished batch");
+
                     tasks.Clear();
                 }
             }

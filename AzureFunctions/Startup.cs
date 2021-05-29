@@ -16,6 +16,13 @@ namespace AzureFunctions
         {
             builder.Services
                 .AddHttpClient<HttpClient>("HttpClient", client => client.Timeout = TimeSpan.FromSeconds(120)) // default overall request request timeout (includes all polly retries)
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                {
+                    return new HttpClientHandler()
+                    {
+                        UseCookies = false,
+                    };
+                })
                 .AddPolicyHandler(GetRetryWithTimeoutPolicy());
         }
 

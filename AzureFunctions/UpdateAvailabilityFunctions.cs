@@ -154,7 +154,7 @@ namespace AzureFunctions
                 // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
                 var initialResponse = await httpClient.GetAsync(hut.Link, HttpCompletionOption.ResponseHeadersRead);
 
-                var cookie = initialResponse.Headers.GetValues("Set-Cookie").FirstOrDefault();
+                var cookie = initialResponse.Headers.GetValues("Set-Cookie").Where(c => c.StartsWith("JSESSIONID")).FirstOrDefault();
                 if (!string.IsNullOrEmpty(cookie))
                 {
                     httpClient.DefaultRequestHeaders.Add("Cookie", cookie);

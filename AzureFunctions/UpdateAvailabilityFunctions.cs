@@ -66,6 +66,8 @@ namespace AzureFunctions
                 return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");
             }
 
+            log.LogInformation("Request to update huts={hutIds}", hutIds);
+
             int numRowsWritten = 0;
 
             foreach (var hutId in hutIds.Split(','))
@@ -98,15 +100,23 @@ namespace AzureFunctions
             // Fan-out
             for (int i = 0; i < hutIds.Count; i++)
             {
+                log.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutIds[i]);
                 tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
-                if(i % 10 == 0 && i < hutIds.Count -1)
+                if(i != 0 && i % 10 == 0 && i < hutIds.Count -1)
                 {
                     log.LogInformation("Delaying next batch for 1 minute. i={i}, last hutId={hutid}", i, hutIds[i]);
                     await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
+
+                    log.LogInformation("Waiting for batch to finishing UpdateHutAvailability Activity Functions");
+                    // Fan-in (wait for all tasks to be completed)
+                    await Task.WhenAll(tasks);
+                    tasks.Clear();
                 }
             }
+
+            log.LogInformation("All UpdateHutAvailability Activity Functions scheduled. Waiting for finishing last batch");
 
             // Fan-in (wait for all tasks to be completed)
             await Task.WhenAll(tasks);

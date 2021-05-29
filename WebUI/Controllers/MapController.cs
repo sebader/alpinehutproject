@@ -63,18 +63,19 @@ namespace WebUI.Cotrollers
                 Rooms = dateFilter != null && hut.Enabled == true ? hut.Availability.Where(a => a.Date == dateFilter).Select(a => new RoomAvailability { BedCategoryId = a.BedCategoryId, FreeBeds = (int)a.FreeRoom, TotalBeds = (int)a.TotalRoom }).ToList() : null,
             });
 
-            _logger.LogInformation($"GetHuts for map view returned {result.Count()} huts");
             var finalList = await result.AsNoTracking().ToListAsync();
+            _logger.LogInformation($"GetHuts for map view returned {finalList.Count()} huts");
             if (dateFilter != null)
             {
-                var beds = await _context.BedCategories.Include(b => b.SharesNameWith).AsNoTracking().ToListAsync();
+                var bedCategories = await _context.BedCategories.Include(b => b.SharesNameWith).AsNoTracking().ToListAsync();
                 foreach (var h in finalList)
                 {
                     if (h.Rooms?.Count > 0)
                     {
                         foreach(var room in h.Rooms)
                         {
-                            room.BedCategory = beds.SingleOrDefault(b => room.BedCategoryId == b.Id)?.CommonName;
+                            // Look up the CommonName (display name) for each room's bedCategory
+                            room.BedCategory = bedCategories.SingleOrDefault(bc => room.BedCategoryId == bc.Id)?.CommonName;
                         }
                     }
                 }

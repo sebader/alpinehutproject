@@ -98,15 +98,15 @@ namespace AzureFunctions
             var tasks = new List<Task>();
 
             // Fan-out
-            for (int i = 0; i < hutIds.Count; i++)
+            foreach (var hutId in hutIds)
             {
-                log.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutIds[i]);
-                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]));
+                log.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
+                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutId));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
-                if(i != 0 && i % 10 == 0 && i < hutIds.Count -1)
+                if(tasks.Count >= 10)
                 {
-                    log.LogInformation("Delaying next batch for 1 minute. i={i}, last hutId={hutid}", i, hutIds[i]);
+                    log.LogInformation("Delaying next batch for 1 minute, last hutId={hutid}", hutId);
                     await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
 
                     log.LogInformation("Waiting for batch to finishing UpdateHutAvailability Activity Functions");

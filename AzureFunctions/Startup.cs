@@ -20,7 +20,7 @@ namespace AzureFunctions
                 {
                     return new HttpClientHandler()
                     {
-                        UseCookies = false,
+                        UseCookies = false, // Prevent cookie sharing in multi thread env https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0#cookies
                     };
                 })
                 .AddPolicyHandler(GetRetryWithTimeoutPolicy());

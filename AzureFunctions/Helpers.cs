@@ -27,12 +27,16 @@ namespace AzureFunctions
         {
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
 
-            // Using managed AAD identity to connect to the database
-            var dbConnection = new SqlConnection(Environment.GetEnvironmentVariable("DatabaseConnectionString"))
+            var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString");
+
+            var dbConnection = new SqlConnection();
+
+            if (!connectionString.Contains("Password="))
             {
-                AccessToken = await new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/")
-            };
-            optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
+                // Using managed AAD identity to connect to the database
+                dbConnection.AccessToken = await new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/");
+            }
+                optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }
@@ -66,7 +70,7 @@ namespace AzureFunctions
 
                 coordinates = Regex.Replace(coordinates, @"\s+", " ");
                 coordinates = Regex.Replace(coordinates, "Koordinaten: ", "");
-                hut.Coordinates = coordinates;
+                //hut.Coordinates = coordinates;
 
                 var logoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "logo").FirstOrDefault();
                 var hutWebsiteUrl = logoDiv?.Descendants("a").Where(d => d.Attributes.Contains("href")).Select(a => a.Attributes["href"].Value).FirstOrDefault();
@@ -108,7 +112,7 @@ namespace AzureFunctions
                 hut.Region = region;
                 hut.LastUpdated = DateTime.UtcNow;
 
-                log.LogInformation($"Hut info parsed: id={hutId} name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude} coordinates={hut.Coordinates}");
+                log.LogInformation($"Hut info parsed: id={hutId} name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude}");
                 return hut;
             }
 

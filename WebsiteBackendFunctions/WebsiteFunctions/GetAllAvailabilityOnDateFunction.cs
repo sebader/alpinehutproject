@@ -45,6 +45,7 @@ namespace WebsiteBackendFunctions
                     HutEnabled = (bool)hut.Enabled,
                     HutName = hut.Name,
                     HutWebsite = hut.HutWebsite,
+                    FreeBeds = hutAvailabilities?.Sum(a => a.FreeRoom),
                     LastUpdated = hutAvailabilities?.FirstOrDefault()?.LastUpdated,
                     Latitude = hut.Latitude,
                     Longitude = hut.Longitude,

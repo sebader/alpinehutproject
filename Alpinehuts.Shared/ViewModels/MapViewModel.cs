@@ -12,6 +12,7 @@ namespace Alpinehuts.Shared.ViewModels
         public string HutName { get; set; }
         public bool HutEnabled { get; set; }
         public string HutWebsite { get; set; }
+        public int? FreeBeds { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public DateTime Date { get; set; }

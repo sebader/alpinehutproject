@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alpinehuts.Shared", "Alpine
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureFunctions", "AzureFunctions\AzureFunctions.csproj", "{5F30F45C-C421-4D40-8ACD-01542A9D2B68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebsiteBackendFunctions", "WebsiteBackendFunctions\WebsiteBackendFunctions.csproj", "{4D237EF0-2A1C-42C5-A186-CB6130051512}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5F30F45C-C421-4D40-8ACD-01542A9D2B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F30F45C-C421-4D40-8ACD-01542A9D2B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F30F45C-C421-4D40-8ACD-01542A9D2B68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D237EF0-2A1C-42C5-A186-CB6130051512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D237EF0-2A1C-42C5-A186-CB6130051512}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D237EF0-2A1C-42C5-A186-CB6130051512}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D237EF0-2A1C-42C5-A186-CB6130051512}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

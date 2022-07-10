@@ -10,8 +10,9 @@ using Newtonsoft.Json;
 using Shared.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data;
 
-namespace AzureFunctions.WebsiteFunctions
+namespace WebsiteBackendFunctions
 {
     public static class GetHutByIdFunction
     {
@@ -19,19 +20,21 @@ namespace AzureFunctions.WebsiteFunctions
         public static IActionResult GetHut(
             [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req,
             [Sql("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
-            CommandType = System.Data.CommandType.Text,
+            CommandType = CommandType.Text,
             Parameters = "@Id={Query.id}",
             ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<Hut> result,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger with SQL Input Binding function processed a request.");
 
-            if(result?.Count() == 0)
+            if (result == null || result.Count() == 0)
             {
+                log.LogInformation("Not hut found for id {hutid}", req.Query["id"]);
                 return new NotFoundResult();
             }
 
-            return new OkObjectResult(result.FirstOrDefault());
+            var hut = result.FirstOrDefault();
+            log.LogInformation("Retrieved hut {hutName} for id {hutid}", hut?.Name, req.Query["id"]);
+            return new OkObjectResult(hut);
         }
-}
+    }
 }

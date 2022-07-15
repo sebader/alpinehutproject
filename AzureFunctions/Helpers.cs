@@ -13,6 +13,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.Options;
 
 namespace AzureFunctions
 {
@@ -20,6 +23,17 @@ namespace AzureFunctions
     {
         public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
+
+        public static string[] ExcludedHutNames = new[]
+        {
+            "testhuette_elca",
+            "ZZZ TEST Monbijouhütte",
+            "TEST123",
+            "ZZZ TEST",
+            "AV Testhütte",
+            "Test",
+            "Domžalski dom Test"
+        };
 
         //private static HttpClient _httpClient = new HttpClient();
 
@@ -29,14 +43,17 @@ namespace AzureFunctions
 
             var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString");
 
-            var dbConnection = new SqlConnection();
+            var dbConnection = new SqlConnection(connectionString);
 
+       /*     
             if (!connectionString.Contains("Password="))
             {
                 // Using managed AAD identity to connect to the database
-                dbConnection.AccessToken = await new AzureServiceTokenProvider().GetAccessTokenAsync("https://database.windows.net/");
+                var accessToken = await new DefaultAzureCredential().GetTokenAsync(new TokenRequestContext(new string[] { "https://database.windows.net//.default" }));
+                dbConnection.AccessToken = accessToken.Token;
             }
-                optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
+            */
+            optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
         }

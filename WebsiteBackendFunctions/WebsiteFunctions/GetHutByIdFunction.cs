@@ -18,22 +18,23 @@ namespace WebsiteBackendFunctions
     {
         [FunctionName(nameof(GetHut))]
         public static IActionResult GetHut(
-            [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "hut/{hutid:int}")] HttpRequest req,
             [Sql("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
             CommandType = CommandType.Text,
-            Parameters = "@Id={Query.id}",
+            Parameters = "@Id={hutid}",
             ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<Hut> result,
+            int hutId,
             ILogger log)
         {
 
             if (result == null || result.Count() == 0)
             {
-                log.LogInformation("Not hut found for id {hutid}", req.Query["id"]);
+                log.LogInformation("Not hut found for id {hutid}", hutId);
                 return new NotFoundResult();
             }
 
             var hut = result.FirstOrDefault();
-            log.LogInformation("Retrieved hut {hutName} for id {hutid}", hut?.Name, req.Query["id"]);
+            log.LogInformation("Retrieved hut {hutName} for id {hutid}", hut?.Name, hutId);
             return new OkObjectResult(hut);
         }
     }

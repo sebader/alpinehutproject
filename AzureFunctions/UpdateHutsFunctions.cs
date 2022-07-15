@@ -152,6 +152,13 @@ namespace AzureFunctions
                     }
                     var httpClient = _clientFactory.CreateClient("HttpClient");
                     var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), httpClient, log);
+
+                    if (Helpers.ExcludedHutNames.Contains(parsedHut.Name))
+                    {
+                        log.LogInformation("Skipping excluded hut {hutName}", parsedHut.Name);
+                        return null;
+                    }
+
                     if (parsedHut != null)
                     {
                         parsedHut.Link = url;

@@ -15,7 +15,7 @@ namespace WebsiteBackendFunctions
 
         [FunctionName(nameof(GetAllHuts))]
         public static IActionResult GetAllHuts(
-                [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req,
+                [HttpTrigger(AuthorizationLevel.Function, "get", Route = "hut")] HttpRequest req,
                 [Sql("SELECT * FROM [dbo].[Huts]",
             CommandType = System.Data.CommandType.Text,
             ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<Hut> result,

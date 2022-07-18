@@ -4,22 +4,34 @@
 
       <p v-show="loading">Loading...</p>
 
-      <div v-show="huts.length > 0">
-
-         <div class="grid-container">
-            <div v-for="hut in huts" v-bind:key="hut.id" v-on:click="gotoDetail(hut.id)" class="hut-item">
-                  <strong>{{ hut.name }}</strong> <br />
-                  {{ hut.country }} - {{ hut.region }}
-            </div>
-         </div>
-
-         <p>Showing {{huts.length}} hut{{ (huts.length > 1) ? "s" : "" }}.</p>
+      <div v-show="huts.length > 0" class="grid-container">
+         <table>
+            <thead>
+               <tr>
+                  <th>ID</th>
+                  <th>Hut</th>
+                  <th>Country / Region</th>
+                  <th>Coordinates</th>
+                  <th>Link</th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr v-for="(hut, iHut) in huts" :key="hut.id">
+                  <td>{{ hut.id }}</td>
+                  <td><router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" >{{ hut.name }}</router-link></td>
+                  <td>{{ hut.country }} - {{ hut.region }}</td>
+                  <td><router-link :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
+                  <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
+               </tr>
+            </tbody>
+         </table>
       </div>
 
-      <div v-show="!loading && huts.length <= 0">
-         <p>Nothing to show.</p>
+      <div>
+         <p v-show="!loading && huts.length > 0">Showing {{ huts.length }} hut{{ (huts.length > 1) ? "s" : "" }}.</p>
+         <p v-show="!loading && huts.length <= 0">Nothing to show.</p>
       </div>
-  </section>
+   </section>
 </template>
 
 <style scoped>
@@ -29,7 +41,8 @@
    gap: 10px;
    grid-auto-rows: minmax(100px, auto);
 }
-.grid-container > div {
+
+.grid-container>div {
    cursor: pointer;
 }
 </style>
@@ -39,10 +52,16 @@ import { Constants } from "../utils"
 import { EventBus } from "../main"
 
 export default {
-   data: function() {
+   data: function () {
       return {
          huts: [],
-         loading: false
+         loading: false,
+         headers: [
+            { text: "ID", value: "id" },
+            { text: "Hut", value: "name", sortable: true },
+            { text: "Country / Region", value: "country", sortable: true },
+            { text: "Link", value: "link", sortable: false }
+         ]
       }
    },
    async created() {
@@ -58,7 +77,7 @@ export default {
    },
    methods: {
       gotoDetail(hutId) {
-         this.$router.push({ name: 'hutById', params: { hutId: hutId }});
+         this.$router.push({ name: 'hutById', params: { hutId: hutId } });
       },
    }
 }

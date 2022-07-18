@@ -1,7 +1,5 @@
 import { createApp } from 'vue'
-import Vue from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { BootstrapVue } from 'bootstrap-vue'
 import { ApplicationInsights } from '@microsoft/applicationinsights-web'
 import emitter from 'tiny-emitter/instance'
 
@@ -10,7 +8,9 @@ import components from "@/components"
 
 // Import Bootstrap and BootstrapVue CSS files (order is important)
 import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+
+import SimpleTypeahead from 'vue3-simple-typeahead';
+import 'vue3-simple-typeahead/dist/vue3-simple-typeahead.css'; //Optional default CSS
 
 import HutService from './services/hut-service'
 import MapviewService from './services/mapview-service'
@@ -32,10 +32,9 @@ const appInsights = new ApplicationInsights(
 appInsights.loadAppInsights();
 appInsights.trackPageView();
 
-// Make BootstrapVue available throughout your project
-//Vue.use(BootstrapVue)
-
 const app = createApp(App);
+
+app.use(SimpleTypeahead);
 
 app.config.globalProperties.$HutService = new HutService();
 app.config.globalProperties.$AvailabilityService = new AvailabilityService();
@@ -66,7 +65,7 @@ const router = createRouter({
    },
    {
       path: "/hut/:hutId",
-      name: "hutById",
+      name: "hutDetailsPage",
       component: components.HutDetailPage
    }
   ]

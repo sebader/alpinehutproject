@@ -15,7 +15,8 @@
     "bootstrap-vue": "^2.22.0",
     "tiny-emitter": "^2.1.0",
     "vue": "^3.2.37",
-    "vue-router": "^4.0.16"
+    "vue-router": "^4.0.16",
+    "vue3-simple-typeahead": "^1.0.7"
   },
   "devDependencies": {
     "@vue-leaflet/vue-leaflet": "^0.6.1",

@@ -30,7 +30,7 @@
                   </tr>
                   <tr>
                      <td>Coordinates</td>
-                     <td>{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</td>
+                     <td><router-link :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
                   </tr>
                </table>
             </div>
@@ -92,7 +92,7 @@ export default {
       }
    },
    computed: {
-      shortWebsiteUrl () {
+      shortWebsiteUrl() {
          const regex = new RegExp("^http[s]{0,1}://(www\.){0,1}(.*?)(/.*){0,1}$");
          const matches = regex.exec(this.hut.hutWebsite);
          return matches && matches[2];

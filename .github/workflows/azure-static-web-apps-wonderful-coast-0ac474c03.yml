@@ -33,7 +33,7 @@ jobs:
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/website" # App source code path
           api_location: "/website/api" # Api source code path - optional
-          output_location: "/website/dist" # Built app content directory - optional
+          output_location: "" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
         env:
           NODE_VERSION: 17.6.0

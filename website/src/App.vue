@@ -1,7 +1,7 @@
 <template>
   <div>
     <router-link :to="{ path: '/' }">Map</router-link> |
-    <router-link :to="{ name: 'hutsPage' }">Hut list</router-link>
+    <router-link :to="{ name: 'hutsPage' }">List</router-link>
 
     <hr />
 

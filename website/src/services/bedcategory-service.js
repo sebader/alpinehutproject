@@ -4,18 +4,23 @@ const API_ENDPOINT = window.API_URL;
 
 export default class BedCategoryService {
 
-   async getAllBedCategories() {
-      var res = await fetch(`${API_ENDPOINT}/bedcategory`);
+   bedCategories = null;
 
-      if (res.ok) {
-         return await res.json();
+   async getAllBedCategories() {
+      if (this.bedCategories == null) {
+         var res = await fetch(`${API_ENDPOINT}/bedcategory`);
+
+         if (res.ok) {
+            this.bedCategories = await res.json();
+         }
+         else if (res.status === 404) {
+            return 0;
+         }
+         else {
+            throw new Error(await processErrorResponseAsync(res));
+         }
       }
-      else if (res.status === 404) {
-         return 0;
-      }
-      else {
-         throw new Error(await processErrorResponseAsync(res));
-      }
+      return this.bedCategories;
    }
 
 }

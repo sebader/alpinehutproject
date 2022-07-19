@@ -4,7 +4,7 @@
 
       <p v-show="loading">Loading...</p>
 
-      <div v-show="huts.length > 0" class="grid-container">
+      <div v-show="huts.length > 0">
          <table>
             <thead>
                <tr>
@@ -16,11 +16,11 @@
                </tr>
             </thead>
             <tbody>
-               <tr v-for="(hut, iHut) in huts" :key="hut.id">
+               <tr v-for="hut in huts" :key="hut.id">
                   <td>{{ hut.id }}</td>
                   <td><router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" >{{ hut.name }}</router-link></td>
                   <td>{{ hut.country }} - {{ hut.region }}</td>
-                  <td><router-link :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
+                  <td><router-link v-if="hut.latitude != null && hut.longitude != null" :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
                   <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
                </tr>
             </tbody>
@@ -35,16 +35,7 @@
 </template>
 
 <style scoped>
-.grid-container {
-   display: grid;
-   grid-template-columns: repeat(3, 1fr);
-   gap: 10px;
-   grid-auto-rows: minmax(100px, auto);
-}
 
-.grid-container>div {
-   cursor: pointer;
-}
 </style>
 
 <script>
@@ -64,7 +55,7 @@ export default {
          ]
       }
    },
-   async created() {
+   async mounted() {
       this.loading = true;
 
       try {
@@ -76,9 +67,6 @@ export default {
       this.loading = false;
    },
    methods: {
-      gotoDetail(hutId) {
-         this.$router.push({ name: 'hutById', params: { hutId: hutId } });
-      },
    }
 }
 </script>

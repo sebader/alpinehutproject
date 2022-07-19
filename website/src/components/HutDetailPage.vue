@@ -4,7 +4,7 @@
       <p v-show="loading">Loading...</p>
 
       <div v-if="!loading && hut != null">
-         <div class="grid-container">
+         <div>
             <div>
                <h1>{{ hut.name }}</h1>
                <table>
@@ -30,13 +30,13 @@
                   </tr>
                   <tr>
                      <td>Coordinates</td>
-                     <td><router-link :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
+                     <td><router-link v-if="hut.latitude != null && hut.longitude != null" :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
                   </tr>
                </table>
             </div>
          </div>
          <br />
-         <div class="grid-container">
+         <div>
             <table>
                <thead>
                   <tr>
@@ -63,13 +63,6 @@
 </template>
 
 <style scoped>
-.grid-container {
-   display: grid;
-   grid-template-columns: 1fr 1fr;
-   gap: 10px;
-   grid-auto-rows: minmax(100px, auto);
-}
-
 .availability-box {
    border: 2px dashed rgb(233, 233, 233);
    padding: 8px;
@@ -87,7 +80,6 @@ import { EventBus } from "../main"
 export default {
    data: function () {
       return {
-
          loading: false
       }
    },

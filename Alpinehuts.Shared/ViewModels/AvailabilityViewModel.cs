@@ -7,6 +7,8 @@ namespace Alpinehuts.Shared.ViewModels
     {
         public int? HutId { get; set; }
         public DateTime Date { get; set; }
+        public DateTime? LastUpdated { get; set; }
+        public int? TotalFreeBeds { get; set; }
         public List<RoomAvailabilityViewModel> RoomAvailabilities { get; set; }
     }
 

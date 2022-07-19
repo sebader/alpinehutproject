@@ -1,34 +1,26 @@
 <template>
-  <div class="row justify-content-between">
-    <div class="col-md-3">
-      <div class="form-group">
-        <form id="dateForm" class="form-inline">
-          <div class="form-group">
-            <div class="col-sm-4">
-              <label style="width:200px">Availability at date</label>
-              <input v-model="dateFilter" type="date" min="2022-07-11" style="width:200px" />
-            </div>
-            <div class="col-sm-2">
-              <label style="width:100px">Number of beds</label>
-              <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" style="width:100px" />
-            </div>
-            <div class="col-sm-3">
-              <label style="width:100px">Bed category</label>
-              <select v-model="selectedBedCategory">
-                <option value="">-any-</option>
-                <option v-for="option in this.bedCategories" :value="option.name">
-                  {{ option.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </form>
-      </div>
+  <div class="row">
+    <div class="col-sm-3">
+      <label>Availability at date</label>
+      <input v-model="dateFilter" type="date" min="2022-07-11" style="width:200px" />
     </div>
-    <div class="col-md-3">
+    <div class="col-sm-3">
+      <label>Number of beds</label>
+      <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" style="width:100px" />
+    </div>
+    <div class="col-sm-3">
+      <label>Bed category</label>
+      <select v-model="selectedBedCategory">
+        <option value="">-any-</option>
+        <option v-for="option in this.bedCategories" :value="option.name">
+          {{ option.name }}
+        </option>
+      </select>
+    </div>
+    <div class="col-sm-3">
       <label>Search</label>
-      <vue3-simple-typeahead id="typeahead_id" placeholder="Start writing..." :items="huts"
-        :minInputLength="1" :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
+      <vue3-simple-typeahead style="z-index:10000;" placeholder="Start writing..." :items="huts" :minInputLength="1"
+        :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
       </vue3-simple-typeahead>
     </div>
   </div>
@@ -57,7 +49,7 @@
                 Free beds: {{ hut.availability.totalFreeBeds }}</span>
               <br />
               <a v-if="hut.availability != null" :href="`${hut.link}`" target="_blank">Online booking</a>
-              <span v-if="hut.availability == null">Online booking inactive</span>
+              <span v-else>Online booking inactive</span>
               <br />
               <a :href="`${hut.website}`" target="_blank">Hut Website</a>
               <br />
@@ -67,10 +59,9 @@
                 <br />
               </template>
               <br />
-              <span v-if="hut.availability != null">Last updated: {{ new
-                  Date(hut.availability.lastUpdated).toLocaleString()
-              }}</span>
-              <span v-else>Last updated: {{ new Date(hut.lastUpdated).toLocaleString() }}</span>
+              <span>Last updated: {{ new
+                  Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
+              }} (<a href="#" @click="hutSelected(hut)">Zoom in</a>)</span>
             </div>
           </l-popup>
         </l-marker>

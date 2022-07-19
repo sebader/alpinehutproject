@@ -16,11 +16,10 @@ namespace WebsiteBackendFunctions
         [FunctionName(nameof(GetHutAvailability))]
         public static IActionResult GetHutAvailability(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "hut/{hutid:int}/availability")] HttpRequest req,
-            [Sql("SELECT h.id as HutId, a.AvailabilityId as AvailabilityId, " +
+            [Sql("SELECT a.hutId as HutId, a.AvailabilityId as AvailabilityId, " +
             "CASE WHEN bc.name IS NOT NULL THEN bc.name ELSE b.name END as BedCategory, " +
             "a.Date as Date, a.FreeRoom as FreeRoom, a.TotalRoom as TotalRoom, a.LastUpdated as LastUpdated " +
             "FROM dbo.Availability a " +
-            "JOIN dbo.Huts h on a.hutid = h.id " +
             "JOIN dbo.BedCategories b on a.BedCategoryId = b.id " +
             "LEFT OUTER JOIN dbo.BedCategories bc on b.SharesNameWithBedCateogryId = bc.id " +
             "WHERE a.hutid = @HutId AND a.Date >= CURRENT_TIMESTAMP " +
@@ -44,6 +43,8 @@ namespace WebsiteBackendFunctions
                 {
                     HutId = a.FirstOrDefault()?.HutId,
                     Date = (DateTime)a.Key,
+                    LastUpdated = a.FirstOrDefault()?.LastUpdated,
+                    TotalFreeBeds = a.Sum(r => r.FreeRoom),
                     RoomAvailabilities = a.Select(a => new RoomAvailabilityViewModel()
                     {
                         BedCategory = a.BedCategory,

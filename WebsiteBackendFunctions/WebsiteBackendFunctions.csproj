@@ -8,10 +8,6 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Sql" Version="0.1.346-preview" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Alpinehuts.Shared\Alpinehuts.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

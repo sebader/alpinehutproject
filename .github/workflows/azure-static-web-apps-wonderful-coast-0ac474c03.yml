@@ -36,7 +36,7 @@ jobs:
           output_location: "/website/dist" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
         env:
-          NODE_VERSION: 18.5.0
+          NODE_VERSION: 17.6.0
 
   # close_pull_request_job:
   #   if: github.event_name == 'pull_request' && github.event.action == 'closed'

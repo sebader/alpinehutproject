@@ -27,8 +27,8 @@
     </div>
     <div class="col-md-3">
       <label>Search</label>
-      <vue3-simple-typeahead id="typeahead_id" placeholder="Start writing..." :items="availabilityData"
-        :minInputLength="1" :itemProjection="(item) => { return item.hutName; }" @selectItem="hutSelected">
+      <vue3-simple-typeahead id="typeahead_id" placeholder="Start writing..." :items="huts"
+        :minInputLength="1" :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
       </vue3-simple-typeahead>
     </div>
   </div>

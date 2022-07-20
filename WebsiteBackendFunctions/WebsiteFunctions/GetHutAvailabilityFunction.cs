@@ -22,7 +22,7 @@ namespace WebsiteBackendFunctions
             "FROM dbo.Availability a " +
             "JOIN dbo.BedCategories b on a.BedCategoryId = b.id " +
             "LEFT OUTER JOIN dbo.BedCategories bc on b.SharesNameWithBedCateogryId = bc.id " +
-            "WHERE a.hutid = @HutId AND a.Date >= CURRENT_TIMESTAMP " +
+            "WHERE a.hutid = @HutId AND a.Date >= CONVERT (date, GETDATE()) " +
             "ORDER BY a.date ASC",
             CommandType = CommandType.Text,
             Parameters = "@HutId={hutid}",

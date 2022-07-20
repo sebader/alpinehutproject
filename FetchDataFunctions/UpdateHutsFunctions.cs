@@ -224,12 +224,13 @@ namespace AzureFunctions
         private async Task<HtmlDocument> LoadWebsite(string url, ILogger log)
         {
             log.LogDebug("Executing http GET against {url}", url);
-            // Load the hut web page for parsing using HtmlAgilityPack
-            var web = new HtmlWeb();
-            web.UsingCache = false;
-            web.CaptureRedirect = false;
-            var doc = await web.LoadFromWebAsync(url);
 
+            var httpClient = _clientFactory.CreateClient("HttpClient");
+            var responseStream = await httpClient.GetStreamAsync(url);
+            var doc = new HtmlDocument();
+            doc.Load(responseStream);
+
+            // Load the hut web page for parsing using HtmlAgilityPack
             //log.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
             return doc;
         }

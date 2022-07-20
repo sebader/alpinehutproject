@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AzureFunctions.Models
+namespace FetchDataFunctions.Models
 {
     public class MapQuestSearchResult
     {

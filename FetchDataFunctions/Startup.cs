@@ -6,9 +6,9 @@ using Polly.Timeout;
 using System;
 using System.Net.Http;
 
-[assembly: FunctionsStartup(typeof(AzureFunctions.Startup))]
+[assembly: FunctionsStartup(typeof(FetchDataFunctions.Startup))]
 
-namespace AzureFunctions
+namespace FetchDataFunctions
 {
     public class Startup : FunctionsStartup
     {

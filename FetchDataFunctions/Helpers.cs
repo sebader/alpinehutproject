@@ -1,23 +1,18 @@
-﻿using AzureFunctions.Models;
+﻿using FetchDataFunctions.Models;
 using HtmlAgilityPack;
-using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
 using System;
 using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Azure.Core;
-using Azure.Identity;
-using Microsoft.Extensions.Options;
 
-namespace AzureFunctions
+namespace FetchDataFunctions
 {
     public static class Helpers
     {

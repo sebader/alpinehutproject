@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace AzureFunctions.Models
+namespace FetchDataFunctions.Models
 {
     public class DayAvailability
     {

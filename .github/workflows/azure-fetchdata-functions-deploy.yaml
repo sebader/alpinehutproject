@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'FetchDataFunctions/*'
 
 env:
   AZURE_FUNCTIONAPP_NAME: alpinehutsdatafetcher   # set this to your application's name

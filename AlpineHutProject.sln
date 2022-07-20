@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUI", "WebUI\WebUI.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alpinehuts.Shared", "Alpinehuts.Shared\Alpinehuts.Shared.csproj", "{BA20C361-53EC-490C-9E66-4DB4C42DDE3B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureFunctions", "AzureFunctions\AzureFunctions.csproj", "{5F30F45C-C421-4D40-8ACD-01542A9D2B68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FetchDataFunctions", "FetchDataFunctions\FetchDataFunctions.csproj", "{5F30F45C-C421-4D40-8ACD-01542A9D2B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebsiteBackendFunctions", "WebsiteBackendFunctions\WebsiteBackendFunctions.csproj", "{4D237EF0-2A1C-42C5-A186-CB6130051512}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebsiteBackendFunctions", "WebsiteBackendFunctions\WebsiteBackendFunctions.csproj", "{4D237EF0-2A1C-42C5-A186-CB6130051512}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

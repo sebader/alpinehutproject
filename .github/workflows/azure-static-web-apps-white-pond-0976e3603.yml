@@ -7,8 +7,8 @@ on:
     branches:
       - master
     paths:
-      - 'website/*'
-      - 'WebsiteBackendFunctions/*'
+      - 'website/**'
+      - 'WebsiteBackendFunctions/**'
 
 jobs:
   build_and_deploy:

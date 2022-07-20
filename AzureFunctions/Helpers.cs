@@ -1,5 +1,6 @@
 ﻿using AzureFunctions.Models;
 using HtmlAgilityPack;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Models;
@@ -12,7 +13,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Shared;
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.Options;
 
 namespace AzureFunctions
 {
@@ -21,17 +24,25 @@ namespace AzureFunctions
         public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
 
-        private static HttpClient _httpClient = new HttpClient();
+        public static string[] ExcludedHutNames = new[]
+        {
+            "testhuette_elca, ELCA",
+            "ZZZ TEST Monbijouhütte, SAC GS",
+            "TEST123, TEST",
+            "ZZZ TEST, TEST",
+            "AV Testhütte, DAV Bundesgeschäftsstelle",
+            "Test",
+            "Domžalski dom Test"
+        };
 
         public static AlpinehutsDbContext GetDbContext()
         {
-            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryMSI, new AzureIdentitySqlAuthenticationProvider());
-            SqlAuthenticationProvider.SetProvider(SqlAuthenticationMethod.ActiveDirectoryManagedIdentity, new AzureIdentitySqlAuthenticationProvider());
-
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
 
-            // Using managed AAD identity to connect to the database
-            var dbConnection = new SqlConnection(Environment.GetEnvironmentVariable("DatabaseConnectionString"));
+            var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString");
+
+            var dbConnection = new SqlConnection(connectionString);
+
             optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;
@@ -45,7 +56,7 @@ namespace AzureFunctions
         /// <param name="isNewHut"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        public static async Task<Hut> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, ILogger log)
+        public static async Task<Hut> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, HttpClient httpClient, ILogger log)
         {
             var infoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "info").FirstOrDefault();
             if (infoDiv != null)
@@ -66,7 +77,7 @@ namespace AzureFunctions
 
                 coordinates = Regex.Replace(coordinates, @"\s+", " ");
                 coordinates = Regex.Replace(coordinates, "Koordinaten: ", "");
-                hut.Coordinates = coordinates;
+                //hut.Coordinates = coordinates;
 
                 var logoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "logo").FirstOrDefault();
                 var hutWebsiteUrl = logoDiv?.Descendants("a").Where(d => d.Attributes.Contains("href")).Select(a => a.Attributes["href"].Value).FirstOrDefault();
@@ -86,14 +97,14 @@ namespace AzureFunctions
                 // Only call the external services, if the hut is a new one for us
                 if (isNewHut)
                 {
-                    var latLong = await SearchHutCoordinates(hutName, log);
+                    var latLong = await SearchHutCoordinates(hutName, httpClient, log);
 
                     if (latLong.latitude != null && latLong.longitude != null)
                     {
                         hut.Latitude = latLong.latitude;
                         hut.Longitude = latLong.longitude;
 
-                        var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                        var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, httpClient, log);
                         country = countryRegion.country ?? country;
                         region = countryRegion.region;
                     }
@@ -108,7 +119,7 @@ namespace AzureFunctions
                 hut.Region = region;
                 hut.LastUpdated = DateTime.UtcNow;
 
-                log.LogInformation($"Hut info parsed: id={hutId} name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude} coordinates={hut.Coordinates}");
+                log.LogInformation($"Hut info parsed: id={hutId} name={hut.Name} country={hut.Country} region={hut.Region} hutEnabled={hut.Enabled} lat={hut.Latitude} long={hut.Longitude}");
                 return hut;
             }
 
@@ -163,7 +174,7 @@ namespace AzureFunctions
         /// </summary>
         /// <param name="hutName"></param>
         /// <returns></returns>
-        public static async Task<(double? latitude, double? longitude)> SearchHutCoordinates(string hutName, ILogger log)
+        public static async Task<(double? latitude, double? longitude)> SearchHutCoordinates(string hutName, HttpClient httpClient, ILogger log)
         {
             const string baseSearchUrl = "https://open.mapquestapi.com/nominatim/v1/search.php?format=json&limit=5";
 
@@ -183,7 +194,7 @@ namespace AzureFunctions
                 }
 
                 string searchUrl = $"{baseSearchUrl}&key={apiKey}&q={hutName}";
-                var result = await _httpClient.GetAsync(searchUrl);
+                var result = await httpClient.GetAsync(searchUrl);
                 result.EnsureSuccessStatusCode();
 
                 var searchResults = await result.Content.ReadAsAsync<List<MapQuestSearchResult>>();
@@ -220,21 +231,21 @@ namespace AzureFunctions
                 {
                     hutName = Regex.Replace(hutName, "(?<TLA> [A-ZÖÄÜ]{2,4})", "");
                     log.LogInformation($"Attempting alternative search for {hutName} without TLA");
-                    return await SearchHutCoordinates(hutName, log);
+                    return await SearchHutCoordinates(hutName, httpClient, log);
                 }
 
                 if (hutName.Contains(" Hütte", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hutName = hutName.Replace(" hütte", "hütte", StringComparison.InvariantCultureIgnoreCase);
                     log.LogInformation($"Attempting alternative search for {hutName}");
-                    return await SearchHutCoordinates(hutName, log);
+                    return await SearchHutCoordinates(hutName, httpClient, log);
                 }
 
                 if (hutName.Contains("hütte", StringComparison.InvariantCultureIgnoreCase) && !hutName.Contains("-hütte", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hutName = hutName.Replace("hütte", "-hütte", StringComparison.InvariantCultureIgnoreCase);
                     log.LogInformation($"Attempting alternative search for {hutName}");
-                    return await SearchHutCoordinates(hutName, log);
+                    return await SearchHutCoordinates(hutName, httpClient, log);
                 }
             }
             catch (Exception e)
@@ -251,7 +262,7 @@ namespace AzureFunctions
         /// <param name="longitude"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        public static async Task<(string country, string region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
+        public static async Task<(string country, string region)> GetCountryAndRegion(double latitude, double longitude, HttpClient httpClient, ILogger log)
         {
             const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0&language=de";
 
@@ -264,7 +275,7 @@ namespace AzureFunctions
             try
             {
                 string searchUrl = $"{baseSearchUrl}&subscription-key={apiKey}&query={latitude.ToString("##.#####", CultureInfo.InvariantCulture)},{longitude.ToString("##.#####", CultureInfo.InvariantCulture)}";
-                var result = await _httpClient.GetAsync(searchUrl);
+                var result = await httpClient.GetAsync(searchUrl);
                 result.EnsureSuccessStatusCode();
 
                 var searchResult = await result.Content.ReadAsAsync<AzureMapsResult>();

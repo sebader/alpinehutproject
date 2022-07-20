@@ -46,7 +46,7 @@ namespace Shared.Models
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.Coordinates).HasMaxLength(100);
+                //entity.Property(e => e.Coordinates).HasMaxLength(100);
 
                 entity.Property(e => e.Country).HasMaxLength(100);
 

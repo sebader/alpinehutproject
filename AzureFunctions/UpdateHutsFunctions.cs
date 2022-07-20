@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
@@ -15,12 +16,28 @@ using Shared.Models;
 
 namespace AzureFunctions
 {
-    public static class UpdateHutsFunctions
+    public class UpdateHutsFunctions
     {
-        private const int MaxHutId = 450;
+        private int MaxHutId
+        {
+            get
+            {
+                if (int.TryParse(Environment.GetEnvironmentVariable("MAX_HUT_ID"), out int value))
+                {
+                    return value;
+                }
+                return 500;
+            }
+        }
+
+        private IHttpClientFactory _clientFactory;
+        public UpdateHutsFunctions(IHttpClientFactory clientFactory)
+        {
+            _clientFactory = clientFactory;
+        }
 
         [FunctionName(nameof(UpdateHutsTimerTriggered))]
-        public static async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)]TimerInfo myTimer,
+        public async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)] TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -29,7 +46,7 @@ namespace AzureFunctions
                 return;
             }
             // Start hutId should start at least with 1, not 0, thats why we add 1
-            int startHutId = (int) DateTime.UtcNow.DayOfWeek + 1;
+            int startHutId = (int)DateTime.UtcNow.DayOfWeek + 1;
             string instanceId = await starter.StartNewAsync<int>(nameof(UpdateHutsOrchestrator), null, startHutId);
             log.LogInformation($"UpdateHut orchestrator started. Instance ID={instanceId}");
         }
@@ -41,7 +58,7 @@ namespace AzureFunctions
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName(nameof(UpdateHutHttpTriggered))]
-        public static async Task<IActionResult> UpdateHutHttpTriggered(
+        public async Task<IActionResult> UpdateHutHttpTriggered(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
         {
             log.LogInformation("Update Hut HTTP trigger function received a request");
@@ -69,7 +86,7 @@ namespace AzureFunctions
         }
 
         [FunctionName(nameof(UpdateHutsOrchestrator))]
-        public static async Task UpdateHutsOrchestrator(
+        public async Task UpdateHutsOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
             log = context.CreateReplaySafeLogger(log);
@@ -93,7 +110,7 @@ namespace AzureFunctions
 
 
         [FunctionName(nameof(GetHutFromProviderActivity))]
-        public static async Task<Hut> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
+        public async Task<Hut> GetHutFromProviderActivity([ActivityTrigger] int hutId, ILogger log)
         {
             try
             {
@@ -133,8 +150,15 @@ namespace AzureFunctions
                             doc = await LoadWebsite(url, log);
                         }
                     }
+                    var httpClient = _clientFactory.CreateClient("HttpClient");
+                    var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), httpClient, log);
 
-                    var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), log);
+                    if (Helpers.ExcludedHutNames.Contains(parsedHut.Name))
+                    {
+                        log.LogInformation("Skipping excluded hut {hutName}", parsedHut.Name);
+                        return null;
+                    }
+
                     if (parsedHut != null)
                     {
                         parsedHut.Link = url;
@@ -143,19 +167,19 @@ namespace AzureFunctions
                         {
                             if (existingHut.Latitude == null || existingHut.Longitude == null || string.IsNullOrEmpty(existingHut.Country))
                             {
-                                var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, log);
+                                var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, httpClient, log);
                                 if (latLong.latitude != null && latLong.longitude != null)
                                 {
                                     parsedHut.Latitude = latLong.latitude;
                                     parsedHut.Longitude = latLong.longitude;
 
-                                    var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, log);
+                                    var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, httpClient, log);
                                     parsedHut.Country = countryRegion.country ?? parsedHut.Country;
                                     parsedHut.Region = countryRegion.region ?? parsedHut.Region;
                                 }
                             }
                             existingHut.Name = parsedHut.Name;
-                            if(existingHut.Enabled == false && parsedHut.Enabled == true)
+                            if (existingHut.Enabled == false && parsedHut.Enabled == true)
                             {
                                 existingHut.Activated = DateTime.Today;
                             }
@@ -172,8 +196,8 @@ namespace AzureFunctions
                         else
                         {
                             parsedHut.Added = DateTime.Today;
-                            if (parsedHut.Enabled == true) 
-                            { 
+                            if (parsedHut.Enabled == true)
+                            {
                                 parsedHut.Activated = DateTime.Today;
                             }
                             dbContext.Huts.Add(parsedHut);
@@ -197,7 +221,7 @@ namespace AzureFunctions
             return null;
         }
 
-        private static async Task<HtmlDocument> LoadWebsite(string url, ILogger log)
+        private async Task<HtmlDocument> LoadWebsite(string url, ILogger log)
         {
             log.LogDebug("Executing http GET against {url}", url);
             // Load the hut web page for parsing using HtmlAgilityPack

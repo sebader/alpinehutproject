@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using AzureFunctions.Models;
 using Microsoft.AspNetCore.Http;
@@ -19,10 +20,16 @@ using Shared.Models;
 
 namespace AzureFunctions
 {
-    public static class UpdateAvailabilityFunctions
+    public class UpdateAvailabilityFunctions
     {
+        private IHttpClientFactory _clientFactory;
+        public UpdateAvailabilityFunctions(IHttpClientFactory clientFactory)
+        {
+            _clientFactory = clientFactory;
+        }
+
         [FunctionName(nameof(UpdateAvailabilityTimerTriggered))]
-        public static async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")]TimerInfo myTimer,
+        public async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")]TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -48,7 +55,7 @@ namespace AzureFunctions
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName(nameof(UpdateAvailabilityHttpTriggered))]
-        public static async Task<IActionResult> UpdateAvailabilityHttpTriggered(
+        public async Task<IActionResult> UpdateAvailabilityHttpTriggered(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
         {
             log.LogInformation("Update Hut HTTP trigger function received a request");
@@ -58,6 +65,8 @@ namespace AzureFunctions
             {
                 return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");
             }
+
+            log.LogInformation("Request to update huts={hutIds}", hutIds);
 
             int numRowsWritten = 0;
 
@@ -77,7 +86,7 @@ namespace AzureFunctions
         }
 
         [FunctionName(nameof(UpdateAvailabilityOrchestrator))]
-        public static async Task UpdateAvailabilityOrchestrator(
+        public async Task UpdateAvailabilityOrchestrator(
            [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
             log = context.CreateReplaySafeLogger(log);
@@ -89,10 +98,27 @@ namespace AzureFunctions
             var tasks = new List<Task>();
 
             // Fan-out
-            for (int i = 0; i < hutIds.Count; i++)
+            foreach (var hutId in hutIds)
             {
-                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutIds[i]));
+                log.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
+                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutId));
+
+                // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
+                if(tasks.Count >= 10)
+                {
+                    log.LogInformation("Delaying next batch for 1 minute, last hutId={hutid}", hutId);
+                    await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
+
+                    log.LogInformation("Waiting for batch to finishing UpdateHutAvailability Activity Functions");
+                    // Fan-in (wait for all tasks to be completed)
+                    await Task.WhenAll(tasks);
+                    log.LogInformation("Finished batch");
+
+                    tasks.Clear();
+                }
             }
+
+            log.LogInformation("All UpdateHutAvailability Activity Functions scheduled. Waiting for finishing last batch");
 
             // Fan-in (wait for all tasks to be completed)
             await Task.WhenAll(tasks);
@@ -104,7 +130,7 @@ namespace AzureFunctions
         }
 
         [FunctionName(nameof(UpdateHutAvailability))]
-        public static async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
+        public async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
         {
             int numRowsWritten = 0;
             try
@@ -123,12 +149,12 @@ namespace AzureFunctions
                     log.LogError("Hut id={hutId} is not enabled", hutId);
                     return numRowsWritten;
                 }
-                
-                var httpClient = new HttpClient();
+
+                var httpClient = _clientFactory.CreateClient("HttpClient");
                 // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
                 var initialResponse = await httpClient.GetAsync(hut.Link, HttpCompletionOption.ResponseHeadersRead);
 
-                var cookie = initialResponse.Headers.GetValues("Set-Cookie").FirstOrDefault();
+                var cookie = initialResponse.Headers.GetValues("Set-Cookie").Where(c => c.StartsWith("JSESSIONID")).FirstOrDefault();
                 if (!string.IsNullOrEmpty(cookie))
                 {
                     httpClient.DefaultRequestHeaders.Add("Cookie", cookie);
@@ -190,21 +216,45 @@ namespace AzureFunctions
                                         dbContext.Availability.Add(newAva);
                                     }
                                 }
+                                var allBedcategories = day.Rooms.Select(r => (int) r.BedCategoryId).ToList();
+                                var oldEntries = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !allBedcategories.Contains(a.BedCategoryId)).ToListAsync();
+                                if(oldEntries.Count > 0)
+                                {
+                                    log.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.Date);
+                                    foreach(var entry in oldEntries)
+                                    {
+                                        log.LogInformation("Deleting entry with bedCategoryId={bed}", entry.BedCategoryId);
+                                        dbContext.Availability.Remove(entry);
+                                    }
+                                }
                             }
+
+                            // If the bed category changes over time, there might be obsolete entries in the database which we remove here
+                            var obsoleteExistingAva = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !day.Rooms.Select(d => d.BedCategoryId).Contains(a.BedCategoryId)).ToListAsync();
+                            foreach (var ava in obsoleteExistingAva)
+                            {
+                                log.LogInformation("Removing obsolete existing availability for hut {hutid}, on {date} with bedCategoryId {bedCategoryId}", hutId, ava.Date, ava.BedCategoryId);
+                            }
+                            dbContext.RemoveRange(obsoleteExistingAva);
+
                             numRowsWritten += await dbContext.SaveChangesAsync();
                         }
                     }
                     log.LogInformation("Finished updating availability for hutId={hutId}. Number of rows written={numberOfRowsWritten}", hut.Id, numRowsWritten);
                 }
             }
+            catch (DbUpdateException e)
+            {
+                log.LogError(default, e, "DbUpdateException in writing availability updates to database for hutid={hutId}", hutId);
+            }
             catch (Exception e)
             {
-                log.LogError(default, e, "Exception in writing availability updates to database for hutid={hutId}", hutId);
+                log.LogError(default, e, "Exception in getting availability updates from website for hutid={hutId}", hutId);
             }
             return numRowsWritten;
         }
 
-        private static List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
+        private List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
         {
             var jObject = JsonConvert.DeserializeObject<JObject>(responseBody);
 
@@ -252,7 +302,7 @@ namespace AzureFunctions
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName(nameof(UpdateAvailabilityReporting))]
-        public static async Task UpdateAvailabilityReporting([ActivityTrigger] object input, ILogger log)
+        public async Task UpdateAvailabilityReporting([ActivityTrigger] object input, ILogger log)
         {
             try
             {

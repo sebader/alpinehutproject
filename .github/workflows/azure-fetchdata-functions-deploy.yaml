@@ -1,4 +1,4 @@
-name: Deploy FetchDataFuctions to Azure
+name: Deploy FetchDataFuctions to Azure Function
 
 on:
   workflow_dispatch:

@@ -1,6 +1,8 @@
 name: SPA - Azure Static Web Apps CI/CD
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - master

@@ -2,14 +2,14 @@
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
 
-@inject IViewLocalizer Localizer
+@inject IStringLocalizer<WebUI.SharedResources> SharedLocalizer
 @model InfoModel
 @{
-    ViewData["Title"] = Localizer["title"];
+    ViewData["Title"] = SharedLocalizer["infoTitle"];
     var requestCultureFeature = HttpContext.Features.Get<IRequestCultureFeature>();
     var requestCulture = requestCultureFeature.RequestCulture;
 }
-<h1>@ViewData["Title"]</h1>
+<h1>@ViewData["infoTitle"]</h1>
 
-<p>@Localizer["Paragraph1"]</p>
-<p>@Localizer["Paragraph2"]</p>
+<p>@SharedLocalizer["infoParagraph1"]</p>
+<p>@SharedLocalizer["infoParagraph2"]</p>

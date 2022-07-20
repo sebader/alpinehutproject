@@ -36,7 +36,7 @@ namespace AzureFunctions
             _clientFactory = clientFactory;
         }
 
-        //[FunctionName(nameof(UpdateHutsTimerTriggered))]
+        [FunctionName(nameof(UpdateHutsTimerTriggered))]
         public async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)] TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)

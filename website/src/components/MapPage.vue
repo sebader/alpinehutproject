@@ -51,7 +51,7 @@
               <a v-if="hut.availability != null" :href="`${hut.link}`" target="_blank">Online booking</a>
               <span v-else>Online booking inactive</span>
               <br />
-              <a :href="`${hut.website}`" target="_blank">Hut Website</a>
+              <a :href="`${hut.hutWebsite}`" target="_blank">Hut Website</a>
               <br />
               <br />
               <template v-for="availability in hut.availability?.roomAvailabilities">

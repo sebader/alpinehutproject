@@ -36,7 +36,7 @@ namespace AzureFunctions
             _clientFactory = clientFactory;
         }
 
-        [FunctionName(nameof(UpdateHutsTimerTriggered))]
+        //[FunctionName(nameof(UpdateHutsTimerTriggered))]
         public async Task UpdateHutsTimerTriggered([TimerTrigger("0 0 2 * * *", RunOnStartup = false)] TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
@@ -115,7 +115,7 @@ namespace AzureFunctions
             try
             {
                 log.LogInformation("Executing " + nameof(GetHutFromProviderActivity) + " for hutid={hutId}", hutId);
-                var dbContext = await Helpers.GetDbContext();
+                var dbContext = Helpers.GetDbContext();
 
                 var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
                 if (existingHut == null)

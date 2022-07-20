@@ -26,18 +26,16 @@ namespace AzureFunctions
 
         public static string[] ExcludedHutNames = new[]
         {
-            "testhuette_elca",
-            "ZZZ TEST Monbijouhütte",
-            "TEST123",
-            "ZZZ TEST",
-            "AV Testhütte",
+            "testhuette_elca, ELCA",
+            "ZZZ TEST Monbijouhütte, SAC GS",
+            "TEST123, TEST",
+            "ZZZ TEST, TEST",
+            "AV Testhütte, DAV Bundesgeschäftsstelle",
             "Test",
             "Domžalski dom Test"
         };
 
-        //private static HttpClient _httpClient = new HttpClient();
-
-        public static async Task<AlpinehutsDbContext> GetDbContext()
+        public static AlpinehutsDbContext GetDbContext()
         {
             DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
 
@@ -45,14 +43,6 @@ namespace AzureFunctions
 
             var dbConnection = new SqlConnection(connectionString);
 
-       /*     
-            if (!connectionString.Contains("Password="))
-            {
-                // Using managed AAD identity to connect to the database
-                var accessToken = await new DefaultAzureCredential().GetTokenAsync(new TokenRequestContext(new string[] { "https://database.windows.net//.default" }));
-                dbConnection.AccessToken = accessToken.Token;
-            }
-            */
             optionsBuilder.UseSqlServer(dbConnection, options => options.EnableRetryOnFailure());
             var alpinehutsDbContext = new AlpinehutsDbContext(optionsBuilder.Options);
             return alpinehutsDbContext;

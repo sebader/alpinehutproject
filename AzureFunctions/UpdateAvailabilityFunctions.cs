@@ -40,7 +40,7 @@ namespace AzureFunctions
 
             log.LogInformation($"{nameof(UpdateAvailabilityTimerTriggered)} function executed at: {DateTime.Now}");
 
-            var dbContext = await Helpers.GetDbContext();
+            var dbContext = Helpers.GetDbContext();
             // Fetch all hut ids which are in Enabled state from database
             var hutIds = await dbContext.Huts.Where(h => h.Enabled == true).AsNoTracking().Select(h => h.Id).ToListAsync();
 
@@ -136,7 +136,7 @@ namespace AzureFunctions
             try
             {
                 log.LogInformation("Executing UpdateHutAvailability for hutid={hutId}", hutId);
-                var dbContext = await Helpers.GetDbContext();
+                var dbContext = Helpers.GetDbContext();
 
                 var hut = await dbContext.Huts.Include(h => h.Availability).ThenInclude(a => a.BedCategory).AsNoTracking().SingleOrDefaultAsync(h => h.Id == hutId);
                 if (hut == null)
@@ -307,7 +307,7 @@ namespace AzureFunctions
             try
             {
                 log.LogInformation("Executing stored procedure to update availability reporting");
-                var dbContext = await Helpers.GetDbContext();
+                var dbContext = Helpers.GetDbContext();
                 var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync("dbo.UpdateAvailabilityReporting");
                 log.LogInformation("Inserted {rowsAffected} new rows into reporting table", rowsAffected);
             }

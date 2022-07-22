@@ -18,8 +18,7 @@
       </select>
     </div>
     <div class="col-sm-3">
-      <label>Search</label>
-      <vue3-simple-typeahead style="z-index:10000;" placeholder="Start writing..." :items="huts" :minInputLength="1"
+      <vue3-simple-typeahead style="z-index:10000;" placeholder="Search..." :items="huts" :minInputLength="1"
         :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
       </vue3-simple-typeahead>
     </div>

@@ -53,10 +53,14 @@
               <a :href="`${hut.hutWebsite}`" target="_blank">Hut Website</a>
               <br />
               <br />
-              <template v-for="availability in hut.availability?.roomAvailabilities">
-                <span>{{ availability.bedCategory }}: {{ availability.freeBeds }} / {{ availability.totalBeds }}</span>
-                <br />
-              </template>
+              <table v-if="hut.availability != null">
+                <template v-for="availability in hut.availability?.roomAvailabilities">
+                  <tr>
+                    <td>{{ availability.bedCategory }}</td>
+                    <td>{{ availability.freeBeds }} / {{ availability.totalBeds }}</td>
+                  </tr>
+                </template>
+              </table>
               <br />
               <span>Last updated: {{ new
                   Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
@@ -97,7 +101,7 @@ export default {
       dateFilter: new Date().toISOString().split('T')[0],
       selectedBedCategory: "",
       desiredNumberOfBeds: 1,
-      mapCenter: [46.90, 11.33], // initial map center
+      mapCenter: [48.00, 11.33], // initial map center
       zoom: 7,  // initial zoom level
       tileProviders: [
         {

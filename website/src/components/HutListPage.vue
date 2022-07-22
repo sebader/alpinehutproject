@@ -4,38 +4,33 @@
 
       <p v-show="loading">Loading...</p>
 
-      <div v-show="huts.length > 0">
-         <table>
-            <thead>
-               <tr>
-                  <th>ID</th>
-                  <th>Hut</th>
-                  <th>Country / Region</th>
-                  <th>Coordinates</th>
-                  <th>Link</th>
-               </tr>
-            </thead>
-            <tbody>
-               <tr v-for="hut in huts" :key="hut.id">
-                  <td>{{ hut.id }}</td>
-                  <td><router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details" >{{ hut.name }}</router-link></td>
-                  <td><span>{{ hut.country }}</span><span v-if="hut.region != null"> - {{ hut.region }}</span></td>
-                  <td><router-link v-if="hut.latitude != null && hut.longitude != null" :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
-                  <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
-               </tr>
-            </tbody>
-         </table>
-      </div>
-
-      <div>
-         <p v-show="!loading && huts.length > 0">Showing {{ huts.length }} hut{{ (huts.length > 1) ? "s" : "" }}.</p>
-         <p v-show="!loading && huts.length <= 0">Nothing to show.</p>
+      <div v-show="!loading">
+         <label>Search</label>
+         <input type="text" v-model="searchValue">
+         <EasyDataTable :headers="tableHeaders" :items="huts" alternating :rows-per-page="rowsPerPage"
+             :search-value="searchValue">
+            <template #item-name="hut">
+               <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details">
+                  {{ hut.name }}</router-link>
+            </template>
+            <template #item-country="hut">
+               <span>{{ hut.country }}</span><span v-if="hut.region != null"> - {{ hut.region }}</span>
+            </template>
+            <template #item-latitude="hut">
+               <router-link v-if="hut.latitude != null && hut.longitude != null"
+                  :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{
+                        hut.latitude?.toLocaleString()
+                  }}/{{ hut.longitude?.toLocaleString() }}</router-link>
+            </template>
+            <template #item-link="hut">
+               <a :href="`${hut.link}`" target="_blank">Online booking</a>
+            </template>
+         </EasyDataTable>
       </div>
    </section>
 </template>
 
 <style scoped>
-
 </style>
 
 <script>
@@ -46,13 +41,16 @@ export default {
    data: function () {
       return {
          huts: [],
+         rowsPerPage: 1000,
          loading: false,
-         headers: [
-            { text: "ID", value: "id" },
+         tableHeaders: [
+            { text: "ID", value: "id", sortable: true },
             { text: "Hut", value: "name", sortable: true },
             { text: "Country / Region", value: "country", sortable: true },
+            { text: "Coordinates", value: "latitude", sortable: false },
             { text: "Link", value: "link", sortable: false }
-         ]
+         ],
+         searchValue: ""
       }
    },
    async mounted() {
@@ -67,6 +65,9 @@ export default {
       this.loading = false;
    },
    methods: {
+      hutSelected(selectedHut) {
+         this.$router.push({ name: 'hutDetailsPage', params: { hutId: selectedHut.id } });
+      }
    }
 }
 </script>

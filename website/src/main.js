@@ -60,8 +60,8 @@ const router = createRouter({
    },
    {
       path: "/hut",
-      name: "hutsPage",
-      component: components.HutsPage
+      name: "hutListPage",
+      component: components.HutListPage
    },
    {
       path: "/hut/:hutId",

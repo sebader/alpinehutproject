@@ -17,8 +17,8 @@
         </option>
       </select>
     </div>
-    <div class="col-sm-3">
-      <vue3-simple-typeahead style="z-index:10000;" placeholder="Search..." :items="huts" :minInputLength="1"
+    <div class="col-sm-3" style="z-index:9999;">
+      <vue3-simple-typeahead placeholder="Search..." :items="huts" :minInputLength="1"
         :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
       </vue3-simple-typeahead>
     </div>
@@ -38,7 +38,7 @@
           </l-tooltip>
           <l-popup :options='{ "closeButton": false }'>
             <h6>
-              <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }">{{
+              <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details">{{
                   hut.name
               }}</router-link>
             </h6>
@@ -50,7 +50,7 @@
               <a v-if="hut.availability != null" :href="`${hut.link}`" target="_blank">Online booking</a>
               <span v-else>Online booking inactive</span>
               <br />
-              <a :href="`${hut.hutWebsite}`" target="_blank">Hut Website</a>
+              <a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a>
               <br />
               <br />
               <table v-if="hut.availability != null">
@@ -74,6 +74,8 @@
 </template>
 
 <script>
+import { shortWebsiteUrl } from "../utils"
+
 import L from 'leaflet';
 import {
   LMap,
@@ -98,6 +100,7 @@ export default {
   },
   data() {
     return {
+      loading: true,
       dateFilter: new Date().toISOString().split('T')[0],
       selectedBedCategory: "",
       desiredNumberOfBeds: 1,
@@ -130,6 +133,9 @@ export default {
   computed: {
   },
   methods: {
+    shortWebsiteUrl(url) {
+      return shortWebsiteUrl(url);
+    },
     async updateAvailabilityData() {
       try {
         this.availabilityData = await this.$MapviewService.getAllAvailabilityOnDate(this.dateFilter);
@@ -226,6 +232,8 @@ export default {
         await this.hutSelected(hut);
       }
     }
+
+    this.loading = false;
   }
 };
 </script>

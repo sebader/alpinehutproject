@@ -34,3 +34,9 @@ export async function processErrorResponseAsync(httpResponse) {
    // Final "catch all" other cases.
    return `${await httpResponse.text()} (HTTP: ${httpResponse.status})`;
 }
+
+export function shortWebsiteUrl(url) {
+   const regex = new RegExp("^http[s]{0,1}://(www\.){0,1}(.*?)$");
+   const matches = regex.exec(url);
+   return matches && matches[2];
+}

@@ -18,9 +18,9 @@
             <tbody>
                <tr v-for="hut in huts" :key="hut.id">
                   <td>{{ hut.id }}</td>
-                  <td><router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" >{{ hut.name }}</router-link></td>
-                  <td>{{ hut.country }} - {{ hut.region }}</td>
-                  <td><router-link v-if="hut.latitude != null && hut.longitude != null" :to="{ name: 'mapPage', query: { hutId: hut.id } }" >{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
+                  <td><router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details" >{{ hut.name }}</router-link></td>
+                  <td><span>{{ hut.country }}</span><span v-if="hut.region != null"> - {{ hut.region }}</span></td>
+                  <td><router-link v-if="hut.latitude != null && hut.longitude != null" :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</router-link></td>
                   <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
                </tr>
             </tbody>

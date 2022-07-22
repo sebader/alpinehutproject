@@ -22,7 +22,7 @@
                   </tr>
                   <tr>
                      <td>Website</td>
-                     <td><a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl }}</a></td>
+                     <td><a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a></td>
                   </tr>
                   <tr v-if="hut.enabled">
                      <td></td>
@@ -96,6 +96,7 @@
 </style>
 
 <script>
+import { shortWebsiteUrl } from "../utils"
 import { Constants } from '../utils';
 import { EventBus } from "../main"
 
@@ -152,14 +153,10 @@ export default {
          })
       }
    },
-   computed: {
-      shortWebsiteUrl() {
-         const regex = new RegExp("^http[s]{0,1}://(www\.){0,1}(.*?)(/.*){0,1}$");
-         const matches = regex.exec(this.hut.hutWebsite);
-         return matches && matches[2];
-      }
-   },
    methods: {
+      shortWebsiteUrl(url) {
+         return shortWebsiteUrl(url);
+      },
    },
    async created() {
       this.loading = true;

@@ -1,7 +1,7 @@
 import MapPage from "./MapPage.vue"
-import HutsPage from "./HutsPage.vue"
+import HutListPage from "./HutListPage.vue"
 import HutDetailPage from "./HutDetailPage.vue"
 
 export default {
-   MapPage, HutsPage, HutDetailPage
+   MapPage, HutListPage, HutDetailPage
 }

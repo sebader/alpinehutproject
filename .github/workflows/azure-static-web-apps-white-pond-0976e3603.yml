@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-      - master
+      - main
     paths:
       - 'website/**'
       - 'WebsiteBackendFunctions/**'
@@ -30,6 +30,7 @@ jobs:
           app_location: "/website" # App source code path
           api_location: "/WebsiteBackendFunctions" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
+          production_branch: "main"
           ###### End of Repository/Build Configurations ######
         env:
           NODE_VERSION: 17.6.0

@@ -21,16 +21,16 @@ import AvailabilityService from './services/availability-service'
 import BedCategoryService from './services/bedcategory-service'
 
 const appInsights = new ApplicationInsights(
-{
-   config: {
-      connectionString: window.APPLICATIONINSIGHTS_CONNECTION_STRING,
-      enableCorsCorrelation: true,
-      enableRequestHeaderTracking: true,
-      enableResponseHeaderTracking: true,
-      disableFetchTracking: false,
-      enableAutoRouteTracking: true
-   }
-});
+   {
+      config: {
+         connectionString: window.APPLICATIONINSIGHTS_CONNECTION_STRING,
+         enableCorsCorrelation: true,
+         enableRequestHeaderTracking: true,
+         enableResponseHeaderTracking: true,
+         disableFetchTracking: false,
+         enableAutoRouteTracking: true
+      }
+   });
 
 appInsights.loadAppInsights();
 appInsights.trackPageView();
@@ -58,22 +58,26 @@ export const EventBus = {
 const router = createRouter({
    history: createWebHashHistory(),
    routes: [
-   {
-      path: "/",
-      name: "mapPage",
-      component: components.MapPage
-   },
-   {
-      path: "/hut",
-      name: "hutListPage",
-      component: components.HutListPage
-   },
-   {
-      path: "/hut/:hutId",
-      name: "hutDetailsPage",
-      component: components.HutDetailPage
-   }
-  ]
+      {
+         path: '/',
+         redirect: '/map'
+      },
+      {
+         path: "/map",
+         name: "mapPage",
+         component: components.MapPage
+      },
+      {
+         path: "/hut",
+         name: "hutListPage",
+         component: components.HutListPage
+      },
+      {
+         path: "/hut/:hutId",
+         name: "hutDetailsPage",
+         component: components.HutDetailPage
+      }
+   ]
 });
 
 app.use(router).mount("#app");

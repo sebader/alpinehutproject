@@ -1,6 +1,6 @@
 <template>
    <section>
-      <h1>Huts</h1>
+      <h1>All Huts</h1>
 
       <p v-show="loading">Loading...</p>
 
@@ -23,7 +23,8 @@
                   }}/{{ hut.longitude?.toLocaleString() }}</router-link>
             </template>
             <template #item-link="hut">
-               <a :href="`${hut.link}`" target="_blank">Online booking</a>
+               <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">Online booking</a>
+               <span v-else>Online booking inactive</span>
             </template>
          </EasyDataTable>
       </div>

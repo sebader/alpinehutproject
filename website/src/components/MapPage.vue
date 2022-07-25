@@ -24,6 +24,7 @@
     </div>
   </div>
   <div style="height: 75vh; width: 90vw;">
+    <loading v-model:active="loading" />
     <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
       <l-control-layers position="topright"></l-control-layers>
       <l-tile-layer v-for="tileProvider in tileProviders" :key="tileProvider.name" :name="tileProvider.name"
@@ -88,6 +89,9 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
+
 export default {
   components: {
     LMap,
@@ -97,6 +101,7 @@ export default {
     LControlLayers,
     LTooltip,
     LPopup,
+    Loading
   },
   data() {
     return {
@@ -129,8 +134,6 @@ export default {
       availabilityData: [],
       bedCategories: [],
     };
-  },
-  computed: {
   },
   methods: {
     shortWebsiteUrl(url) {

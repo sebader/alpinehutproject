@@ -35,7 +35,7 @@
           :icon="getHutMarkerIcon(hut)">
           <l-tooltip>
             <b>{{ hut.name }}</b>
-            <div v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }}</div>
+            <div v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</div>
           </l-tooltip>
           <l-popup :options='{ "closeButton": false }'>
             <h6>
@@ -46,7 +46,7 @@
             <div>
               <span v-if="hut.enabled">[{{ new Date(this.dateFilter).toLocaleDateString()
               }}] </span>
-              <span v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }}</span>
+              <span v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</span>
               <span v-if="hut.availability == null && hut.enabled">No availability information available</span>
               <br />
               <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">Online booking</a>

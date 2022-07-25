@@ -32,7 +32,7 @@
                      <td>Coordinates</td>
                      <td>
                         <router-link v-if="hut.latitude != null && hut.longitude != null"
-                           :to="{ name: 'mapPage', query: { hutId: hut.id } }">{{ hut.latitude }}/{{ hut.longitude }}
+                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude }}/{{ hut.longitude }}
                         </router-link>
                      </td>
                   </tr>
@@ -55,7 +55,7 @@
                </div>
             </div>
          </div>
-         <div class="row">
+         <div class="row" v-if="hut.enabled">
             <br />
             <div class="col">
                <table>

@@ -76,7 +76,12 @@ const router = createRouter({
          path: "/hut/:hutId",
          name: "hutDetailsPage",
          component: components.HutDetailPage
-      }
+      },
+      {
+         path: "/info",
+         name: "infoPage",
+         component: components.InfoPage
+      },
    ]
 });
 

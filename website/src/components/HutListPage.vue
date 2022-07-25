@@ -8,7 +8,7 @@
          <label>Search</label>
          <input type="text" v-model="searchValue">
          <EasyDataTable :headers="tableHeaders" :items="huts" alternating :rows-per-page="rowsPerPage"
-             :search-value="searchValue">
+            :search-value="searchValue" :sort-by="sortBy">
             <template #item-name="hut">
                <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details">
                   {{ hut.name }}</router-link>
@@ -51,7 +51,8 @@ export default {
             { text: "Coordinates", value: "latitude", sortable: false },
             { text: "Link", value: "link", sortable: false }
          ],
-         searchValue: ""
+         searchValue: "",
+         sortBy: "id"
       }
    },
    async mounted() {

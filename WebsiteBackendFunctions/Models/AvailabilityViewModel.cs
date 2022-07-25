@@ -9,6 +9,7 @@ namespace WebsiteBackendFunctions.Models
         public DateTime Date { get; set; }
         public DateTime? LastUpdated { get; set; }
         public int? TotalFreeBeds { get; set; }
+        public int? TotalBeds { get; set; }
         public List<RoomAvailabilityViewModel> RoomAvailabilities { get; set; }
     }
 

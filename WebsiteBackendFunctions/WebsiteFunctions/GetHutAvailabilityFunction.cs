@@ -45,6 +45,7 @@ namespace WebsiteBackendFunctions
                     Date = (DateTime)a.Key,
                     LastUpdated = a.FirstOrDefault()?.LastUpdated,
                     TotalFreeBeds = a.Sum(r => r.FreeRoom),
+                    TotalBeds = a.Sum(r => r.TotalRoom),
                     RoomAvailabilities = a.Select(a => new RoomAvailabilityViewModel()
                     {
                         BedCategory = a.BedCategory,

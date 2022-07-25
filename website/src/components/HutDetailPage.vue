@@ -24,15 +24,15 @@
                      <td>Website</td>
                      <td><a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a></td>
                   </tr>
-                  <tr v-if="hut.enabled">
-                     <td></td>
+                  <tr>
+                     <td><span v-if="!hut.enabled"><i>Online booking inactive</i></span></td>
                      <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
                   </tr>
                   <tr>
                      <td>Coordinates</td>
                      <td>
                         <router-link v-if="hut.latitude != null && hut.longitude != null"
-                           :to="{ name: 'mapPage', query: { hutId: hut.id } }">{{ hut.latitude }}/{{ hut.longitude }}
+                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude }}/{{ hut.longitude }}
                         </router-link>
                      </td>
                   </tr>
@@ -55,7 +55,7 @@
                </div>
             </div>
          </div>
-         <div class="row">
+         <div class="row" v-if="hut.enabled">
             <br />
             <div class="col">
                <table>

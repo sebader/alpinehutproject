@@ -24,6 +24,7 @@
     </div>
   </div>
   <div style="height: 75vh; width: 90vw;">
+    <loading v-model:active="loading" />
     <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
       <l-control-layers position="topright"></l-control-layers>
       <l-tile-layer v-for="tileProvider in tileProviders" :key="tileProvider.name" :name="tileProvider.name"
@@ -31,10 +32,10 @@
         layer-type="base" />
       <template v-for="hut in this.huts">
         <l-marker ref="markerItems" :name="hut.name" :lat-lng="[hut.latitude, hut.longitude]"
-          :icon="getHutMarkerIcon(hut.availability)">
+          :icon="getHutMarkerIcon(hut)">
           <l-tooltip>
             <b>{{ hut.name }}</b>
-            <div v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }}</div>
+            <div v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</div>
           </l-tooltip>
           <l-popup :options='{ "closeButton": false }'>
             <h6>
@@ -43,12 +44,13 @@
               }}</router-link>
             </h6>
             <div>
-              <span v-if="hut.availability != null">[{{ new Date(this.dateFilter).toLocaleDateString()
-              }}]
-                Free beds: {{ hut.availability.totalFreeBeds }}</span>
+              <span v-if="hut.enabled">[{{ new Date(this.dateFilter).toLocaleDateString()
+              }}] </span>
+              <span v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</span>
+              <span v-if="hut.availability == null && hut.enabled">No availability information available</span>
               <br />
-              <a v-if="hut.availability != null" :href="`${hut.link}`" target="_blank">Online booking</a>
-              <span v-else>Online booking inactive</span>
+              <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">Online booking</a>
+              <span v-else><i>Online booking inactive</i></span>
               <br />
               <a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a>
               <br />
@@ -88,6 +90,9 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
+
 export default {
   components: {
     LMap,
@@ -97,6 +102,7 @@ export default {
     LControlLayers,
     LTooltip,
     LPopup,
+    Loading
   },
   data() {
     return {
@@ -130,8 +136,6 @@ export default {
       bedCategories: [],
     };
   },
-  computed: {
-  },
   methods: {
     shortWebsiteUrl(url) {
       return shortWebsiteUrl(url);
@@ -151,17 +155,17 @@ export default {
       }
     },
     // Fetch the correct marker icon based on the hut availability
-    getHutMarkerIcon(hutAvailability) {
+    getHutMarkerIcon(hut) {
 
       var icon = "";
-      if (hutAvailability == null) {
+      if (!hut.enabled) {
         icon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png'
       }
       else {
-        var freeBeds = hutAvailability.totalFreeBeds;
-        if (this.selectedBedCategory != "" && hutAvailability.roomAvailabilities != null) {
+        var freeBeds = hut.availability?.totalFreeBeds;
+        if (freeBeds != null && this.selectedBedCategory != "" && hut.availability.roomAvailabilities != null) {
           var bedCategory = this.selectedBedCategory;
-          var filteredAvailability = hutAvailability.roomAvailabilities.filter(function (availability) {
+          var filteredAvailability = hut.availability.roomAvailabilities.filter(function (availability) {
             return availability.bedCategory == bedCategory;
           });
           if (filteredAvailability.length > 0) {
@@ -206,8 +210,10 @@ export default {
     }
   },
   watch: {
-    dateFilter: function (newValue, oldValue) {
-      this.updateAvailabilityData();
+    dateFilter: async function (newValue, oldValue) {
+      this.loading = true;
+      await this.updateAvailabilityData();
+      this.loading = false;
     }
   },
   async mounted() {

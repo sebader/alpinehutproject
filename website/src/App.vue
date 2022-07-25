@@ -1,7 +1,8 @@
 <template>
   <div>
-    <router-link :to="{ path: '/' }">Map</router-link> |
-    <router-link :to="{ name: 'hutListPage' }">List</router-link>
+    <router-link :to="{ name: 'mapPage' }">Map</router-link> |
+    <router-link :to="{ name: 'hutListPage' }">List</router-link> |
+    <router-link :to="{ name: 'infoPage' }">Info</router-link>
 
     <hr />
 

@@ -1,6 +1,6 @@
 <template>
    <section>
-      <h1>Huts</h1>
+      <h1>All Huts</h1>
 
       <p v-show="loading">Loading...</p>
 
@@ -8,7 +8,7 @@
          <label>Search</label>
          <input type="text" v-model="searchValue">
          <EasyDataTable :headers="tableHeaders" :items="huts" alternating :rows-per-page="rowsPerPage"
-             :search-value="searchValue">
+            :search-value="searchValue" :sort-by="sortBy">
             <template #item-name="hut">
                <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details">
                   {{ hut.name }}</router-link>
@@ -23,7 +23,8 @@
                   }}/{{ hut.longitude?.toLocaleString() }}</router-link>
             </template>
             <template #item-link="hut">
-               <a :href="`${hut.link}`" target="_blank">Online booking</a>
+               <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">Online booking</a>
+               <span v-else>Online booking inactive</span>
             </template>
          </EasyDataTable>
       </div>
@@ -50,7 +51,8 @@ export default {
             { text: "Coordinates", value: "latitude", sortable: false },
             { text: "Link", value: "link", sortable: false }
          ],
-         searchValue: ""
+         searchValue: "",
+         sortBy: "id"
       }
    },
    async mounted() {

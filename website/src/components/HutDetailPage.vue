@@ -18,7 +18,7 @@
                   </tr>
                   <tr>
                      <td>Last updated</td>
-                     <td>{{ new Date(hut.lastUpdated).toLocaleTimeString() }}</td>
+                     <td>{{ new Date(hut.lastUpdated).toLocaleString() }}</td>
                   </tr>
                   <tr>
                      <td>Website</td>
@@ -29,10 +29,16 @@
                      <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
                   </tr>
                   <tr>
+                     <td>Country / Region</td>
+                     <td><span>{{ hut.country }}</span><span v-if="hut.region != null"> - {{ hut.region }}</span></td>
+                  </tr>
+                  <tr>
                      <td>Coordinates</td>
                      <td>
                         <router-link v-if="hut.latitude != null && hut.longitude != null"
-                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude }}/{{ hut.longitude }}
+                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude }}/{{
+                                 hut.longitude
+                           }}
                         </router-link>
                      </td>
                   </tr>

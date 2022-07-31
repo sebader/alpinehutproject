@@ -76,6 +76,8 @@
 </template>
 
 <script>
+import { Constants } from '../utils';
+import { EventBus } from "../main"
 import { shortWebsiteUrl } from "../utils"
 
 import L from 'leaflet';

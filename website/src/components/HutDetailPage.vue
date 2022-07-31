@@ -25,8 +25,9 @@
                      <td><a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a></td>
                   </tr>
                   <tr>
-                     <td><span v-if="!hut.enabled"><i>Online booking inactive</i></span></td>
-                     <td><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
+                     <td></td>
+                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
+                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>Online booking inactive</i></a></td>
                   </tr>
                   <tr>
                      <td>Country / Region</td>

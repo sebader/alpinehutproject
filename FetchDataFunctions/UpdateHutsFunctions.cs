@@ -126,9 +126,11 @@ namespace FetchDataFunctions
                     log.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
                 }
 
+                var httpClient = _clientFactory.CreateClient("HttpClient");
+
                 // First we try to use locale de_DE, we might switch below
                 var url = $"{Helpers.HutProviderBaseUrl}lang=de_DE&hut_id={hutId}";
-                HtmlDocument doc = await LoadWebsite(url, log);
+                HtmlDocument doc = await LoadWebsite(url, httpClient, log);
 
                 if (doc.ParsedText.Contains("kann nicht gefunden werden"))
                 {
@@ -146,10 +148,9 @@ namespace FetchDataFunctions
                         if (newUrl != url)
                         {
                             url = newUrl;
-                            doc = await LoadWebsite(url, log);
+                            doc = await LoadWebsite(url, httpClient, log);
                         }
                     }
-                    var httpClient = _clientFactory.CreateClient("HttpClient");
                     var parsedHut = await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), httpClient, log);
 
                     if (Helpers.ExcludedHutNames.Contains(parsedHut.Name))
@@ -220,11 +221,10 @@ namespace FetchDataFunctions
             return null;
         }
 
-        private async Task<HtmlDocument> LoadWebsite(string url, ILogger log)
+        private async Task<HtmlDocument> LoadWebsite(string url, HttpClient httpClient, ILogger log)
         {
             log.LogDebug("Executing http GET against {url}", url);
 
-            var httpClient = _clientFactory.CreateClient("HttpClient");
             var responseStream = await httpClient.GetStreamAsync(url);
             var doc = new HtmlDocument();
             doc.Load(responseStream);

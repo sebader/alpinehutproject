@@ -106,7 +106,7 @@ namespace FetchDataFunctions
 
                     if (string.IsNullOrEmpty(country))
                     {
-                        // Fallback solution to roughly determine the country a hut is based in. This is not alway accurate
+                        // Fallback solution to roughly determine the country a hut is based in. This is not always accurate
                         country = GetCountry(hutName, phoneNumber, doc.ParsedText);
                     }
                 }
@@ -125,13 +125,13 @@ namespace FetchDataFunctions
         private static string GetCountry(string hutName, string phoneNumber, string requestBody)
         {
             string[] swissNames = { "SAC", "CAS", "AACZ" };
-            if (swissNames.Any(n => hutName.Contains(n) || phoneNumber.Contains("+41") || phoneNumber.Contains("0041")))
+            if (swissNames.Any(n => hutName.Contains(n)) || phoneNumber.Contains("+41") || phoneNumber.Contains("0041"))
             {
                 return "Schweiz";
             }
 
             string[] southTyrolNames = { "AVS" };
-            if (southTyrolNames.Any(n => hutName.Contains(n) || phoneNumber.Contains("+39") || phoneNumber.Contains("0039")))
+            if (southTyrolNames.Any(n => hutName.Contains(n)) || phoneNumber.Contains("+39") || phoneNumber.Contains("0039"))
             {
                 return "Italia";
             }

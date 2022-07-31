@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col-sm-3">
       <label>Availability at date</label>
-      <input v-model="dateFilter" type="date" min="2022-07-11" style="width:200px" />
+      <input v-model="dateFilter" type="date" :min="`${new Date().toISOString().split('T')[0]}`" style="width:200px" />
     </div>
     <div class="col-sm-3">
       <label>Number of beds</label>
@@ -76,6 +76,8 @@
 </template>
 
 <script>
+import { Constants } from '../utils';
+import { EventBus } from "../main"
 import { shortWebsiteUrl } from "../utils"
 
 import L from 'leaflet';

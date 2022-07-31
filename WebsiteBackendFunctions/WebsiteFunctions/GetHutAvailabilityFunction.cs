@@ -30,12 +30,6 @@ namespace WebsiteBackendFunctions
             int hutId,
             ILogger log)
         {
-            if (availabilityResult == null || availabilityResult.Count() == 0)
-            {
-                log.LogInformation("Not availability found for id {hutid}", hutId);
-                return new NotFoundResult();
-            }
-
             var result = new List<AvailabilityViewModel>();
             foreach (var a in availabilityResult.GroupBy(a => a.Date))
             {

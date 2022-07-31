@@ -29,10 +29,6 @@ namespace WebsiteBackendFunctions
             string dateFilter,
             ILogger log)
         {
-            if (availabilityResult == null || availabilityResult.Count() == 0)
-            {
-                return new NotFoundResult();
-            }
             var date = DateTime.Parse(dateFilter);
 
             // Map database response into nested object, grouped by hut id

@@ -5,8 +5,18 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    schedule:
-      interval: "weekly"
-
+- package-ecosystem: "nuget"
+  directory: "/WebsiteBackendFunctions"
+  schedule:
+    interval: "monthly" 
+  target-branch: "dev" 
+- package-ecosystem: "nuget"
+  directory: "/FetchDataFunctions"
+  schedule:
+    interval: "monthly" 
+  target-branch: "dev" 
+- package-ecosystem: "npm"
+  directory: "/website"
+  schedule:
+    interval: "monthly" 
+  target-branch: "dev" 

@@ -27,7 +27,8 @@ namespace FetchDataFunctions
             "ZZZ TEST, TEST",
             "AV Testhütte, DAV Bundesgeschäftsstelle",
             "Test",
-            "Domžalski dom Test"
+            "Domžalski dom Test",
+            "ZZZ TEST - Demo Cabane CAS Gruyere, CAS Gruyere"
         };
 
         public static AlpinehutsDbContext GetDbContext()

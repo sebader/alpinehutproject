@@ -23,8 +23,9 @@ jobs:
         shell: pwsh
         run: |
           $configFileContent = Get-Content website/public/config.js
-          $commitShaShort = "${{ github.sha }}".Substring(0,7) # get commit SHA and shorten to 7 chars
-          $configFileContent = $configFileContent -replace '(window.VERSION_LABEL = ")(.*)(")',"`$1$commitShaShort`$3"
+          $commitShaShort = "github.sha".Substring(0,7) # get commit SHA and shorten to 7 chars
+          $configFileContent = $configFileContent -replace '(window.VERSION_LABEL = ")(.*)(")',"`${1}$commitShaShort`${3}"
+          echo "New config file content:"
           $configFileContent
           $configFileContent | Set-Content website/public/config.js
       - name: Build And Deploy to Azure Static Web App

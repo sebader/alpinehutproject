@@ -19,6 +19,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Inject commit version
+        shell: pwsh
+        run: |
+          $configFileContent = Get-Content website/public/config.js
+          $commitShaShort = "${{ github.sha }}".Substring(0,7) # get commit SHA and shorten to 7 chars
+          $configFileContent -replace '(window.VERSION_LABEL = ")(.*)(")',"`$1$commitShaShort`$3"
+          $configFileContent
+          $configFileContent | Set-Content website/public/config.js
       - name: Build And Deploy to Azure Static Web App
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

@@ -10,6 +10,7 @@ on:
     paths:
       - 'website/**'
       - 'WebsiteBackendFunctions/**'
+      - '.github/workflows/azure-static-web-apps-white-pond-0976e3603.yml'
 
 jobs:
   build_and_deploy:

@@ -12,7 +12,7 @@
 
     <hr/>
 
-    <footer>This is a private project with no association to the Alpine Clubs. Version: {{ versionLabel }}</footer>
+    <footer>This is a private project with no association to the Alpine Clubs. Commit version: {{ versionLabel }}</footer>
   </div>
 </template>
 

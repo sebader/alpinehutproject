@@ -1,0 +1,16 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "alpinhutsspa": {
+      "appLocation": ".",
+      "apiLocation": "../WebsiteBackenFunctions",
+      "outputLocation": "dist",
+      "appBuildCommand": "npm run build",
+      "apiBuildCommand": "dotnet publish -c Release",
+      "run": "npm run serve",
+      "appDevserverUrl": "http://localhost:8080",
+      "appName": "alpinehutsspa",
+      "resourceGroupName": "alpinehuts-rg"
+    }
+  }
+}

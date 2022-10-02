@@ -26,8 +26,8 @@
                   </tr>
                   <tr>
                      <td></td>
-                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">{{ shortWebsiteUrl(hut.onlineBooking) }}</a></td>
-                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>{{ shortWebsiteUrl(hut.onlineBookingInactive) }}</i></a></td>
+                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking') }}</a></td>
+                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>{{ $t('message.onlineBookingInactive') }}</i></a></td>
                   </tr>
                   <tr>
                      <td>{{ $t('message.country') }} / {{ $t('message.region') }}</td>

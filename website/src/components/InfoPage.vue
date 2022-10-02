@@ -1,14 +1,11 @@
 <template>
     <div>
-        <h1>Welcome,</h1>
-        <p>This is a list of all alpine huts which are connected to the central booking system of the alpine clubs of
-            Switzerland, Austria, Germany, Slowenia and Southern-Tyrol (Italy).</p>
+        <h3>{{ $t('infoPage.infoHeader')}}!</h3>
+        <p>{{ $t('infoPage.firstParagraph')}}</p>
 
-        <p>Important: This is a private project with no connection to the alpine clubs. There is no guarantee about the
-            correctness of the data shown.</p>
+        <p>{{ $t('infoPage.secondParagraph')}}</p>
 
-        <p>The source code of this project is available on GitHub! <a
-                href="https://github.com/sebader/alpinehutproject" target="_blank">sebader/alpinehutproject</a></p>
+        <p>{{ $t('infoPage.thirdParagraph')}} <a href="https://github.com/sebader/alpinehutproject" target="_blank">sebader/alpinehutproject</a></p>
     </div>
 </template>
 
@@ -22,4 +19,5 @@ export default {
 </script>
 
 <style>
+
 </style>

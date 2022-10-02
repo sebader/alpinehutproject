@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h3>{{ $t('infoPage.infoHeader')}},</h3>
+        <h3>{{ $t('infoPage.infoHeader')}}!</h3>
         <p>{{ $t('infoPage.firstParagraph')}}</p>
 
         <p>{{ $t('infoPage.secondParagraph')}}</p>

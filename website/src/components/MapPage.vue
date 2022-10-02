@@ -1,24 +1,24 @@
 <template>
   <div class="row">
     <div class="col-sm-3">
-      <label>Availability at date</label>
+      <label>{{ $t('mapPage.availabilityAtDate') }}</label>
       <input v-model="dateFilter" type="date" :min="`${new Date().toISOString().split('T')[0]}`" style="width:200px" />
     </div>
     <div class="col-sm-3">
-      <label>Number of beds</label>
+      <label>{{ $t('mapPage.numberOfBeds') }}</label>
       <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" style="width:100px" />
     </div>
     <div class="col-sm-3">
-      <label>Bed category</label>
+      <label>{{ $t('mapPage.bedCategory') }}</label>
       <select v-model="selectedBedCategory">
-        <option value="">-any-</option>
+        <option value="">-{{ $t('mapPage.anyBeds') }}-</option>
         <option v-for="option in this.bedCategories" :value="option.name">
           {{ option.name }}
         </option>
       </select>
     </div>
     <div class="col-sm-3" style="z-index:9999;">
-      <vue3-simple-typeahead placeholder="Search..." :items="huts" :minInputLength="1"
+      <vue3-simple-typeahead :placeholder="$t('message.search')" :items="huts" :minInputLength="1"
         :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
       </vue3-simple-typeahead>
     </div>
@@ -35,22 +35,22 @@
           :icon="getHutMarkerIcon(hut)">
           <l-tooltip>
             <b>{{ hut.name }}</b>
-            <div v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</div>
+            <div v-if="hut.availability != null">{{ $t('mapPage.freeBeds') }}: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</div>
           </l-tooltip>
           <l-popup :options='{ "closeButton": false }'>
             <h6>
-              <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="Show hut details">{{
+              <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="{{ $t('message.showHutDetails') }}">{{
                   hut.name
               }}</router-link>
             </h6>
             <div>
               <span v-if="hut.enabled">[{{ new Date(this.dateFilter).toLocaleDateString()
               }}] </span>
-              <span v-if="hut.availability != null">Free beds: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</span>
-              <span v-if="hut.availability == null && hut.enabled">No availability information available</span>
+              <span v-if="hut.availability != null">{{ $t('mapPage.freeBeds') }}: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</span>
+              <span v-if="hut.availability == null && hut.enabled">{{ $t('mapPage.noAvailabilityInfo') }}</span>
               <br />
-              <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">Online booking</a>
-              <span v-else><i>Online booking inactive</i></span>
+              <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking') }}</a>
+              <span v-else><i>{{ $t('message.onlineBookingInactive') }}</i></span>
               <br />
               <a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a>
               <br />
@@ -64,7 +64,7 @@
                 </template>
               </table>
               <br />
-              <span>Last updated: {{ new
+              <span>{{ $t('message.lastUpdated') }}: {{ new
                   Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
               }} (<a href="#" @click="hutSelected(hut)">Zoom in</a>)</span>
             </div>

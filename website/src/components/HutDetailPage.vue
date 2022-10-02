@@ -1,7 +1,7 @@
 <template>
    <section>
 
-      <p v-show="loading">Loading...</p>
+      <p v-show="loading">{{ $t('message.loading') }}...</p>
 
       <div v-if="!loading && hut != null">
          <div class="row">
@@ -13,11 +13,11 @@
                      <td>{{ hut.id }}</td>
                   </tr>
                   <tr>
-                     <td>Hut added</td>
+                     <td>{{ $t('message.hutAdded') }}</td>
                      <td>{{ new Date(hut.added).toLocaleDateString() }}</td>
                   </tr>
                   <tr>
-                     <td>Last updated</td>
+                     <td>{{ $t('message.lastUpdated') }}</td>
                      <td>{{ new Date(hut.lastUpdated).toLocaleString() }}</td>
                   </tr>
                   <tr>
@@ -26,18 +26,18 @@
                   </tr>
                   <tr>
                      <td></td>
-                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">Online booking</a></td>
-                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>Online booking inactive</i></a></td>
+                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">{{ shortWebsiteUrl(hut.onlineBooking) }}</a></td>
+                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>{{ shortWebsiteUrl(hut.onlineBookingInactive) }}</i></a></td>
                   </tr>
                   <tr>
-                     <td>Country / Region</td>
+                     <td>{{ $t('message.country') }} / {{ $t('message.region') }}</td>
                      <td><span>{{ hut.country }}</span><span v-if="hut.region != null"> - {{ hut.region }}</span></td>
                   </tr>
                   <tr>
-                     <td>Coordinates</td>
+                     <td>{{ $t('message.coordinates') }}</td>
                      <td>
                         <router-link v-if="hut.latitude != null && hut.longitude != null"
-                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" title="Show on map">{{ hut.latitude }}/{{
+                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" :title="$t('message.showOnMap')">{{ hut.latitude }}/{{
                                  hut.longitude
                            }}
                         </router-link>
@@ -68,9 +68,9 @@
                <table>
                   <thead>
                      <tr>
-                        <th>Date</th>
-                        <th>Beds</th>
-                        <th>Type of accommodation</th>
+                        <th>{{ $t('message.date') }}</th>
+                        <th>{{ $t('message.beds') }}</th>
+                        <th>{{ $t('message.typeOfAccommodation') }}</th>
                      </tr>
                   </thead>
                   <tbody>

@@ -1,18 +1,26 @@
 <template>
   <div>
-    <router-link :to="{ name: 'mapPage' }">Map</router-link> |
-    <router-link :to="{ name: 'hutListPage' }">List</router-link> |
-    <router-link :to="{ name: 'infoPage' }">Info</router-link>
+    <h4>{{ $t("message.siteTitle") }}</h4>
+    <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
+    <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
+    <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link>
 
+    <span style="float:right;">
+      {{ $t("message.language") }}
+      <select v-model="$i18n.locale">
+        <option v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`" :value="locale">{{ $t("message.locale" + locale) }}</option>
+      </select>
+    </span>
     <hr />
 
     <SystemMessage />
 
     <router-view :key="$route.fullPath"></router-view>
 
-    <hr/>
+    <hr />
 
-    <footer>This is a private project with no association to the Alpine Clubs. Commit version: {{ versionLabel }}</footer>
+    <footer>{{ $t("message.footerText")}}. Commit version: {{ versionLabel }}
+    </footer>
   </div>
 </template>
 
@@ -20,14 +28,14 @@
 import SystemMessage from "./components/SystemMessage";
 
 export default {
-  data: function() {
-     return {
-        versionLabel: window.VERSION_LABEL
-      }
+  data: function () {
+    return {
+      versionLabel: window.VERSION_LABEL
+    }
   },
   created() { },
-  methods: { },
-  computed: { },
+  methods: {},
+  computed: {},
   components: {
     SystemMessage,
   },
@@ -36,7 +44,7 @@ export default {
 
 <style>
 footer {
-   font-style: italic;
-   font-size: 0.8em;
+  font-style: italic;
+  font-size: 0.8em;
 }
 </style>

@@ -195,6 +195,7 @@ namespace FetchDataFunctions
                                         Hutid = hutId,
                                         LastUpdated = updateTime
                                     };
+                                    log.LogDebug($"Adding new 'Closed' availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
                                     dbContext.Availability.Add(newAva);
                                 }
                             }
@@ -255,7 +256,7 @@ namespace FetchDataFunctions
                             }
 
                             // If the bed category changes over time, there might be obsolete entries in the database which we remove here
-                            var obsoleteExistingAva = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !day.Rooms.Select(d => d.BedCategoryId).Contains(a.BedCategoryId)).ToListAsync();
+                            var obsoleteExistingAva = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !day.Rooms.Select(d => d.BedCategoryId).Contains(a.BedCategoryId) && a.BedCategoryId != BedCategory.HutClosedBedcatoryId).ToListAsync();
                             foreach (var ava in obsoleteExistingAva)
                             {
                                 log.LogInformation("Removing obsolete existing availability for hut {hutid}, on {date} with bedCategoryId {bedCategoryId}", hutId, ava.Date, ava.BedCategoryId);

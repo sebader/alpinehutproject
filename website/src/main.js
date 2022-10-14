@@ -63,6 +63,7 @@ const messages = {
          typeOfAccommodation: 'Type of accommodation',
          localeen: 'English',
          localede: 'Deutsch',
+         hutClosed: 'Hut closed',
       },
       mapPage: {
          availabilityAtDate: 'Availability at',
@@ -116,13 +117,14 @@ const messages = {
          typeOfAccommodation: 'Zimmerkategorie',
          localeen: 'English',
          localede: 'Deutsch',
+         hutClosed: 'Hütte geschlossen',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',
          numberOfBeds: 'Anzahl Betten',
          bedCategory: 'Zimmerkategorie',
          freeBeds: 'Freie Betten',
-         noAvailabilityInfo: 'Keine Verfügbarkeitsinformationen verfügbar',
+         noAvailabilityInfo: 'Keine Information verfügbar',
          anyBeds: 'egal',
       },
       hutListPage: {

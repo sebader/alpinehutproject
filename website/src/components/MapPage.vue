@@ -35,18 +35,25 @@
           :icon="getHutMarkerIcon(hut)">
           <l-tooltip>
             <b>{{ hut.name }}</b>
-            <div v-if="hut.availability != null">{{ $t('mapPage.freeBeds') }}: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</div>
+            <div v-if="hut.availability != null && !hut.availability.hutClosed">{{ $t('mapPage.freeBeds') }}: {{
+            hut.availability.totalFreeBeds }} / {{
+              hut.availability.totalBeds }}</div>
+            <div v-if="hut.availability?.hutClosed">{{ $t('message.hutClosed') }}</div>
           </l-tooltip>
           <l-popup :options='{ "closeButton": false }'>
             <h6>
-              <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" title="{{ $t('message.showHutDetails') }}">{{
-                  hut.name
-              }}</router-link>
+              <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }"
+                title="{{ $t('message.showHutDetails') }}">{{
+                hut.name
+                }}</router-link>
             </h6>
             <div>
               <span v-if="hut.enabled">[{{ new Date(this.dateFilter).toLocaleDateString()
               }}] </span>
-              <span v-if="hut.availability != null">{{ $t('mapPage.freeBeds') }}: {{ hut.availability.totalFreeBeds }} / {{ hut.availability.totalBeds }}</span>
+              <span v-if="hut.availability != null && !hut.availability.hutClosed">{{ $t('mapPage.freeBeds') }}: {{
+              hut.availability.totalFreeBeds }} /
+                {{ hut.availability.totalBeds }}</span>
+              <span v-if="hut.availability?.hutClosed">{{ $t('message.hutClosed') }}</span>
               <span v-if="hut.availability == null && hut.enabled">{{ $t('mapPage.noAvailabilityInfo') }}</span>
               <br />
               <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking') }}</a>
@@ -59,13 +66,14 @@
                 <template v-for="availability in hut.availability?.roomAvailabilities">
                   <tr>
                     <td>{{ availability.bedCategory }}</td>
-                    <td>{{ availability.freeBeds }} / {{ availability.totalBeds }}</td>
+                    <td>{{ availability.freeBeds }} / {{ availability.totalBeds }}
+                    </td>
                   </tr>
                 </template>
               </table>
               <br />
               <span>{{ $t('message.lastUpdated') }}: {{ new
-                  Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
+              Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
               }} (<a href="#" @click="hutSelected(hut)">Zoom in</a>)</span>
             </div>
           </l-popup>
@@ -159,13 +167,22 @@ export default {
     // Fetch the correct marker icon based on the hut availability
     getHutMarkerIcon(hut) {
 
+      // Icons from here: https://github.com/pointhi/leaflet-color-markers
+      const redIcon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png'
+      const greenIcon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
+      const greyIcon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png'
+      const blueIcon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png'
+
       var icon = "";
       if (!hut.enabled) {
-        icon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png'
+        icon = greyIcon
       }
       else {
         var freeBeds = hut.availability?.totalFreeBeds;
-        if (freeBeds != null && this.selectedBedCategory != "" && hut.availability.roomAvailabilities != null) {
+
+        if (freeBeds != null
+          && this.selectedBedCategory != ""
+          && hut.availability.roomAvailabilities != null) {
           var bedCategory = this.selectedBedCategory;
           var filteredAvailability = hut.availability.roomAvailabilities.filter(function (availability) {
             return availability.bedCategory == bedCategory;
@@ -177,15 +194,15 @@ export default {
             freeBeds = 0;
           }
         }
-        // Icons from here: https://github.com/pointhi/leaflet-color-markers
-        if (freeBeds == null) {
-          icon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png'
+        // If there is no availability data - or the hut is closed, show the blue icon
+        if (freeBeds == null || hut.availability?.hutClosed) {
+          icon = blueIcon
         }
         else if (freeBeds >= this.desiredNumberOfBeds) {
-          icon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
+          icon = greenIcon
         }
         else {
-          icon = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png'
+          icon = redIcon
         }
       }
 
@@ -247,4 +264,5 @@ export default {
 </script>
 
 <style>
+
 </style>

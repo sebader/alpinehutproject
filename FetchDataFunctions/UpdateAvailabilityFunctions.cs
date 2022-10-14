@@ -28,7 +28,7 @@ namespace FetchDataFunctions
         }
 
         [FunctionName(nameof(UpdateAvailabilityTimerTriggered))]
-        public async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")]TimerInfo myTimer,
+        public async Task UpdateAvailabilityTimerTriggered([TimerTrigger("0 0 14,23 * * *")] TimerInfo myTimer,
             ILogger log,
             [DurableClient] IDurableOrchestrationClient starter)
         {
@@ -103,7 +103,7 @@ namespace FetchDataFunctions
                 tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutId));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
-                if(tasks.Count >= 10)
+                if (tasks.Count >= 10)
                 {
                     log.LogInformation("Delaying next batch for 1 minute, last hutId={hutid}", hutId);
                     await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
@@ -175,55 +175,81 @@ namespace FetchDataFunctions
 
                         foreach (var day in daysAvailability)
                         {
-                            foreach (var room in day.Rooms)
+                            if (day.HutClosed)
                             {
-                                var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
-                                if (existingAva != null)
+                                // See if there is any existing availability entries that we should delete
+                                var existingAva = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId != BedCategory.HutClosedBedcatoryId).ToListAsync();
+                                foreach (var obsoleteAva in existingAva)
                                 {
-                                    if (room.Closed)
-                                    {
-                                        // Was not closed before, so we delete the row
-                                        dbContext.Remove(existingAva);
-                                    }
-                                    else
-                                    {
-                                        existingAva.FreeRoom = room.FreeRoom;
-                                        existingAva.TotalRoom = room.TotalRoom;
-                                        existingAva.LastUpdated = updateTime;
-                                        log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
-                                        dbContext.Update(existingAva);
-                                    }
+                                    dbContext.Remove(obsoleteAva);
                                 }
-                                else
+                                var existingCloseAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == BedCategory.HutClosedBedcatoryId);
+                                if (existingCloseAva == null)
                                 {
-                                    if (room.Closed)
+                                    var newAva = new Availability()
                                     {
-                                        log.LogDebug($"Skipping availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} because closed on that date");
-                                    }
-                                    else
+                                        BedCategoryId = BedCategory.HutClosedBedcatoryId,
+                                        Date = (DateTime)day.Date,
+                                        FreeRoom = 0,
+                                        TotalRoom = 0,
+                                        Hutid = hutId,
+                                        LastUpdated = updateTime
+                                    };
+                                    dbContext.Availability.Add(newAva);
+                                }
+                            }
+                            else
+                            {
+                                foreach (var room in day.Rooms)
+                                {
+                                    var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a => a.Hutid == hutId && a.Date == day.Date && a.BedCategoryId == room.BedCategoryId);
+                                    if (existingAva != null)
                                     {
-                                        var newAva = new Availability()
+                                        if (room.Closed)
                                         {
-                                            BedCategoryId = (int)room.BedCategoryId,
-                                            Date = (DateTime)day.Date,
-                                            FreeRoom = room.FreeRoom,
-                                            TotalRoom = room.TotalRoom,
-                                            Hutid = hutId,
-                                            LastUpdated = updateTime
-                                        };
-                                        log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
-                                        dbContext.Availability.Add(newAva);
+                                            // Was not closed before, so we delete the row
+                                            dbContext.Remove(existingAva);
+                                        }
+                                        else
+                                        {
+                                            existingAva.FreeRoom = room.FreeRoom;
+                                            existingAva.TotalRoom = room.TotalRoom;
+                                            existingAva.LastUpdated = updateTime;
+                                            log.LogDebug($"Updating existing availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} FreeRoom={room.FreeRoom}");
+                                            dbContext.Update(existingAva);
+                                        }
                                     }
-                                }
-                                var allBedcategories = day.Rooms.Select(r => (int) r.BedCategoryId).ToList();
-                                var oldEntries = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !allBedcategories.Contains(a.BedCategoryId)).ToListAsync();
-                                if(oldEntries.Count > 0)
-                                {
-                                    log.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.Date);
-                                    foreach(var entry in oldEntries)
+                                    else
                                     {
-                                        log.LogInformation("Deleting entry with bedCategoryId={bed}", entry.BedCategoryId);
-                                        dbContext.Availability.Remove(entry);
+                                        if (room.Closed)
+                                        {
+                                            log.LogDebug($"Skipping availability for hutid={hutId} date={day.Date} bedCategoryId={room.BedCategoryId} because closed on that date");
+                                        }
+                                        else
+                                        {
+                                            var newAva = new Availability()
+                                            {
+                                                BedCategoryId = (int)room.BedCategoryId,
+                                                Date = (DateTime)day.Date,
+                                                FreeRoom = room.FreeRoom,
+                                                TotalRoom = room.TotalRoom,
+                                                Hutid = hutId,
+                                                LastUpdated = updateTime
+                                            };
+                                            log.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
+                                            dbContext.Availability.Add(newAva);
+                                        }
+                                    }
+                                    var allBedcategories = day.Rooms.Select(r => (int)r.BedCategoryId).ToList();
+                                    var oldEntries = await dbContext.Availability.Where(a => a.Hutid == hutId && a.Date == day.Date && !allBedcategories.Contains(a.BedCategoryId)).ToListAsync();
+                                    if (oldEntries.Count > 0)
+                                    {
+                                        log.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.Date);
+                                        foreach (var entry in oldEntries)
+                                        {
+                                            log.LogInformation("Deleting entry with bedCategoryId={bed}", entry.BedCategoryId);
+                                            dbContext.Availability.Remove(entry);
+                                        }
                                     }
                                 }
                             }
@@ -265,7 +291,7 @@ namespace FetchDataFunctions
                 foreach (var room in day.First?.Children())
                 {
                     var roomDayAvailabilty = JsonConvert.DeserializeObject<RoomDayAvailability>(room.ToString());
-                    if(roomDayAvailabilty.BedCategoryId == null || roomDayAvailabilty.HutBedCategoryId == null)
+                    if (roomDayAvailabilty.BedCategoryId == null || roomDayAvailabilty.HutBedCategoryId == null)
                     {
                         log.LogWarning("Parsed JSON has BedCategoryId=null or HutBedCategoryId=null. Raw JSON={json}", room.ToString());
                         continue;

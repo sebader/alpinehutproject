@@ -40,7 +40,8 @@ namespace WebsiteBackendFunctions
                     LastUpdated = a.FirstOrDefault()?.LastUpdated,
                     TotalFreeBeds = a.Sum(r => r.FreeRoom),
                     TotalBeds = a.Sum(r => r.TotalRoom),
-                    RoomAvailabilities = a.Select(a => new RoomAvailabilityViewModel()
+                    HutClosed = a.Sum(r => r.TotalRoom) == 0,
+                    RoomAvailabilities = a.Where(r => r.TotalRoom > 0).Select(a => new RoomAvailabilityViewModel() // Filter out "Hütte Geschlossen (0/0)
                     {
                         BedCategory = a.BedCategory,
                         FreeBeds = (int)a.FreeRoom,

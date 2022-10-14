@@ -26,8 +26,10 @@
                   </tr>
                   <tr>
                      <td></td>
-                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking') }}</a></td>
-                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>{{ $t('message.onlineBookingInactive') }}</i></a></td>
+                     <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking')
+                     }}</a></td>
+                     <td v-else><a :href="`${hut.link}`" target="_blank"><i>{{ $t('message.onlineBookingInactive')
+                     }}</i></a></td>
                   </tr>
                   <tr>
                      <td>{{ $t('message.country') }} / {{ $t('message.region') }}</td>
@@ -37,8 +39,9 @@
                      <td>{{ $t('message.coordinates') }}</td>
                      <td>
                         <router-link v-if="hut.latitude != null && hut.longitude != null"
-                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" :title="$t('message.showOnMap')">{{ hut.latitude }}/{{
-                                 hut.longitude
+                           :to="{ name: 'mapPage', query: { hutId: hut.id } }" :title="$t('message.showOnMap')">{{
+                           hut.latitude }}/{{
+                           hut.longitude
                            }}
                         </router-link>
                      </td>
@@ -77,10 +80,15 @@
                      <template v-for="av in hut.availability">
                         <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory">
                            <td v-if="iSub === 0" :rowspan="av.roomAvailabilities.length">{{ new
-                                 Date(av.date).toDateString("dddd, dd.MM.yyyy")
+                           Date(av.date).toDateString("dddd, dd.MM.yyyy")
                            }}</td>
                            <td>{{ roomAv.freeBeds }} / {{ roomAv.totalBeds }}</td>
                            <td>{{ roomAv.bedCategory }}</td>
+                        </tr>
+                        <tr v-if="av.hutClosed">
+                           <td>{{ new Date(av.date).toDateString("dddd, dd.MM.yyyy")
+                           }}</td>
+                           <td colspan="2">{{ $t('message.hutClosed') }}</td>
                         </tr>
                      </template>
                   </tbody>

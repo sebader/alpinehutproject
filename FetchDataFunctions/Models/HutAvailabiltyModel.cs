@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace FetchDataFunctions.Models
@@ -8,6 +9,16 @@ namespace FetchDataFunctions.Models
     {
         public DateTime? Date { get; set; } = null;
         public List<RoomAvailability> Rooms { get; set; } = new List<RoomAvailability>();
+        /// <summary>
+        /// Returns True if all Rooms are closed on this day
+        /// </summary>
+        public bool HutClosed
+        {
+            get
+            {
+                return Rooms == null || Rooms.All(r => r.Closed);
+            }
+        }
     }
 
     public class RoomAvailability

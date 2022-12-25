@@ -46,4 +46,4 @@ jobs:
           production_branch: "main"
           ###### End of Repository/Build Configurations ######
         env:
-          NODE_VERSION: 17.6.0
+          NODE_VERSION: 18.12.1

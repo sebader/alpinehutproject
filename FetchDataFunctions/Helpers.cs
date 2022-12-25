@@ -19,6 +19,9 @@ namespace FetchDataFunctions
         public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
 
+        /// <summary>
+        /// List of hut names which are clearly only used for testing. We filter these out
+        /// </summary>
         public static string[] ExcludedHutNames = new[]
         {
             "testhuette_elca, ELCA",

@@ -19,7 +19,6 @@ namespace FetchDataFunctions
                 .AddHttpClient<HttpClient>("HttpClient", client =>
                 {
                     var productValue = new ProductInfoHeaderValue("HutInfoScraperBot", "1.0");
-
                     client.DefaultRequestHeaders.UserAgent.Add(productValue);
 
                     client.Timeout = TimeSpan.FromSeconds(120); // default overall request request timeout (includes all polly retries)

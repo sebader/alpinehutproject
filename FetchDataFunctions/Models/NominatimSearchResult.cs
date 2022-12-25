@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Newtonsoft.Json;
 
 namespace FetchDataFunctions.Models
 {
-    public class MapQuestSearchResult
+    public class NominatimSearchResult
     {
         public string place_id { get; set; }
         public string licence { get; set; }
@@ -14,6 +12,8 @@ namespace FetchDataFunctions.Models
         public string lat { get; set; }
         public string lon { get; set; }
         public string display_name { get; set; }
+
+        [JsonProperty("class")]
         public string _class { get; set; }
         public string type { get; set; }
         public float importance { get; set; }

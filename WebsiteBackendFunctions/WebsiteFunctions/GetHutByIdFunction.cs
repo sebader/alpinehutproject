@@ -23,7 +23,7 @@ namespace WebsiteBackendFunctions
             ILogger log)
         {
 
-            if (result == null || result.Count() == 0)
+            if (result == null || !result.Any())
             {
                 log.LogInformation("Not hut found for id {hutid}", hutId);
                 return new NotFoundResult();

@@ -5,6 +5,7 @@ using Polly.Extensions.Http;
 using Polly.Timeout;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 [assembly: FunctionsStartup(typeof(FetchDataFunctions.Startup))]
 
@@ -15,7 +16,13 @@ namespace FetchDataFunctions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services
-                .AddHttpClient<HttpClient>("HttpClient", client => client.Timeout = TimeSpan.FromSeconds(120)) // default overall request request timeout (includes all polly retries)
+                .AddHttpClient<HttpClient>("HttpClient", client =>
+                {
+                    var productValue = new ProductInfoHeaderValue("HutInfoScraperBot", "1.0");
+                    client.DefaultRequestHeaders.UserAgent.Add(productValue);
+
+                    client.Timeout = TimeSpan.FromSeconds(120); // default overall request request timeout (includes all polly retries)
+                })
                 .ConfigurePrimaryHttpMessageHandler(() =>
                 {
                     return new HttpClientHandler()

@@ -19,6 +19,9 @@ namespace FetchDataFunctions
         public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
 
+        /// <summary>
+        /// List of hut names which are clearly only used for testing. We filter these out
+        /// </summary>
         public static string[] ExcludedHutNames = new[]
         {
             "testhuette_elca, ELCA",
@@ -165,21 +168,14 @@ namespace FetchDataFunctions
 
         /// <summary>
         /// Looks up the GPS coordinates based on a hut name
-        /// Uses MapQuest API https://developer.mapquest.com/documentation/open/nominatim-search/search/
-        /// This data is based on OpenStreetMap
+        /// Uses OSM Nominatim API https://nominatim.org/release-docs/latest/api/Search/
         /// </summary>
         /// <param name="hutName"></param>
         /// <returns></returns>
         public static async Task<(double? latitude, double? longitude)> SearchHutCoordinates(string hutName, HttpClient httpClient, ILogger log)
         {
-            const string baseSearchUrl = "https://open.mapquestapi.com/nominatim/v1/search.php?format=json&limit=5";
-
-            string apiKey = Environment.GetEnvironmentVariable("MapQuestApiKey");
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                throw new ArgumentException("MapQuestApiKey missing in AppSettings");
-            }
-
+            const string baseSearchUrl = "https://nominatim.openstreetmap.org/search.php?format=json&limit=5";
+            string searchUrl = null;
             try
             {
                 // Most hut names contain the Section after a comma. We only use the name for the search
@@ -189,14 +185,15 @@ namespace FetchDataFunctions
                     hutName = hutName.Split(',')[0];
                 }
 
-                string searchUrl = $"{baseSearchUrl}&key={apiKey}&q={hutName}";
+                searchUrl = $"{baseSearchUrl}&q={hutName}";
+
                 var result = await httpClient.GetAsync(searchUrl);
                 result.EnsureSuccessStatusCode();
 
-                var searchResults = await result.Content.ReadAsAsync<List<MapQuestSearchResult>>();
+                var searchResults = await result.Content.ReadAsAsync<List<NominatimSearchResult>>();
                 if (searchResults?.Count > 0)
                 {
-                    MapQuestSearchResult sr = null;
+                    NominatimSearchResult sr = null;
                     if (searchResults.Count > 1)
                     {
                         // Many - but not all - of the huts actually have the type property properly 
@@ -246,7 +243,7 @@ namespace FetchDataFunctions
             }
             catch (Exception e)
             {
-                log.LogError(default, e, $"Exception while calling coordinate search for hut={hutName}");
+                log.LogError(default, e, $"Exception while calling coordinate search for hut={hutName} with URL {searchUrl}");
             }
             return (null, null);
         }

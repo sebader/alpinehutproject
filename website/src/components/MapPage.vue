@@ -38,7 +38,8 @@
             <div v-if="hut.availability != null && !hut.availability.hutClosed">{{ $t('mapPage.freeBeds') }}: {{
             hut.availability.totalFreeBeds }} / {{
               hut.availability.totalBeds }}</div>
-            <div v-if="hut.availability?.hutClosed">{{ $t('message.hutClosed') }}</div>
+            <div v-if="hut.availability?.hutClosed"><i>{{ $t('message.hutClosed') }}</i></div>  <!-- Blue marker -->
+            <div v-if="!hut.enabled"><i>{{ $t('message.hutNotYetActive') }}</i></div> <!-- Grey marker -->
           </l-tooltip>
           <l-popup :options='{ "closeButton": false }'>
             <h6>

@@ -64,6 +64,7 @@ const messages = {
          localeen: 'English',
          localede: 'Deutsch',
          hutClosed: 'Hut closed',
+         hutNotYetActive: 'Hut not yet activated',
       },
       mapPage: {
          availabilityAtDate: 'Availability at',
@@ -118,6 +119,7 @@ const messages = {
          localeen: 'English',
          localede: 'Deutsch',
          hutClosed: 'Hütte geschlossen',
+         hutNotYetActive: 'Hütte noch nicht aktiviert',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',

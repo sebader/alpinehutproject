@@ -22,7 +22,7 @@
     "vue3-simple-typeahead": "^1.0.10"
   },
   "devDependencies": {
-    "@vue-leaflet/vue-leaflet": "^0.6.1",
+    "@vue-leaflet/vue-leaflet": "^0.7.0",
     "@vue/cli-service": "^5.0.6",
     "ajv": "8.11.2",
     "is-primitive": "^3.0.1",

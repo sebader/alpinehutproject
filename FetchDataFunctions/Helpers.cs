@@ -3,7 +3,6 @@ using HtmlAgilityPack;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

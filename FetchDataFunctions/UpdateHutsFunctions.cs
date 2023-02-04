@@ -6,7 +6,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared.Models;
+using FetchDataFunctions.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

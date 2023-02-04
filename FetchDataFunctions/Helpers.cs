@@ -159,10 +159,10 @@ namespace FetchDataFunctions
             }
             else if (requestBody.Contains("de_DE"))
             {
-                return "Deutschland/Österreich";
+                return "unbekannt";
             }
 
-            return "Deutschland/Österreich";
+            return "unbekannt";
         }
 
         /// <summary>

@@ -91,6 +91,7 @@ const messages = {
          Slowenien: 'Slovenia',
          Belgien: 'Belgium',
          Frankreich: 'France',
+         unbekannt: 'unknown',
       }
    },
    de: {
@@ -146,6 +147,7 @@ const messages = {
          Slowenien: 'Slowenien',
          Belgien: 'Belgien',
          Frankreich: 'Frankreich',
+         unbekannt: 'unbekannt',
       }
    }
 }

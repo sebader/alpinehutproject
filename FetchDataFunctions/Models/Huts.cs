@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Shared.Models
+namespace FetchDataFunctions.Models
 {
     public partial class Hut
     {
@@ -31,7 +31,7 @@ namespace Shared.Models
         {
             if (!string.IsNullOrEmpty(HutWebsite))
             {
-                Regex r = new Regex(@"http[s]{0,1}://(www){0,1}\.*");
+                var r = new Regex(@"http[s]{0,1}://(www){0,1}\.*");
                 return r.Replace(HutWebsite.ToLower(), "");
             }
             else

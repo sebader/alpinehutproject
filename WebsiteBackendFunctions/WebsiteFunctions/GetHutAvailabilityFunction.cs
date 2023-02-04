@@ -51,7 +51,7 @@ namespace WebsiteBackendFunctions
                 result.Add(avw);
             }
 
-            log.LogInformation("Retrieved {count} availabilites for hut id {hutid}", result.Count(), hutId);
+            log.LogInformation("Retrieved {count} availabilites for hut id {hutid}", result.Count, hutId);
             return new OkObjectResult(result);
         }
     }

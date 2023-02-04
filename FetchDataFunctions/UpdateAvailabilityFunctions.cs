@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,7 +20,7 @@ namespace FetchDataFunctions
 {
     public class UpdateAvailabilityFunctions
     {
-        private IHttpClientFactory _clientFactory;
+        private readonly IHttpClientFactory _clientFactory;
         public UpdateAvailabilityFunctions(IHttpClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
@@ -71,8 +70,7 @@ namespace FetchDataFunctions
 
             foreach (var hutId in hutIds.Split(','))
             {
-                int parsedId;
-                if (!int.TryParse(hutId, out parsedId))
+                if (!int.TryParse(hutId, out int parsedId))
                 {
                     log.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
@@ -280,7 +278,7 @@ namespace FetchDataFunctions
             return numRowsWritten;
         }
 
-        private List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
+        private static List<DayAvailability> ParseAvailability(string responseBody, ILogger log)
         {
             var jObject = JsonConvert.DeserializeObject<JObject>(responseBody);
 

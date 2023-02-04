@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Shared.Models
+namespace FetchDataFunctions.Models
 {
     public partial class Availability
     {

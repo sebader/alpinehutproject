@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace Shared.Models
+namespace FetchDataFunctions.Models
 {
     public partial class AlpinehutsDbContext : DbContext
     {

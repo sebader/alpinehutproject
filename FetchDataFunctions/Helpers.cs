@@ -3,7 +3,6 @@ using HtmlAgilityPack;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,7 +35,7 @@ namespace FetchDataFunctions
 
         public static AlpinehutsDbContext GetDbContext()
         {
-            DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new DbContextOptionsBuilder<AlpinehutsDbContext>();
+            DbContextOptionsBuilder<AlpinehutsDbContext> optionsBuilder = new();
 
             var connectionString = Environment.GetEnvironmentVariable("DatabaseConnectionString");
 
@@ -96,14 +95,14 @@ namespace FetchDataFunctions
                 // Only call the external services, if the hut is a new one for us
                 if (isNewHut)
                 {
-                    var latLong = await SearchHutCoordinates(hutName, httpClient, log);
+                    var (latitude, longitude) = await SearchHutCoordinates(hutName, httpClient, log);
 
-                    if (latLong.latitude != null && latLong.longitude != null)
+                    if (latitude != null && longitude != null)
                     {
-                        hut.Latitude = latLong.latitude;
-                        hut.Longitude = latLong.longitude;
+                        hut.Latitude = latitude;
+                        hut.Longitude = longitude;
 
-                        var countryRegion = await GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, httpClient, log);
+                        var countryRegion = await GetCountryAndRegion((double)latitude, (double)longitude, httpClient, log);
                         country = countryRegion.country ?? country;
                         region = countryRegion.region;
                     }
@@ -160,10 +159,10 @@ namespace FetchDataFunctions
             }
             else if (requestBody.Contains("de_DE"))
             {
-                return "Deutschland/Österreich";
+                return "unbekannt";
             }
 
-            return "Deutschland/Österreich";
+            return "unbekannt";
         }
 
         /// <summary>
@@ -203,7 +202,7 @@ namespace FetchDataFunctions
                             log.LogWarning($"Multiple coordinate search results for hut name={hutName}. Selecting the first one which might not be the correct one");
                         }
                     }
-                    sr = sr ?? searchResults.First();
+                    sr ??= searchResults.First();
                     var lat = double.Parse(sr.lat, CultureInfo.InvariantCulture);
                     var lon = double.Parse(sr.lon, CultureInfo.InvariantCulture);
 

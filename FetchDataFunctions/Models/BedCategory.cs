@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Shared.Models
+namespace FetchDataFunctions.Models
 {
     public partial class BedCategory
     {

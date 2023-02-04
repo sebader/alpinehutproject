@@ -17,7 +17,7 @@ namespace FetchDataFunctions
 {
     public class UpdateHutsFunctions
     {
-        private int MaxHutId
+        private static int MaxHutId
         {
             get
             {
@@ -29,7 +29,7 @@ namespace FetchDataFunctions
             }
         }
 
-        private IHttpClientFactory _clientFactory;
+        private readonly IHttpClientFactory _clientFactory;
         public UpdateHutsFunctions(IHttpClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
@@ -72,8 +72,7 @@ namespace FetchDataFunctions
 
             foreach (var hutId in hutIds.Split(','))
             {
-                int parsedId;
-                if (!int.TryParse(hutId, out parsedId))
+                if (!int.TryParse(hutId, out int parsedId))
                 {
                     log.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
@@ -96,7 +95,7 @@ namespace FetchDataFunctions
             var tasks = new List<Task>();
 
             // Fan-out. Every day we check 1/7 of all hut IDs in the range
-            for (int i = startHutId; i <= MaxHutId; i = i + 7)
+            for (int i = startHutId; i <= MaxHutId; i += 7)
             {
                 tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivity), i));
             }
@@ -167,15 +166,15 @@ namespace FetchDataFunctions
                         {
                             if (existingHut.Latitude == null || existingHut.Longitude == null || string.IsNullOrEmpty(existingHut.Country))
                             {
-                                var latLong = await Helpers.SearchHutCoordinates(parsedHut.Name, httpClient, log);
-                                if (latLong.latitude != null && latLong.longitude != null)
+                                var (latitude, longitude) = await Helpers.SearchHutCoordinates(parsedHut.Name, httpClient, log);
+                                if (latitude != null && longitude != null)
                                 {
-                                    parsedHut.Latitude = latLong.latitude;
-                                    parsedHut.Longitude = latLong.longitude;
+                                    parsedHut.Latitude = latitude;
+                                    parsedHut.Longitude = longitude;
 
-                                    var countryRegion = await Helpers.GetCountryAndRegion((double)latLong.latitude, (double)latLong.longitude, httpClient, log);
-                                    parsedHut.Country = countryRegion.country ?? parsedHut.Country;
-                                    parsedHut.Region = countryRegion.region ?? parsedHut.Region;
+                                    var (country, region) = await Helpers.GetCountryAndRegion((double)latitude, (double)longitude, httpClient, log);
+                                    parsedHut.Country = country ?? parsedHut.Country;
+                                    parsedHut.Region = region ?? parsedHut.Region;
                                 }
                             }
                             existingHut.Name = parsedHut.Name;
@@ -221,7 +220,7 @@ namespace FetchDataFunctions
             return null;
         }
 
-        private async Task<HtmlDocument> LoadWebsite(string url, HttpClient httpClient, ILogger log)
+        private static async Task<HtmlDocument> LoadWebsite(string url, HttpClient httpClient, ILogger log)
         {
             log.LogDebug("Executing http GET against {url}", url);
 

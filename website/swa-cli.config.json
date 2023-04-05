@@ -10,7 +10,8 @@
       "run": "npm run serve",
       "appDevserverUrl": "http://localhost:8080",
       "appName": "alpinehutsspa",
-      "resourceGroupName": "alpinehuts-rg"
+      "resourceGroupName": "alpinehuts-rg",
+      "data_api_location": "../swa-db-connections"
     }
   }
 }

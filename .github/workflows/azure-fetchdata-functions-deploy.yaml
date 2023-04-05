@@ -27,11 +27,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: 'Function Build using Dotnet'
-      shell: pwsh
       run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        cd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         dotnet build --configuration Release --output ./output
-        popd
+
     - name: 'Deploy Azure Function'
       uses: Azure/functions-action@v1
       id: fa

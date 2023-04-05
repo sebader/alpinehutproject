@@ -15,14 +15,14 @@ env:
   DOTNET_VERSION: '6.x'              # set this to the dotnet version to use
 
 jobs:
-  build_and_deploy:
+  function_build_and_deploy:
     runs-on: windows-latest
     steps:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@v3
 
     - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 

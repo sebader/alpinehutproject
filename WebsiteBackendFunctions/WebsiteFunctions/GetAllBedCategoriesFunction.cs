@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,8 +16,8 @@ namespace WebsiteBackendFunctions
         public static IActionResult GetAllBedCategories(
                 [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bedcategory")] HttpRequest req,
                 [Sql("SELECT DISTINCT name FROM [dbo].[BedCategories] WHERE SharesNameWithBedCateogryId IS NULL AND Id <> -1",
-            CommandType = System.Data.CommandType.Text,
-            ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<BedCategoryViewModel> result,
+            commandType: CommandType.Text,
+            connectionStringSetting : "DatabaseConnectionString")] IEnumerable<BedCategoryViewModel> result,
                 ILogger log)
         {
             log.LogInformation("Retrieved {count} bed categories from database", result?.Count());

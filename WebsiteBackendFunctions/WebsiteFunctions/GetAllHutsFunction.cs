@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +17,8 @@ namespace WebsiteBackendFunctions
         public static IActionResult GetAllHuts(
                 [HttpTrigger(AuthorizationLevel.Function, "get", Route = "hut")] HttpRequest req,
                 [Sql("SELECT * FROM [dbo].[Huts]",
-            CommandType = System.Data.CommandType.Text,
-            ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<Hut> result,
+            commandType: CommandType.Text,
+            connectionStringSetting: "DatabaseConnectionString")] IEnumerable<Hut> result,
                 ILogger log)
         {
             log.LogInformation("Retrieved {count} huts from database", result?.Count());

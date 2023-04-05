@@ -24,9 +24,10 @@ namespace WebsiteBackendFunctions
             "LEFT OUTER JOIN dbo.BedCategories bc ON b.SharesNameWithBedCateogryId = bc.id " +
             "WHERE a.hutid = @HutId AND a.Date >= CONVERT (date, GETDATE()) " +
             "ORDER BY a.date ASC",
-            CommandType = CommandType.Text,
-            Parameters = "@HutId={hutid}",
-            ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<AvailabilityIntermediaryModel> availabilityResult,
+            "DatabaseConnectionString",
+            CommandType.Text,
+            "@HutId={hutid}"
+            )] IEnumerable<AvailabilityIntermediaryModel> availabilityResult,
             int hutId,
             ILogger log)
         {

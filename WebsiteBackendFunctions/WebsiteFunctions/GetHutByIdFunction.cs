@@ -16,9 +16,9 @@ namespace WebsiteBackendFunctions
         public static IActionResult GetHut(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "hut/{hutid:int}")] HttpRequest req,
             [Sql("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
-            CommandType = CommandType.Text,
-            Parameters = "@Id={hutid}",
-            ConnectionStringSetting = "DatabaseConnectionString")] IEnumerable<Hut> result,
+            "DatabaseConnectionString",
+            CommandType.Text,
+            "@Id={hutid}")] IEnumerable<Hut> result,
             int hutId,
             ILogger log)
         {

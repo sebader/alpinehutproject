@@ -17,8 +17,8 @@ namespace WebsiteBackendFunctions
         public static IActionResult GetAllHuts(
                 [HttpTrigger(AuthorizationLevel.Function, "get", Route = "hut")] HttpRequest req,
                 [Sql("SELECT * FROM [dbo].[Huts]",
-            commandType: CommandType.Text,
-            connectionStringSetting: "DatabaseConnectionString")] IEnumerable<Hut> result,
+            "DatabaseConnectionString",
+            CommandType.Text)] IEnumerable<Hut> result,
                 ILogger log)
         {
             log.LogInformation("Retrieved {count} huts from database", result?.Count());

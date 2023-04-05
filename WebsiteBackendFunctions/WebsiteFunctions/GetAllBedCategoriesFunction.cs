@@ -16,8 +16,8 @@ namespace WebsiteBackendFunctions
         public static IActionResult GetAllBedCategories(
                 [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bedcategory")] HttpRequest req,
                 [Sql("SELECT DISTINCT name FROM [dbo].[BedCategories] WHERE SharesNameWithBedCateogryId IS NULL AND Id <> -1",
-            commandType: CommandType.Text,
-            connectionStringSetting : "DatabaseConnectionString")] IEnumerable<BedCategoryViewModel> result,
+                    "DatabaseConnectionString",
+                    CommandType.Text)] IEnumerable<BedCategoryViewModel> result,
                 ILogger log)
         {
             log.LogInformation("Retrieved {count} bed categories from database", result?.Count());

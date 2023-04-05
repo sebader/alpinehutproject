@@ -23,9 +23,9 @@ namespace WebsiteBackendFunctions
             "JOIN dbo.BedCategories b on a.BedCategoryId = b.id " +
             "LEFT OUTER JOIN dbo.BedCategories bc on b.SharesNameWithBedCateogryId = bc.id " +
             "WHERE a.Date = @DateFilter ",
-            commandType: CommandType.Text,
-            parameters: "@DateFilter={datefilter}",
-            connectionStringSetting: "DatabaseConnectionString")] IEnumerable<AvailabilityIntermediaryModel> availabilityResult,
+            "DatabaseConnectionString",
+            CommandType.Text,
+            "@DateFilter={datefilter}" )] IEnumerable<AvailabilityIntermediaryModel> availabilityResult,
             string dateFilter,
             ILogger log)
         {

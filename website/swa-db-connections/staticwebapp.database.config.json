@@ -10,7 +10,7 @@
   "runtime": {
     "rest": {
       "enabled": true,
-      "path": "/rest"
+      "path": "/"
     },
     "graphql": {
       "allow-introspection": true,
@@ -31,7 +31,6 @@
   "entities": {
     "Hut": {
       "source": "dbo.huts",
-      "key-fields": "id",
       "permissions": [
         {
           "role": "anonymous",

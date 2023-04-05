@@ -10,9 +10,9 @@ export default class HutService {
 
    async listHutsAsync() {
       if (this.huts == null) {
-         var res = await fetch(`${DATA_API_ENDPOINT}/Hut`);
+         var res = await fetch(`${DATA_API_ENDPOINT}/Hut?$first=5000`);
          if (res.ok) {
-            this.huts = res.json();
+            this.huts = res.json().value;
          }
          else {
             throw new Error(await processErrorResponseAsync(res));
@@ -21,7 +21,7 @@ export default class HutService {
       return this.huts;
    }
 
-   async getHutFromList(hutId){
+   async getHutFromList(hutId) {
       if (this.huts == null) {
          await this.listHutsAsync();
       }
@@ -33,7 +33,11 @@ export default class HutService {
       var res = await fetch(`${DATA_API_ENDPOINT}/Hut/Id/${hutId}`);
 
       if (res.ok) {
-         return await res.json();
+         var value = await res.json().value;
+         if (value.length == 1) {
+            return value[0];
+         }
+         return new Error("Hut not found");
       }
       else {
          throw new Error(await processErrorResponseAsync(res));

@@ -12,7 +12,8 @@ export default class HutService {
       if (this.huts == null) {
          var res = await fetch(`${DATA_API_ENDPOINT}/Hut?$first=5000`);
          if (res.ok) {
-            this.huts = res.json().value;
+            var result = res.json();
+            this.huts = result.value;
          }
          else {
             throw new Error(await processErrorResponseAsync(res));
@@ -33,9 +34,9 @@ export default class HutService {
       var res = await fetch(`${DATA_API_ENDPOINT}/Hut/Id/${hutId}`);
 
       if (res.ok) {
-         var value = await res.json().value;
-         if (value.length == 1) {
-            return value[0];
+         var result = await res.json();
+         if (result.value.length == 1) {
+            return result.value[0];
          }
          return new Error("Hut not found");
       }

@@ -8,7 +8,7 @@ export default class MapviewService {
 
    async getAllAvailabilityOnDate(dateFilter) {
       if (this.availabilityData[dateFilter] == null) {
-         var res = await fetch(`${API_ENDPOINT}/availability/${dateFilter}`);
+         var res = await fetch(`${API_ENDPOINT}/Availability/${dateFilter}`);
 
          if (res.ok) {
             this.availabilityData[dateFilter] = await res.json();

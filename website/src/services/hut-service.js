@@ -57,7 +57,7 @@ export default class HutService {
             }
             return obj;
          }
-         return new Error("Hut not found");
+         throw new Error("Hut not found");
       }
       else {
          throw new Error(await processErrorResponseAsync(res));

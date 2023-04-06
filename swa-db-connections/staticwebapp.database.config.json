@@ -39,6 +39,21 @@
           ]
         }
       ]
+    },
+    "BedCategory": {
+      "source": {
+        "type": "view",
+        "object": "dbo.v_BedCategories",
+        "key-fields": [ "Name" ]
+      },
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            "read"
+          ]
+        }
+      ]
     }
   }
 }

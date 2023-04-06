@@ -1,7 +1,7 @@
 import { processErrorResponseAsync } from "../utils"
 import { Constants } from "../utils";
 
-const API_ENDPOINT = window.API_URL;
+const DATA_API_ENDPOINT = window.DATA_API_URL;
 
 export default class HutService {
 
@@ -9,9 +9,21 @@ export default class HutService {
 
    async listHutsAsync() {
       if (this.huts == null) {
-         var res = await fetch(`${API_ENDPOINT}/hut`);
+         var res = await fetch(`${DATA_API_ENDPOINT}/Hut?$first=5000`);
          if (res.ok) {
-            this.huts = res.json();
+            var result = await res.json();
+
+            // Workaround to camelCase the property names
+            for (let i = 0; i < result.value.length; i++) {
+               let obj = result.value[i];
+               for (let prop in obj) {
+                  if (prop[0] === prop[0].toUpperCase()) {
+                     obj[prop[0].toLowerCase() + prop.slice(1)] = obj[prop];
+                     delete obj[prop];
+                  }
+               }
+            }
+            this.huts = result.value;
          }
          else {
             throw new Error(await processErrorResponseAsync(res));
@@ -20,7 +32,7 @@ export default class HutService {
       return this.huts;
    }
 
-   async getHutFromList(hutId){
+   async getHutFromList(hutId) {
       if (this.huts == null) {
          await this.listHutsAsync();
       }
@@ -29,10 +41,23 @@ export default class HutService {
 
    async getHutByIdAsync(hutId) {
 
-      var res = await fetch(`${API_ENDPOINT}/hut/${hutId}`);
+      var res = await fetch(`${DATA_API_ENDPOINT}/Hut/Id/${hutId}`);
 
       if (res.ok) {
-         return await res.json();
+         var result = await res.json();
+         if (result.value.length == 1) {
+
+            // Workaround to camelCase the property names
+            let obj = result.value[0];
+            for (let prop in obj) {
+               if (prop[0] === prop[0].toUpperCase()) {
+                  obj[prop[0].toLowerCase() + prop.slice(1)] = obj[prop];
+                  delete obj[prop];
+               }
+            }
+            return obj;
+         }
+         throw new Error("Hut not found");
       }
       else {
          throw new Error(await processErrorResponseAsync(res));

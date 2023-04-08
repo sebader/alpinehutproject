@@ -21,7 +21,7 @@ namespace FetchDataFunctions
         /// <summary>
         /// List of hut names which are clearly only used for testing. We filter these out
         /// </summary>
-        public static string[] ExcludedHutNames = new[]
+        public readonly static string[] ExcludedHutNames = new[]
         {
             "testhuette_elca, ELCA",
             "ZZZ TEST Monbijouhütte, SAC GS",
@@ -30,7 +30,8 @@ namespace FetchDataFunctions
             "AV Testhütte, DAV Bundesgeschäftsstelle",
             "Test",
             "Domžalski dom Test",
-            "ZZZ TEST - Demo Cabane CAS Gruyere, CAS Gruyere"
+            "ZZZ TEST - Demo Cabane CAS Gruyere, CAS Gruyere",
+            "Testhütte Carolin"
         };
 
         public static AlpinehutsDbContext GetDbContext()

@@ -6,10 +6,11 @@
     <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link>
 
     <span style="float:right;">
-      {{ $t("message.language") }}
-      <select v-model="$i18n.locale">
-        <option v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`" :value="locale">{{ $t("message.locale" + locale) }}</option>
-      </select>
+      <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">
+        <router-link :to="{ name: $route.name, params: $route.params, query: $route.query, hash: $route.hash, replace: true }" :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale" @click.native="$i18n.locale = locale">{{ $t("message.locale" + locale) }}</router-link>
+        <span v-else>{{ $t("message.locale" + locale) }}</span>
+        <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
+      </span>
     </span>
     <hr />
 
@@ -19,7 +20,7 @@
 
     <hr />
 
-    <footer>{{ $t("message.footerText")}}. Commit version: {{ versionLabel }}
+    <footer>{{ $t("message.footerText") }}. Commit version: {{ versionLabel }}
     </footer>
   </div>
 </template>

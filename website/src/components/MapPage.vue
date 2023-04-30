@@ -1,29 +1,39 @@
 <template>
-  <div class="row">
+  <div id="commandbar" class="row">
     <div class="col-sm-3">
       <label>{{ $t('mapPage.availabilityAtDate') }}</label>
-      <input v-model="dateFilter" type="date" :min="`${new Date().toISOString().split('T')[0]}`" style="width:200px" />
+      <div class="input-group">
+        <input v-model="dateFilter" type="date" :min="`${new Date().toISOString().split('T')[0]}`" class="form-control" />
+      </div>
     </div>
     <div class="col-sm-3">
       <label>{{ $t('mapPage.numberOfBeds') }}</label>
-      <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" style="width:100px" />
+      <div class="input-group">
+        <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" class="form-control" />
+      </div>
     </div>
     <div class="col-sm-3">
       <label>{{ $t('mapPage.bedCategory') }}</label>
-      <select v-model="selectedBedCategory">
-        <option value="">-{{ $t('mapPage.anyBeds') }}-</option>
-        <option v-for="option in this.bedCategories" :value="option.name">
-          {{ option.name }}
-        </option>
-      </select>
+      <div class="input-group">
+        <select v-model="selectedBedCategory" class="form-control">
+          <option value="">-{{ $t('mapPage.anyBeds') }}-</option>
+          <option v-for="option in this.bedCategories" :value="option.name">
+            {{ option.name }}
+          </option>
+        </select>
+      </div>
     </div>
     <div class="col-sm-3" style="z-index:9999;">
-      <vue3-simple-typeahead :placeholder="$t('message.search')" :items="huts" :minInputLength="1"
+      <label>{{ $t('message.search') }}</label>
+      <div class="input-group">
+        <vue3-simple-typeahead  :items="huts" :minInputLength="1"
         :itemProjection="(hut) => { return hut.name; }" @selectItem="hutSelected">
       </vue3-simple-typeahead>
+      </div>
     </div>
   </div>
-  <div style="height: 75vh; width: 90vw;">
+    
+  <div id="mainmap" style="height: 75vh; width: 100vw;">
     <loading v-model:active="loading" />
     <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
       <l-control-layers position="topright"></l-control-layers>

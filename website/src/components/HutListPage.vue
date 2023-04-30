@@ -6,9 +6,9 @@
 
       <div v-show="!loading">
          <label>{{ $t('message.search') }}</label>
-         <input type="text" v-model="searchValue">
+         <input type="text" v-model="searchValue" class="form-control">
          <EasyDataTable :headers="tableHeaders" :items="extendedHuts" alternating :rows-per-page="rowsPerPage"
-            :search-value="searchValue" :sort-by="sortBy">
+            :search-value="searchValue" :sort-by="sortBy" :sort-type="sortType" @update-sort="updateSort">
             <template #item-name="hut">
                <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }" :title="$t('message.showHutDetails')">
                   {{ hut.name }}</router-link>
@@ -49,7 +49,8 @@ export default {
             { text: "Link", value: "link", sortable: false }
          ],
          searchValue: "",
-         sortBy: "id"
+         sortBy: localStorage.getItem('sortBy') || "id",
+         sortType: localStorage.getItem('sortType') || "asc"
       }
    },
    computed: {
@@ -78,6 +79,12 @@ export default {
    methods: {
       hutSelected(selectedHut) {
          this.$router.push({ name: 'hutDetailsPage', params: { hutId: selectedHut.id } });
+      },
+      updateSort(sortOptions){
+         this.sortBy = sortOptions.sortBy;
+         this.sortType = sortOptions.sortType;
+         localStorage.setItem('sortBy', this.sortBy);
+         localStorage.setItem('sortType', this.sortType);
       }
    }
 }

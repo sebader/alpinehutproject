@@ -40,7 +40,7 @@ appInsights.trackPageView();
 const messages = {
    en: {
       message: {
-         siteTitle: 'Alpine Huts - Online Booking Overview',
+         siteTitle: 'Alpine Huts - Online Booking',
          map: 'Map',
          list: 'List',
          info: 'Info',
@@ -67,7 +67,7 @@ const messages = {
          hutNotYetActive: 'Hut not yet activated',
       },
       mapPage: {
-         availabilityAtDate: 'Availability at',
+         availabilityAtDate: 'Availability on',
          numberOfBeds: 'Number of beds',
          bedCategory: 'Bed category',
          freeBeds: 'Free beds',
@@ -96,7 +96,7 @@ const messages = {
    },
    de: {
       message: {
-         siteTitle: 'Alpenvereinshütten Onlinebuchungsübersicht',
+         siteTitle: 'AV-Hütten Onlinebuchung',
          map: 'Karte',
          list: 'Liste',
          info: 'Info',

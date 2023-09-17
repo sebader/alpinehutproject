@@ -23,14 +23,15 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
             [Sql("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
             "DatabaseConnectionString",
             CommandType.Text,
-            "@Id={hutId}")] IEnumerable<Hut> result,
+            "@Id={hutId}")] IEnumerable<Hut> huts,
             int hutId,
-            [Sql(commandText: "dbo.FreeBedUpdateSubscriptions", connectionStringSetting: "DatabaseConnectionString")] IAsyncCollector<FreeBedUpdateSubscription> newItems,
+            [Sql(commandText: "dbo.FreeBedUpdateSubscriptions", 
+            connectionStringSetting: "DatabaseConnectionString")] IAsyncCollector<FreeBedUpdateSubscription> newItems,
             ILogger log)
         {
             log.LogInformation("New request to create a free bed notification");
 
-            var hut = result.FirstOrDefault();
+            var hut = huts.FirstOrDefault();
             if (hut == null)
             {
                 return new BadRequestObjectResult("Hut does not exist");
@@ -58,7 +59,7 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
             body.HutId = hutId;
             body.Notified = false;
 
-            log.LogInformation("Adding subscription to the database");
+            log.LogInformation("Adding subscription to the database for hut {hutId}, date {date}", hutId, body.Date);
             await newItems.AddAsync(body);
 
             return new OkResult();

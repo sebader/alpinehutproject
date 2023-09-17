@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using FetchDataFunctions.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 
-namespace WebsiteBackendFunctions.WebsiteFunctions
+namespace FetchDataFunctions.WebsiteFunctions
 {
     public class CleanupFreeBedNotificationSubscriptions
     {
@@ -21,7 +22,7 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
         public void Run([TimerTrigger("0 0 1 * * * ")]TimerInfo myTimer,
             [Sql("[dbo].[DeleteOldFreeBedSubscriptions]",
             "DatabaseConnectionString",
-            CommandType.StoredProcedure)] IEnumerable<CleanupFreeBedNotificationSubscriptions> result, 
+            CommandType.StoredProcedure)] IEnumerable<FreeBedUpdateSubscription> result, 
             ILogger log)
         {
             log.LogInformation($"Free bed subscription cleanup timer trigger function executed at: {DateTime.Now}");

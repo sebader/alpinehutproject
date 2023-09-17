@@ -56,6 +56,11 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
                 return new BadRequestObjectResult("Date must not be in the past");
             }
 
+            if (body.Date > DateTime.Today.AddDays(90))
+            {
+                return new BadRequestObjectResult("Date must not be more than 90 days in the future");
+            }
+
             body.HutId = hutId;
             body.Notified = false;
 

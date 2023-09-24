@@ -277,9 +277,9 @@ namespace FetchDataFunctions
                                 log.LogInformation("Sending free bed notification email for hut {hutId} on date {date}", hutId, day.Date);
                                 var message = new SendGridMessage();
                                 message.AddTo(subscription.EmailAddress);
-                                message.AddContent("text/html", $"Es gibt wieder freie Pl‰tze in {hut.Name} am {day.Date?.ToString("dd.MM.yyyy")}!<br /><br />Schaue direkt nach: <a href=\"{hut.Link}\">Online Buchung</a><br /><br />---<br />Gesendet von <a href=\"https://alpinehuts.silenced.eu\">alpinehuts.silenced.eu</a><br /><br /><%asm_preferences_raw_url%>");
+                                message.AddContent("text/html", $"Es gibt wieder freie Pl√§tze in {hut.Name} am {day.Date?.ToString("dd.MM.yyyy")}!<br /><br />Schaue direkt nach: <a href=\"{hut.Link}\">Online Buchung</a><br /><br />---<br />Gesendet von <a href=\"https://alpinehuts.silenced.eu\">alpinehuts.silenced.eu</a><br /><br /><%asm_preferences_raw_url%>");
                                 message.SetFrom(new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_SENDER_ADDRESS")));
-                                message.SetSubject($"Freie Pl‰tze in {hut.Name}!");
+                                message.SetSubject($"Freie Pl√§tze in {hut.Name}!");
 
                                 await messageCollector.AddAsync(message);
                                 await messageCollector.FlushAsync();

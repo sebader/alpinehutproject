@@ -278,7 +278,7 @@ namespace FetchDataFunctions
                                 var message = new SendGridMessage();
                                 message.AddTo(subscription.EmailAddress);
                                 message.AddContent("text/html", $"Es gibt wieder freie Plätze in {hut.Name} am {day.Date?.ToString("dd.MM.yyyy")}!<br /><br />Schaue direkt nach: <a href=\"{hut.Link}\">Online Buchung</a><br /><br />---<br />Gesendet von <a href=\"https://alpinehuts.silenced.eu\">alpinehuts.silenced.eu</a><br /><br /><%asm_preferences_raw_url%>");
-                                message.SetFrom(new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_SENDER_ADDRESS")));
+                                message.SetFrom(new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_SENDER_ADDRESS"), "Alpine Huts"));
                                 message.SetSubject($"Freie Plätze in {hut.Name}!");
 
                                 await messageCollector.AddAsync(message);

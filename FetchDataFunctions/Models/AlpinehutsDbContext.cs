@@ -13,6 +13,7 @@ namespace FetchDataFunctions.Models
         public virtual DbSet<Availability> Availability { get; set; }
         public virtual DbSet<Hut> Huts { get; set; }
         public virtual DbSet<BedCategory> BedCategories { get; set; }
+        public virtual DbSet<FreeBedUpdateSubscription> FreeBedUpdateSubscriptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +60,11 @@ namespace FetchDataFunctions.Models
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<FreeBedUpdateSubscription>(entity =>
+            {
+                entity.HasKey(pr => new { pr.HutId, pr.Date, pr.EmailAddress });
             });
         }
     }

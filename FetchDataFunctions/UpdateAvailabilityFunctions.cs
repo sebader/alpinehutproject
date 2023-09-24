@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -54,7 +55,9 @@ namespace FetchDataFunctions
         /// <returns></returns>
         [FunctionName(nameof(UpdateAvailabilityHttpTriggered))]
         public async Task<IActionResult> UpdateAvailabilityHttpTriggered(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req, ILogger log)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+        [SendGrid] IAsyncCollector<SendGridMessage> messageCollector, 
+        ILogger log)
         {
             log.LogInformation("Update Hut HTTP trigger function received a request");
 
@@ -76,7 +79,7 @@ namespace FetchDataFunctions
                 }
                 else
                 {
-                    numRowsWritten += await UpdateHutAvailability(parsedId, log);
+                    numRowsWritten += await UpdateHutAvailability(parsedId, messageCollector, log);
                 }
             }
             return new OkObjectResult(numRowsWritten);
@@ -127,7 +130,10 @@ namespace FetchDataFunctions
         }
 
         [FunctionName(nameof(UpdateHutAvailability))]
-        public async Task<int> UpdateHutAvailability([ActivityTrigger] int hutId, ILogger log)
+        public async Task<int> UpdateHutAvailability(
+            [ActivityTrigger] int hutId,
+            [SendGrid] IAsyncCollector<SendGridMessage> messageCollector,
+            ILogger log)
         {
             int numRowsWritten = 0;
             try
@@ -155,6 +161,10 @@ namespace FetchDataFunctions
                 if (!string.IsNullOrEmpty(cookie))
                 {
                     httpClient.DefaultRequestHeaders.Add("Cookie", cookie);
+
+                    var freeBedSubscriptions = await dbContext.FreeBedUpdateSubscriptions
+                                                                .Where(f => f.HutId == hutId && f.Date <= DateTime.Today.AddDays(112) && f.Notified == false)
+                                                                .ToListAsync();
 
                     var startDate = DateTime.UtcNow;
                     // Each selectDate query gives a 14 day window, so we increment by 14
@@ -260,6 +270,22 @@ namespace FetchDataFunctions
                                 log.LogInformation("Removing obsolete existing availability for hut {hutid}, on {date} with bedCategoryId {bedCategoryId}", hutId, ava.Date, ava.BedCategoryId);
                             }
                             dbContext.RemoveRange(obsoleteExistingAva);
+
+                            var subscriptionsOnDate = freeBedSubscriptions.Where(f => f.Date == day.Date);
+                            foreach(var subscription in subscriptionsOnDate)
+                            {
+                                log.LogInformation("Sending free bed notification email for hut {hutId} on date {date}", hutId, day.Date);
+                                var message = new SendGridMessage();
+                                message.AddTo(subscription.EmailAddress);
+                                message.AddContent("text/html", $"Es gibt wieder freie Plätze in {hut.Name} am {day.Date?.ToString("dd.MM.yyyy")}!<br /><br />Schaue direkt nach: <a href=\"{hut.Link}\">Online Buchung</a><br /><br />---<br />Gesendet von <a href=\"https://alpinehuts.silenced.eu\">alpinehuts.silenced.eu</a><br /><br /><%asm_preferences_raw_url%>");
+                                message.SetFrom(new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_SENDER_ADDRESS")));
+                                message.SetSubject($"Freie Plätze in {hut.Name}!");
+
+                                await messageCollector.AddAsync(message);
+                                await messageCollector.FlushAsync();
+
+                                subscription.Notified = true;
+                            }
 
                             numRowsWritten += await dbContext.SaveChangesAsync();
                         }

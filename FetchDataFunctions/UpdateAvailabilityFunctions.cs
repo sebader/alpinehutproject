@@ -271,20 +271,23 @@ namespace FetchDataFunctions
                             }
                             dbContext.RemoveRange(obsoleteExistingAva);
 
-                            var subscriptionsOnDate = freeBedSubscriptions.Where(f => f.Date == day.Date);
-                            foreach(var subscription in subscriptionsOnDate)
+                            if (!day.HutClosed && day.Rooms.Any(r => r.FreeRoom > 0))
                             {
-                                log.LogInformation("Sending free bed notification email for hut {hutId} on date {date}", hutId, day.Date);
-                                var message = new SendGridMessage();
-                                message.AddTo(subscription.EmailAddress);
-                                message.AddContent("text/html", $"Es gibt wieder freie Plätze in {hut.Name} am {day.Date?.ToString("dd.MM.yyyy")}!<br /><br />Schaue direkt nach: <a href=\"{hut.Link}\">Online Buchung</a><br /><br />---<br />Gesendet von <a href=\"https://alpinehuts.silenced.eu\">alpinehuts.silenced.eu</a><br /><br /><%asm_preferences_raw_url%>");
-                                message.SetFrom(new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_SENDER_ADDRESS"), "Alpine Huts"));
-                                message.SetSubject($"Freie Plätze in {hut.Name}!");
+                                var subscriptionsOnDate = freeBedSubscriptions.Where(f => f.Date == day.Date);
+                                foreach (var subscription in subscriptionsOnDate)
+                                {
+                                    log.LogInformation("Sending free bed notification email for hut {hutId} on date {date}", hutId, day.Date);
+                                    var message = new SendGridMessage();
+                                    message.AddTo(subscription.EmailAddress);
+                                    message.AddContent("text/html", $"Es gibt wieder freie Plätze in {hut.Name} am {day.Date?.ToString("dd.MM.yyyy")}!<br /><br />Schaue direkt nach: <a href=\"{hut.Link}\">Online Buchung</a><br /><br />---<br />Gesendet von <a href=\"https://alpinehuts.silenced.eu\">alpinehuts.silenced.eu</a><br /><br />");
+                                    message.SetFrom(new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_SENDER_ADDRESS"), "Alpine Huts"));
+                                    message.SetSubject($"Freie Plätze in {hut.Name}!");
 
-                                await messageCollector.AddAsync(message);
-                                await messageCollector.FlushAsync();
+                                    await messageCollector.AddAsync(message);
+                                    await messageCollector.FlushAsync();
 
-                                subscription.Notified = true;
+                                    subscription.Notified = true;
+                                }
                             }
 
                             numRowsWritten += await dbContext.SaveChangesAsync();

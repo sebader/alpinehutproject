@@ -1,5 +1,5 @@
 <template>
-  <div id="commandbar" class="row">
+  <div class="commandbar row">
     <div class="col-sm-3">
       <label>{{ $t('mapPage.availabilityAtDate') }}</label>
       <div class="input-group">
@@ -9,7 +9,7 @@
     <div class="col-sm-3">
       <label>{{ $t('mapPage.numberOfBeds') }}</label>
       <div class="input-group">
-        <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" class="form-control" />
+        <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" inputmode="numeric" class="form-control" />
       </div>
     </div>
     <div class="col-sm-3">
@@ -33,7 +33,7 @@
     </div>
   </div>
     
-  <div id="mainmap" style="height: 75vh; width: 100vw;">
+  <div id="mainmap" style="height: 75vh; width: 100vw; ">
     <loading v-model:active="loading" />
     <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
       <l-control-layers position="topright"></l-control-layers>
@@ -51,7 +51,7 @@
             <div v-if="hut.availability?.hutClosed"><i>{{ $t('message.hutClosed') }}</i></div>  <!-- Blue marker -->
             <div v-if="!hut.enabled"><i>{{ $t('message.hutNotYetActive') }}</i></div> <!-- Grey marker -->
           </l-tooltip>
-          <l-popup :options='{ "closeButton": false }'>
+          <l-popup :options='{ "closeButton": false }' @remove="onPopupClose">
             <h6>
               <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }"
                 title="{{ $t('message.showHutDetails') }}">{{
@@ -82,6 +82,20 @@
                   </tr>
                 </template>
               </table>
+              <br />
+              <template v-if="!hut.availability?.hutClosed && hut.availability?.totalFreeBeds == 0">
+                <div>
+                  <div v-if="!formSubmitted">         
+                    <label>{{ $t('message.hutfullNotify') }}</label>
+                    <br />
+                    <input type="email" id="email" v-model="email" placeholder="Email" required />
+                    <button @click="submitNotificationForm(hut.id)">{{ $t('message.submit') }}</button>
+                  </div>
+                  <div v-else>
+                    <p>{{ $t('message.formSuccessfullySubmitted') }}</p>
+                  </div>
+                </div>
+              </template>
               <br />
               <span>{{ $t('message.lastUpdated') }}: {{ new
               Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
@@ -127,6 +141,8 @@ export default {
   },
   data() {
     return {
+      email: '',
+      formSubmitted: false,
       loading: true,
       dateFilter: new Date().toISOString().split('T')[0],
       selectedBedCategory: "",
@@ -154,7 +170,7 @@ export default {
       ],
       huts: [],
       availabilityData: [],
-      bedCategories: [],
+      bedCategories: []
     };
   },
   methods: {
@@ -237,6 +253,31 @@ export default {
     // Little helper function
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
+    },
+    async submitNotificationForm(hutId) {
+      try {
+        // Perform AJAX request using Fetch API
+        await fetch(`/api/freebednotification/${hutId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            emailAddress: this.email,
+            date: this.dateFilter
+          })
+        });
+
+        //console.log("Form submitted successfully!");
+        this.formSubmitted = true; // Set formSubmitted to true on successful submission
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        // Handle errors
+      }
+    },
+    onPopupClose() {
+      // Reset formSubmitted to false when popup is closed
+      this.formSubmitted = false;
     }
   },
   watch: {

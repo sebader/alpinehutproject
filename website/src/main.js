@@ -51,6 +51,7 @@ const messages = {
          onlineBooking: 'Online Booking',
          onlineBookingInactive: 'Online Booking Inactive',
          lastUpdated: 'Last Updated',
+         hutfullNotify: 'Notify me when a space opens up',
          showHutDetails: 'Show hut details',
          showOnMap: 'Show on map',
          hut: 'Hut',
@@ -65,6 +66,8 @@ const messages = {
          localede: 'Deutsch',
          hutClosed: 'Hut closed',
          hutNotYetActive: 'Hut not yet activated',
+         submit: 'Submit',
+         formSuccessfullySubmitted: 'Successfully submitted',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -107,6 +110,7 @@ const messages = {
          onlineBooking: 'Online Buchung',
          onlineBookingInactive: 'Online Buchung nicht aktiv',
          lastUpdated: 'Letztes Update',
+         hutfullNotify: 'Benachrichtige mich, wenn ein Platz frei wird',
          showHutDetails: 'Zeige Hütten Details',
          showOnMap: 'Zeige auf Karte',
          hut: 'Hütte',
@@ -121,6 +125,8 @@ const messages = {
          localede: 'Deutsch',
          hutClosed: 'Hütte geschlossen',
          hutNotYetActive: 'Hütte noch nicht aktiviert',
+         submit: 'Absenden',
+         formSuccessfullySubmitted: 'Erfolgreich abgesendet',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',

@@ -1,6 +1,6 @@
 #app {
 	font-family: Tenorite, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	margin: 5px;
+	/*margin: 5px;*/
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: #2c3e50;
@@ -8,6 +8,15 @@
 	padding-top: 10px;
 	overflow-x: hidden;
 
+}
+
+.header {
+	margin: 5px;
+}
+
+.commandbar {
+	margin: 5px;
+	margin-left: 5px;
 }
 
 h1,
@@ -190,4 +199,8 @@ button.action-button {
 button.action-button:hover {
 	background-color: rgb(0, 180, 0);
 	color: white;
+}
+
+@media (hover: none) {
+	.leaflet-tooltip-pane { display: none; }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div id="commandbar" class="row">
+  <div class="commandbar row">
     <div class="col-sm-3">
       <label>{{ $t('mapPage.availabilityAtDate') }}</label>
       <div class="input-group">

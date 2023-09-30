@@ -9,7 +9,7 @@
     <div class="col-sm-3">
       <label>{{ $t('mapPage.numberOfBeds') }}</label>
       <div class="input-group">
-        <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" class="form-control" />
+        <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" inputmode="decimal" class="form-control" />
       </div>
     </div>
     <div class="col-sm-3">

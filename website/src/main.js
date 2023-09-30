@@ -51,7 +51,7 @@ const messages = {
          onlineBooking: 'Online Booking',
          onlineBookingInactive: 'Online Booking Inactive',
          lastUpdated: 'Last Updated',
-         hutfullNotify: 'Notify me when hut a space opens up',
+         hutfullNotify: 'Notify me when a space opens up',
          showHutDetails: 'Show hut details',
          showOnMap: 'Show on map',
          hut: 'Hut',
@@ -67,7 +67,7 @@ const messages = {
          hutClosed: 'Hut closed',
          hutNotYetActive: 'Hut not yet activated',
          submit: 'Submit',
-         formSuccessfullySubmitted: 'Form successfully submitted',
+         formSuccessfullySubmitted: 'Successfully submitted',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',

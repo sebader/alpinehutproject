@@ -89,7 +89,7 @@
                     <label>{{ $t('message.hutfullNotify') }}</label>
                     <br />
                     <input type="email" id="email" v-model="email" placeholder="Email" required />
-                    <button @click="submitNotificationForm(hut.id, email)">{{ $t('message.submit') }}</button>
+                    <button @click="submitNotificationForm(hut.id)">{{ $t('message.submit') }}</button>
                   </div>
                   <div v-else>
                     <p>{{ $t('message.formSuccessfullySubmitted') }}</p>
@@ -254,22 +254,21 @@ export default {
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     },
-    async submitNotificationForm(hutId, emailAddress) {
+    async submitNotificationForm(hutId) {
       try {
         // Perform AJAX request using Fetch API
-        let response = await fetch(`/api/freebednotification/${hutId}`, {
+        await fetch(`/api/freebednotification/${hutId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            emailAddress: emailAddress,
+            emailAddress: this.email,
             date: this.dateFilter
           })
         });
 
-        console.log("Form submitted successfully!");
-        // Handle the response data as needed
+        //console.log("Form submitted successfully!");
         this.formSubmitted = true; // Set formSubmitted to true on successful submission
       } catch (error) {
         console.error("Error submitting form:", error);
@@ -277,7 +276,7 @@ export default {
       }
     },
     onPopupClose() {
-      console.log("Popup closed");
+      // Reset formSubmitted to false when popup is closed
       this.formSubmitted = false;
     }
   },

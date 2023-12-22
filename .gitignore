@@ -263,3 +263,5 @@ appsettings.Development.json
 PublishProfiles/
 /.vscode
 .env
+__blobstorage__
+__azurite_

@@ -263,3 +263,4 @@ appsettings.Development.json
 PublishProfiles/
 /.vscode
 .env
+__blobstorage__

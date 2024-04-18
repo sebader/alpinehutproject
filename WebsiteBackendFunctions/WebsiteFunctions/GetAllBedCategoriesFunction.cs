@@ -3,24 +3,33 @@ using System.Data;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Sql;
 using Microsoft.Extensions.Logging;
 using WebsiteBackendFunctions.Models;
 
 namespace WebsiteBackendFunctions
 {
-    public static class GetAllBedCategoriesFunction
+    public class GetAllBedCategoriesFunction
     {
-        [FunctionName(nameof(GetAllBedCategories))]
-        public static IActionResult GetAllBedCategories(
-                [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bedcategory")] HttpRequest req,
-                [Sql("SELECT DISTINCT name FROM [dbo].[BedCategories] WHERE SharesNameWithBedCateogryId IS NULL AND Id <> -1",
-                    "DatabaseConnectionString",
-                    CommandType.Text)] IEnumerable<BedCategoryViewModel> result,
-                ILogger log)
+        private readonly ILogger<GetAllBedCategoriesFunction> _logger;
+
+        public GetAllBedCategoriesFunction(ILogger<GetAllBedCategoriesFunction> logger)
         {
-            log.LogInformation("Retrieved {count} bed categories from database", result?.Count());
+            _logger = logger;
+        }
+
+        [Function(nameof(GetAllBedCategories))]
+        public IActionResult GetAllBedCategories(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bedcategory")]
+            HttpRequest req,
+            [SqlInput(
+                "SELECT DISTINCT name FROM [dbo].[BedCategories] WHERE SharesNameWithBedCateogryId IS NULL AND Id <> -1",
+                "DatabaseConnectionString",
+                CommandType.Text, "")]
+            IEnumerable<BedCategoryViewModel> result)
+        {
+            _logger.LogInformation("Retrieved {count} bed categories from database", result?.Count());
 
             return new OkObjectResult(result);
         }

@@ -1,79 +1,110 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using WebsiteBackendFunctions.Models;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Text.Json;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Sql;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace WebsiteBackendFunctions.WebsiteFunctions
 {
-    public static class CreateFreeBedNotificationSubscription
+    public class CreateFreeBedNotificationSubscription
     {
-        [FunctionName(nameof(CreateFreeBedNotificationSubscription))]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "freebednotification/{hutId:int}")] HttpRequest req,
-            [Sql("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
-            "DatabaseConnectionString",
-            CommandType.Text,
-            "@Id={hutId}")] IEnumerable<Hut> huts,
-            int hutId,
-            [Sql(commandText: "dbo.FreeBedUpdateSubscriptions", 
-            connectionStringSetting: "DatabaseConnectionString")] IAsyncCollector<FreeBedUpdateSubscription> newItems,
-            ILogger log)
+        private readonly ILogger<CreateFreeBedNotificationSubscription> _logger;
+
+        public CreateFreeBedNotificationSubscription(ILogger<CreateFreeBedNotificationSubscription> logger)
         {
-            log.LogInformation("New request to create a free bed notification");
+            _logger = logger;
+        }
+
+        [Function(nameof(CreateFreeBedNotificationSubscription))]
+        public async Task<OutputType> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "freebednotification/{hutId:int}")]
+            HttpRequestData req,
+            [SqlInput("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
+                "DatabaseConnectionString",
+                CommandType.Text,
+                "@Id={hutId}")]
+            IEnumerable<Hut> huts,
+            int hutId)
+        {
+            _logger.LogInformation("New request to create a free bed notification");
+
+            var output = new OutputType();
 
             var hut = huts.FirstOrDefault();
             if (hut == null)
             {
-                return new BadRequestObjectResult("Hut does not exist");
+                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await output.HttpResponse.WriteStringAsync("Hut does not exist");
+                return output;
             }
 
             if (hut.Enabled == false)
             {
-                return new BadRequestObjectResult("Hut is not enabled");
+                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await output.HttpResponse.WriteStringAsync("Hut is not enabled");
+                return output;
             }
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var body = JsonSerializer.Deserialize<FreeBedUpdateSubscription>(requestBody, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            var body = JsonSerializer.Deserialize<FreeBedUpdateSubscription>(requestBody,
+                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
-            ICollection<ValidationResult> results = null;
-            if (!Validate(body, out results))
+            if (!Validate(body, out var results))
             {
-                return new BadRequestObjectResult(results.Select(o => o.ErrorMessage));
+                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await output.HttpResponse.WriteAsJsonAsync(results.Select(o => o.ErrorMessage));
+                return output;
             }
 
             if (body.Date < DateTime.Today)
             {
-                return new BadRequestObjectResult("Date must not be in the past");
+                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await output.HttpResponse.WriteStringAsync("Date must not be in the past");
+                return output;
             }
 
             if (body.Date > DateTime.Today.AddDays(90))
             {
-                return new BadRequestObjectResult("Date must not be more than 90 days in the future");
+                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await output.HttpResponse.WriteStringAsync("Date must not be more than 90 days in the future");
+                return output;
             }
 
             body.HutId = hutId;
             body.Notified = false;
 
-            log.LogInformation("Adding subscription to the database for hut {hutId}, date {date}", hutId, body.Date);
-            await newItems.AddAsync(body);
+            _logger.LogInformation("Adding subscription to the database for hut {hutId}, date {date}", hutId,
+                body.Date);
 
-            return new OkResult();
+            output.Item = body;
+            output.HttpResponse = req.CreateResponse(HttpStatusCode.OK);
+
+            return output;
         }
+
         private static bool Validate<T>(T obj, out ICollection<ValidationResult> results)
         {
             results = new List<ValidationResult>();
 
             return Validator.TryValidateObject(obj, new ValidationContext(obj), results, true);
+        }
+
+        public class OutputType
+        {
+            [SqlOutput(commandText: "dbo.FreeBedUpdateSubscriptions",
+                connectionStringSetting: "DatabaseConnectionString")]
+            public FreeBedUpdateSubscription Item { get; set; }
+
+            public HttpResponseData HttpResponse { get; set; }
         }
     }
 }

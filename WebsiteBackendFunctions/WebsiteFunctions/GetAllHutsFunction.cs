@@ -3,25 +3,32 @@ using System.Data;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Sql;
 using Microsoft.Extensions.Logging;
 using WebsiteBackendFunctions.Models;
 
 namespace WebsiteBackendFunctions
 {
-    public static class GetAllHutsFunction
+    public class GetAllHutsFunction
     {
+        private readonly ILogger<GetAllHutsFunction> _logger;
 
-        [FunctionName(nameof(GetAllHuts))]
-        public static IActionResult GetAllHuts(
-                [HttpTrigger(AuthorizationLevel.Function, "get", Route = "hut")] HttpRequest req,
-                [Sql("SELECT * FROM [dbo].[Huts]",
-            "DatabaseConnectionString",
-            CommandType.Text)] IEnumerable<Hut> result,
-                ILogger log)
+        public GetAllHutsFunction(ILogger<GetAllHutsFunction> logger)
         {
-            log.LogInformation("Retrieved {count} huts from database", result?.Count());
+            _logger = logger;
+        }
+
+        [Function(nameof(GetAllHuts))]
+        public IActionResult GetAllHuts(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "hut")]
+            HttpRequest req,
+            [SqlInput("SELECT * FROM [dbo].[Huts]",
+                "DatabaseConnectionString",
+                CommandType.Text, "")]
+            IEnumerable<Hut> result)
+        {
+            _logger.LogInformation("Retrieved {count} huts from database", result?.Count());
 
             return new OkObjectResult(result);
         }

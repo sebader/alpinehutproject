@@ -7,12 +7,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Sql;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using SendGrid.Helpers.Mail;
@@ -34,6 +36,10 @@ namespace FetchDataFunctions
         [Function(nameof(UpdateAvailabilityTimerTriggered))]
         public async Task UpdateAvailabilityTimerTriggered(
             [TimerTrigger("0 0 14,23 * * *")] TimerInfo myTimer,
+            [SqlInput("SELECT Id FROM [dbo].[Huts] WHERE Enabled = 1",
+                "DatabaseConnectionString",
+                CommandType.Text, "")]
+            IEnumerable<Hut> huts,
             [DurableClient] DurableTaskClient starter)
         {
             if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
@@ -43,13 +49,8 @@ namespace FetchDataFunctions
 
             _logger.LogInformation($"{nameof(UpdateAvailabilityTimerTriggered)} function executed at: {DateTime.Now}");
 
-            var dbContext = Helpers.GetDbContext();
-            // Fetch all hut ids which are in Enabled state from database
-            var hutIds = await dbContext.Huts.Where(h => h.Enabled == true).AsNoTracking().Select(h => h.Id)
-                .ToListAsync();
-
             string instanceId =
-                await starter.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateAvailabilityOrchestrator), hutIds);
+                await starter.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateAvailabilityOrchestrator), huts.Select(h => h.Id).ToList());
             _logger.LogInformation($"{nameof(UpdateAvailabilityOrchestrator)} started. Instance ID={instanceId}");
         }
 

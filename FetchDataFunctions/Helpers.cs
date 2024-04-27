@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -55,7 +56,7 @@ namespace FetchDataFunctions
         /// <param name="isNewHut"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        public static async Task<Hut> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, HttpClient httpClient, ILogger log)
+        public static async Task<Hut?> ParseHutInformation(int hutId, HtmlDocument doc, bool isNewHut, HttpClient httpClient, ILogger log)
         {
             var infoDiv = doc.DocumentNode.SelectSingleNode("//body").Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value == "info").FirstOrDefault();
             if (infoDiv != null)
@@ -90,8 +91,8 @@ namespace FetchDataFunctions
                 }
                 hut.Enabled = !doc.ParsedText.Contains("Diese Hütte ist nicht freigeschaltet");
 
-                string country = null;
-                string region = null;
+                string? country = null;
+                string? region = null;
 
                 // Only call the external services, if the hut is a new one for us
                 if (isNewHut)
@@ -175,7 +176,7 @@ namespace FetchDataFunctions
         public static async Task<(double? latitude, double? longitude)> SearchHutCoordinates(string hutName, HttpClient httpClient, ILogger log)
         {
             const string baseSearchUrl = "https://nominatim.openstreetmap.org/search.php?format=json&limit=5";
-            string searchUrl = null;
+            string? searchUrl = null;
             try
             {
                 // Most hut names contain the Section after a comma. We only use the name for the search
@@ -190,7 +191,7 @@ namespace FetchDataFunctions
                 var result = await httpClient.GetAsync(searchUrl);
                 result.EnsureSuccessStatusCode();
 
-                var searchResults = await result.Content.ReadAsAsync<List<NominatimSearchResult>>();
+                var searchResults = await result.Content.ReadFromJsonAsync<List<NominatimSearchResult>>();
                 if (searchResults?.Count > 0)
                 {
                     NominatimSearchResult sr = null;
@@ -255,7 +256,7 @@ namespace FetchDataFunctions
         /// <param name="longitude"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        public static async Task<(string country, string region)> GetCountryAndRegion(double latitude, double longitude, HttpClient httpClient, ILogger log)
+        public static async Task<(string? country, string? region)> GetCountryAndRegion(double latitude, double longitude, HttpClient httpClient, ILogger log)
         {
             const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0&language=de";
 
@@ -271,7 +272,7 @@ namespace FetchDataFunctions
                 var result = await httpClient.GetAsync(searchUrl);
                 result.EnsureSuccessStatusCode();
 
-                var searchResult = await result.Content.ReadAsAsync<AzureMapsResult>();
+                var searchResult = await result.Content.ReadFromJsonAsync<AzureMapsResult>();
                 if (searchResult?.addresses?.Length > 0)
                 {
                     var address = searchResult.addresses.First().address;

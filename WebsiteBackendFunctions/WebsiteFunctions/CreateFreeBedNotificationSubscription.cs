@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Sql;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -18,6 +18,9 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
     public class CreateFreeBedNotificationSubscription
     {
         private readonly ILogger<CreateFreeBedNotificationSubscription> _logger;
+
+        private static readonly JsonSerializerOptions JsonSerializerOptions =
+            new() { PropertyNameCaseInsensitive = true };
 
         public CreateFreeBedNotificationSubscription(ILogger<CreateFreeBedNotificationSubscription> logger)
         {
@@ -42,40 +45,34 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
             var hut = huts.FirstOrDefault();
             if (hut == null)
             {
-                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await output.HttpResponse.WriteStringAsync("Hut does not exist");
+                output.HttpResponse = new BadRequestObjectResult("Hut does not exist");
                 return output;
             }
 
             if (hut.Enabled == false)
             {
-                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await output.HttpResponse.WriteStringAsync("Hut is not enabled");
+                output.HttpResponse = new BadRequestObjectResult("Hut is not enabled");
                 return output;
             }
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var body = JsonSerializer.Deserialize<FreeBedUpdateSubscription>(requestBody,
-                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            var body = JsonSerializer.Deserialize<FreeBedUpdateSubscription>(requestBody, JsonSerializerOptions);
 
             if (!Validate(body, out var results))
             {
-                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await output.HttpResponse.WriteAsJsonAsync(results.Select(o => o.ErrorMessage));
+                output.HttpResponse = new BadRequestObjectResult(results.Select(o => o.ErrorMessage));
                 return output;
             }
 
             if (body.Date < DateTime.Today)
             {
-                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await output.HttpResponse.WriteStringAsync("Date must not be in the past");
+                output.HttpResponse = new BadRequestObjectResult("Date must not be in the past");
                 return output;
             }
 
             if (body.Date > DateTime.Today.AddDays(90))
             {
-                output.HttpResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await output.HttpResponse.WriteStringAsync("Date must not be more than 90 days in the future");
+                output.HttpResponse = new BadRequestObjectResult("Date must not be more than 90 days in the future");
                 return output;
             }
 
@@ -86,7 +83,7 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
                 body.Date);
 
             output.Item = body;
-            output.HttpResponse = req.CreateResponse(HttpStatusCode.OK);
+            output.HttpResponse = new OkResult();
 
             return output;
         }
@@ -104,7 +101,7 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
                 connectionStringSetting: "DatabaseConnectionString")]
             public FreeBedUpdateSubscription Item { get; set; }
 
-            public HttpResponseData HttpResponse { get; set; }
+            [HttpResult] public IActionResult HttpResponse { get; set; }
         }
     }
 }

@@ -10,5 +10,12 @@
         "excludedTypes": "Request"
       }
     }
+  },
+  "extensions": {
+    "durableTask": {
+      "storageProvider": {
+        "type": "Netherite"
+      }
+    }
   }
 }

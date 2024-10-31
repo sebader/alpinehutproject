@@ -12,6 +12,11 @@ public class Program
     {
         var host = new HostBuilder()
             .ConfigureFunctionsWebApplication()
+            .ConfigureServices(services =>
+            {
+                services.AddApplicationInsightsTelemetryWorkerService();
+                services.ConfigureFunctionsApplicationInsights();
+            })
             .ConfigureLogging(logging =>
             {
                 logging.Services.Configure<LoggerFilterOptions>(options =>
@@ -25,11 +30,6 @@ public class Program
                         options.Rules.Remove(defaultRule);
                     }
                 });
-            })
-            .ConfigureServices(services =>
-            {
-                services.AddApplicationInsightsTelemetryWorkerService();
-                services.ConfigureFunctionsApplicationInsights();
             })
             .Build();
 

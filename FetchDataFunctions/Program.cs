@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -16,6 +18,20 @@ public class Program
     {
         var host = new HostBuilder()
             .ConfigureFunctionsWebApplication()
+            .ConfigureLogging(logging =>
+            {
+                logging.Services.Configure<LoggerFilterOptions>(options =>
+                {
+                    // Remove the default rule added by the worker service
+                    // https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#managing-log-levels
+                    var defaultRule = options.Rules.FirstOrDefault(rule => rule.ProviderName
+                                                                           == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
+                    if (defaultRule is not null)
+                    {
+                        options.Rules.Remove(defaultRule);
+                    }
+                });
+            })
             .ConfigureServices(services =>
             {
                 services.AddApplicationInsightsTelemetryWorkerService();

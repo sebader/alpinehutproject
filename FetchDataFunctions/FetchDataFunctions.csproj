@@ -19,7 +19,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.70" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SendGrid" Version="3.0.3" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.23.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.18.1" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.1.7" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.SendGrid" Version="3.0.3" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Sql" Version="3.1.284" />

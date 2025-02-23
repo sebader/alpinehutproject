@@ -18,6 +18,11 @@ namespace FetchDataFunctions
     {
         public const string HutProviderBaseUrl = "https://www.alpsonline.org/reservation/calendar?";
         public const string SelectDateBaseUrl = "https://www.alpsonline.org/reservation/selectDate?date=";
+        
+        
+        public const string GetHutInfosUrlV2 = "https://www.hut-reservation.org/api/v1/reservation/hutInfo/{0}";
+        public const string GetHutAvailabilityUrlV2 = "https://www.hut-reservation.org/api/v1/reservation/getHutAvailability?hutId={0}";
+        public const string HutBookingUrlV2 = "https://www.hut-reservation.org/reservation/book-hut/{0}/wizard";
 
         /// <summary>
         /// List of hut names which are clearly only used for testing. We filter these out

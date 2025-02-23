@@ -13,6 +13,7 @@ namespace WebsiteBackendFunctions.Models
         public int? FreeBeds { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+        public int? Altitude { get; set; }
         public DateTime Date { get; set; }
         public DateTime? LastUpdated { get; set; }
         public List<AvailabilityIntermediaryModel> Availabilities { get; set; }

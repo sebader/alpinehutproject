@@ -76,7 +76,14 @@ namespace FetchDataFunctions
                 return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");
             }
 
-            var result = new List<Hut>();
+            var result = new List<Hut?>();
+
+            if ("all".Equals(hutIds, StringComparison.InvariantCultureIgnoreCase))
+            {
+                hutIds = string.Join(",", Enumerable.Range(1, MaxHutId));
+            }
+
+            var tasks = new List<Task<Hut?>>();
 
             foreach (var hutId in hutIds.Split(','))
             {
@@ -85,9 +92,11 @@ namespace FetchDataFunctions
                     _logger.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
 
-                var res = await GetHutFromProviderActivityV2(parsedId);
-                if (res != null) result.Add(res);
+                tasks.Add(GetHutFromProviderActivityV2(parsedId));
             }
+
+            var huts = await Task.WhenAll(tasks);
+            result.AddRange(huts.Where(h => h != null));
 
             return new OkObjectResult(result);
         }

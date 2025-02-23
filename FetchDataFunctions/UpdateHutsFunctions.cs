@@ -30,7 +30,7 @@ namespace FetchDataFunctions
                     return value;
                 }
 
-                return 700;
+                return 750;
             }
         }
 
@@ -107,7 +107,7 @@ namespace FetchDataFunctions
             // Fan-out. Every day we check 1/7 of all hut IDs in the range
             for (int i = startHutId; i <= MaxHutId; i += 7)
             {
-                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivity), i));
+                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivityV2), i));
             }
 
             // Fan in. Wait for all to be finished
@@ -199,7 +199,7 @@ namespace FetchDataFunctions
         }
 
 
-        [Function(nameof(GetHutFromProviderActivity))]
+        //[Function(nameof(GetHutFromProviderActivity))]
         public async Task<Hut?> GetHutFromProviderActivity([ActivityTrigger] int hutId)
         {
             try

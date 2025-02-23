@@ -48,7 +48,13 @@ public class HutInfoV2
     {
         get
         {
-            var trimmed = altitude.Replace("m", "").Trim();
+            var trimmed = altitude
+                .Replace("H.ü.M", "")
+                .Replace(".", "")
+                .Replace("m ü M", "")
+                .Replace("m", "")
+                .Replace("M", "")
+                .Trim();
             return int.TryParse(trimmed, out var result) ? result : null;
         }
     }

@@ -29,7 +29,7 @@ namespace WebsiteBackendFunctions
                  "CASE WHEN bc.name IS NOT NULL THEN bc.name ELSE b.name END as BedCategory, " +
                  "a.Date as Date, a.FreeRoom as FreeRoom, a.TotalRoom as TotalRoom, a.LastUpdated as LastUpdated " +
                  "FROM dbo.Availability a " +
-                 "JOIN dbo.BedCategories b on a.BedCategoryId = b.id " +
+                 "JOIN dbo.BedCategories b on a.TenantBedCategoryId = b.id " +
                  "LEFT OUTER JOIN dbo.BedCategories bc on b.SharesNameWithBedCateogryId = bc.id " +
                  "WHERE a.Date = @DateFilter ",
                 "DatabaseConnectionString",

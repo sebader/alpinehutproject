@@ -11,6 +11,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
@@ -84,7 +85,7 @@ namespace FetchDataFunctions
                 }
                 else
                 {
-                    var result = await UpdateHutAvailability(parsedId);
+                    var result = await UpdateHutAvailabilityV2(parsedId);
                     numRowsWritten += result.NumberOfRowsWritten;
                 }
             }
@@ -109,7 +110,7 @@ namespace FetchDataFunctions
             {
                 orchestratorLogger.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}",
                     hutId);
-                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutId));
+                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailabilityV2), hutId));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
                 if (tasks.Count >= 10)
@@ -140,7 +141,174 @@ namespace FetchDataFunctions
             orchestratorLogger.LogInformation($"Update availability orchestrator finished");
         }
 
-        [Function(nameof(UpdateHutAvailability))]
+        [Function(nameof(UpdateHutAvailabilityV2))]
+        public async Task<UpdateAvailabilityResult> UpdateHutAvailabilityV2([ActivityTrigger] int hutId)
+        {
+            var result = new UpdateAvailabilityResult
+            {
+                Messages = []
+            };
+            try
+            {
+                _logger.LogInformation("Executing UpdateHutAvailability for hutid={hutId}", hutId);
+                var dbContext = Helpers.GetDbContext();
+
+                var hut = await dbContext.Huts.Include(h => h.Availability).ThenInclude(a => a.BedCategory)
+                    .AsNoTracking().SingleOrDefaultAsync(h => h.Id == hutId);
+                if (hut == null)
+                {
+                    _logger.LogError("No hut found for id={hutId}", hutId);
+                    return result;
+                }
+
+                if (hut.Enabled != true)
+                {
+                    _logger.LogError("Hut id={hutId} is not enabled", hutId);
+                    return result;
+                }
+
+                var httpClient = _clientFactory.CreateClient("HttpClient");
+                // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
+                var availabilityResponse = await httpClient.GetAsync(string.Format(Helpers.GetHutAvailabilityUrlV2, hutId), HttpCompletionOption.ResponseHeadersRead);
+                if (!availabilityResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Could not get availability for hutid={hutId}", hutId);
+                    return result;
+                }
+
+                var availability = await availabilityResponse.Content.ReadFromJsonAsync<IEnumerable<AvailabilityV2>>();
+                if (availability == null)
+                {
+                    _logger.LogError("Could not parse availability for hutid={hutId}", hutId);
+                    return result;
+                }
+
+                var updateTime = DateTime.UtcNow;
+
+                var url = string.Format(Helpers.GetHutInfosUrlV2, hutId);
+                var hutInfoResponse = await httpClient.GetAsync(url);
+                if (!hutInfoResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Could not get hut info for hutid={hutId}", hutId);
+                    return result;
+                }
+
+                var hutInfo = await hutInfoResponse.Content.ReadFromJsonAsync<HutInfoV2>();
+                if (hutInfo == null)
+                {
+                    _logger.LogError("Could not parse hut info for hutid={hutId}", hutId);
+                    return result;
+                }
+
+                foreach (var day in availability)
+                {
+                    if (day.HutClosed)
+                    {
+                        // See if there is any existing availability entries that we should delete
+                        var existingAva = await dbContext.Availability.Where(a =>
+                            a.Hutid == hutId && a.Date == day.date &&
+                            a.BedCategoryId != BedCategory.HutClosedBedcatoryId).ToListAsync();
+                        foreach (var obsoleteAva in existingAva)
+                        {
+                            dbContext.Remove(obsoleteAva);
+                        }
+
+                        var existingCloseAva = await dbContext.Availability.FirstOrDefaultAsync(a =>
+                            a.Hutid == hutId && a.Date == day.date &&
+                            a.BedCategoryId == BedCategory.HutClosedBedcatoryId);
+                        if (existingCloseAva == null)
+                        {
+                            var newAva = new Availability
+                            {
+                                BedCategoryId = BedCategory.HutClosedBedcatoryId,
+                                Date = day.date,
+                                FreeRoom = 0,
+                                TotalRoom = 0,
+                                Hutid = hutId,
+                                LastUpdated = updateTime
+                            };
+                            _logger.LogDebug(
+                                $"Adding new 'Closed' availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
+                            dbContext.Availability.Add(newAva);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var (bedCategory, freeBeds) in day.freeBedsPerCategory)
+                        {
+                            var bedCategoryId = int.Parse(bedCategory);
+
+                            var matchingBedCategory = FindMatchingBedCategory(hutInfo, bedCategoryId, day.hutStatus);
+                            if (matchingBedCategory == null)
+                            {
+                                if (matchingBedCategory == null)
+                                {
+                                    _logger.LogDebug("Could not find matching bed category for hutid={hutId} and bedCategory={bedCategory}", hutId, bedCategoryId);
+                                    continue;
+                                }
+                            }
+
+                            var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a =>
+                                a.Hutid == hutId && a.Date == day.date &&
+                                a.BedCategoryId == bedCategoryId);
+                            if (existingAva != null)
+                            {
+                                existingAva.FreeRoom = freeBeds;
+                                existingAva.TotalRoom = matchingBedCategory.totalSleepingPlaces;
+                                existingAva.LastUpdated = updateTime;
+                                existingAva.TenantBedCategoryId = matchingBedCategory.tenantBedCategoryId;
+                                _logger.LogDebug(
+                                    $"Updating existing availability for hutid={hutId} date={day.date} bedCategoryId={bedCategoryId} FreeRoom={freeBeds}");
+                                dbContext.Update(existingAva);
+                            }
+                            else
+                            {
+                                var newAva = new Availability
+                                {
+                                    BedCategoryId = bedCategoryId,
+                                    TenantBedCategoryId = matchingBedCategory.tenantBedCategoryId,
+                                    Date = day.date,
+                                    FreeRoom = freeBeds,
+                                    TotalRoom = matchingBedCategory.totalSleepingPlaces,
+                                    Hutid = hutId,
+                                    LastUpdated = updateTime
+                                };
+                                _logger.LogDebug($"Adding new availability for hutid={hutId} date={newAva.Date} bedCategoryId={newAva.BedCategoryId}");
+                                dbContext.Availability.Add(newAva);
+                            }
+
+                            var allBedcategories = day.freeBedsPerCategory.Select(r => int.Parse(r.Key)).ToList();
+                            var oldEntries = await dbContext.Availability.Where(a =>
+                                a.Hutid == hutId && a.Date == day.date &&
+                                !allBedcategories.Contains(a.BedCategoryId)).ToListAsync();
+                            if (oldEntries.Count > 0)
+                            {
+                                _logger.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.date);
+                                foreach (var entry in oldEntries)
+                                {
+                                    _logger.LogInformation("Deleting entry with bedCategoryId={bed}", entry.BedCategoryId);
+                                    dbContext.Availability.Remove(entry);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                result.NumberOfRowsWritten += await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                _logger.LogError(default, e, "DbUpdateException in writing availability updates to database for hutid={hutId}", hutId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(default, e, "Exception in getting availability updates from website for hutid={hutId}", hutId);
+            }
+
+            return result;
+        }
+
+        //[Function(nameof(UpdateHutAvailability))]
         public async Task<UpdateAvailabilityResult> UpdateHutAvailability(
             [ActivityTrigger] int hutId)
         {
@@ -419,6 +587,18 @@ namespace FetchDataFunctions
                 _logger.LogError(default, e,
                     "Exception in executing stored procedure to update availability reporting");
             }
+        }
+        
+        private static HutBedCategory? FindMatchingBedCategory(HutInfoV2 hutInfo, int bedCategoryId, string hutStatus)
+        {
+            // Matching pairs:
+            // - ReservationMode = "ROOM" and hutStatus = "SERVICED"
+            // - ReservationMode = "UNSERVICED" and hutStatus = "UNSERVICED"
+
+            var matchingBedCategory = hutInfo.hutBedCategories.FirstOrDefault(b => b.categoryID == bedCategoryId &&
+                                                                                   (b.reservationMode == "ROOM" && hutStatus == "SERVICED" || b.reservationMode == "UNSERVICED" && hutStatus == "UNSERVICED"));
+
+            return matchingBedCategory;
         }
     }
 

@@ -18,9 +18,9 @@ public class HutInfoV2
     public string tenantCountry { get; set; }
     public Picture picture { get; set; }
     public string[] hutLanguages { get; set; }
-    public HutBedCategories[] hutBedCategories { get; set; }
+    public HutBedCategory[] hutBedCategories { get; set; }
     public string providerName { get; set; }
-    public HutGeneralDescriptions[] hutGeneralDescriptions { get; set; }
+    public HutGeneralDescription[] hutGeneralDescriptions { get; set; }
     public string supportLink { get; set; }
     public bool waitingListEnabled { get; set; }
 
@@ -62,7 +62,7 @@ public class Picture
     public object fileData { get; set; }
 }
 
-public class HutBedCategories
+public class HutBedCategory
 {
     public int index { get; set; }
     public int categoryID { get; set; }
@@ -83,7 +83,7 @@ public class HutBedCategoryLanguageData
     public string description { get; set; }
 }
 
-public class HutGeneralDescriptions
+public class HutGeneralDescription
 {
     public string description { get; set; }
     public string language { get; set; }

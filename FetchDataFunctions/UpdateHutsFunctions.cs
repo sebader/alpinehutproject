@@ -7,7 +7,9 @@ using FetchDataFunctions.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
@@ -28,7 +30,7 @@ namespace FetchDataFunctions
                     return value;
                 }
 
-                return 700;
+                return 750;
             }
         }
 
@@ -84,7 +86,7 @@ namespace FetchDataFunctions
                     _logger.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
 
-                var res = await GetHutFromProviderActivity(parsedId);
+                var res = await GetHutFromProviderActivityV2(parsedId);
                 if (res != null) result.Add(res);
             }
 
@@ -105,7 +107,7 @@ namespace FetchDataFunctions
             // Fan-out. Every day we check 1/7 of all hut IDs in the range
             for (int i = startHutId; i <= MaxHutId; i += 7)
             {
-                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivity), i));
+                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivityV2), i));
             }
 
             // Fan in. Wait for all to be finished
@@ -114,8 +116,90 @@ namespace FetchDataFunctions
             log.LogInformation("MaxHutId {MaxHutId} reached. Ending hut updating now.", MaxHutId);
         }
 
+        [Function(nameof(GetHutFromProviderActivityV2))]
+        public async Task<Hut?> GetHutFromProviderActivityV2([ActivityTrigger] int hutId)
+        {
+            try
+            {
+                _logger.LogInformation("Executing " + nameof(GetHutFromProviderActivity) + " for hutid={hutId}", hutId);
+                var dbContext = Helpers.GetDbContext();
 
-        [Function(nameof(GetHutFromProviderActivity))]
+                var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
+                if (existingHut == null)
+                {
+                    _logger.LogInformation("No hut yet in the database for id={hutId}", hutId);
+                }
+                else
+                {
+                    _logger.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
+                }
+
+                var httpClient = _clientFactory.CreateClient("HttpClient");
+
+                var url = string.Format(Helpers.GetHutInfosUrlV2, hutId);
+                var hutInfoResponse = await httpClient.GetAsync(url);
+
+                // If 404, hut does not exist
+                if (hutInfoResponse.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _logger.LogInformation("Hut with ID={hutId} not found", hutId);
+                    return null;
+                }
+
+                if (!hutInfoResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Error fetching hut info for ID={hutId}. StatusCode={StatusCode}", hutId, hutInfoResponse.StatusCode);
+                    return null;
+                }
+
+                var hutInfo = await hutInfoResponse.Content.ReadFromJsonAsync<HutInfoV2>();
+                if (hutInfo == null)
+                {
+                    _logger.LogError("Error deserializing hut info for ID={hutId}", hutId);
+                    return null;
+                }
+
+                var hut = existingHut ?? new Hut();
+
+                hut.Id = hutInfo.hutId;
+                hut.Enabled = hutInfo.hutUnlocked;
+                hut.Country = hutInfo.tenantCountry;
+                hut.Longitude = hutInfo.Longitude;
+                hut.Latitude = hutInfo.Latitude;
+                hut.Name = hutInfo.hutName;
+                hut.HutWebsite = hutInfo.hutWebsite;
+                hut.Link = string.Format(Helpers.HutBookingUrlV2, hutId);
+                hut.LastUpdated = DateTime.UtcNow;
+                hut.Added = existingHut?.Added ?? DateTime.UtcNow;
+                hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);
+                hut.Altitude = hutInfo.AltitudeInt;
+
+                if (hut is { Latitude: not null, Longitude: not null })
+                {
+                    var (country, region) = await Helpers.GetCountryAndRegion(hut.Latitude.Value, hut.Longitude.Value, httpClient, _logger);
+                    if (country != null)
+                        hut.Country = country;
+                    if (region != null)
+                        hut.Region = region;
+                }
+
+                if (existingHut == null)
+                    dbContext.Huts.Add(hut);
+
+                await dbContext.SaveChangesAsync();
+
+                return hut;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(default, e, "Exception in http call to provider");
+            }
+
+            return null;
+        }
+
+
+        //[Function(nameof(GetHutFromProviderActivity))]
         public async Task<Hut?> GetHutFromProviderActivity([ActivityTrigger] int hutId)
         {
             try

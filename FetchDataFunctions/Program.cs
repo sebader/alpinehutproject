@@ -18,20 +18,6 @@ public class Program
     {
         var host = new HostBuilder()
             .ConfigureFunctionsWebApplication()
-            .ConfigureLogging(logging =>
-            {
-                logging.Services.Configure<LoggerFilterOptions>(options =>
-                {
-                    // Remove the default rule added by the worker service
-                    // https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#managing-log-levels
-                    var defaultRule = options.Rules.FirstOrDefault(rule => rule.ProviderName
-                                                                           == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
-                    if (defaultRule is not null)
-                    {
-                        options.Rules.Remove(defaultRule);
-                    }
-                });
-            })
             .ConfigureServices(services =>
             {
                 services.AddApplicationInsightsTelemetryWorkerService();
@@ -56,6 +42,19 @@ public class Program
                         };
                     })
                     .AddPolicyHandler(GetRetryWithTimeoutPolicy());
+            }).ConfigureLogging(logging =>
+            {
+                logging.Services.Configure<LoggerFilterOptions>(options =>
+                {
+                    // Remove the default rule added by the worker service
+                    // https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#managing-log-levels
+                    var defaultRule = options.Rules.FirstOrDefault(rule => rule.ProviderName
+                                                                           == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
+                    if (defaultRule is not null)
+                    {
+                        options.Rules.Remove(defaultRule);
+                    }
+                });
             })
             .Build();
 

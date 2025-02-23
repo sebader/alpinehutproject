@@ -1,4 +1,3 @@
-using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -121,7 +120,7 @@ namespace FetchDataFunctions
         {
             try
             {
-                _logger.LogInformation("Executing " + nameof(GetHutFromProviderActivity) + " for hutid={hutId}", hutId);
+                _logger.LogInformation("Executing " + nameof(GetHutFromProviderActivityV2) + " for hutid={hutId}", hutId);
                 var dbContext = Helpers.GetDbContext();
 
                 var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
@@ -219,144 +218,6 @@ namespace FetchDataFunctions
             }
 
             return null;
-        }
-
-
-        //[Function(nameof(GetHutFromProviderActivity))]
-        public async Task<Hut?> GetHutFromProviderActivity([ActivityTrigger] int hutId)
-        {
-            try
-            {
-                _logger.LogInformation("Executing " + nameof(GetHutFromProviderActivity) + " for hutid={hutId}", hutId);
-                var dbContext = Helpers.GetDbContext();
-
-                var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);
-                if (existingHut == null)
-                {
-                    _logger.LogInformation("No hut yet in the database for id={hutId}", hutId);
-                }
-                else
-                {
-                    _logger.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId,
-                        existingHut.Name);
-                }
-
-                var httpClient = _clientFactory.CreateClient("HttpClient");
-
-                // First we try to use locale de_DE, we might switch below
-                var url = $"{Helpers.HutProviderBaseUrl}lang=de_DE&hut_id={hutId}";
-                HtmlDocument doc = await LoadWebsite(url, httpClient);
-
-                if (doc.ParsedText.Contains("kann nicht gefunden werden"))
-                {
-                    // Means there is no hut (yet) in the booking system with this id
-                    _logger.LogInformation("Hut with ID={hutId} not found", hutId);
-                }
-                else
-                {
-                    // Check if the hut page is actually for a different german locale than de_DE. If so, we reload it with the correct locale
-                    var languageSelector = doc.DocumentNode.SelectSingleNode("//body").Descendants("ul")
-                        .Where(d => d.Id == "langSelector").FirstOrDefault();
-                    var germanLocale = languageSelector?.Descendants("li").Where(d => d.InnerText == "Deutsch")
-                        .Select(d => d.Id).FirstOrDefault();
-                    if (!string.IsNullOrEmpty(germanLocale))
-                    {
-                        var newUrl = $"{Helpers.HutProviderBaseUrl}lang={germanLocale}&hut_id={hutId}";
-                        if (newUrl != url)
-                        {
-                            url = newUrl;
-                            doc = await LoadWebsite(url, httpClient);
-                        }
-                    }
-
-                    var parsedHut =
-                        await Helpers.ParseHutInformation(hutId, doc, (existingHut == null), httpClient, _logger);
-
-                    if (Helpers.ExcludedHutNames.Contains(parsedHut?.Name))
-                    {
-                        _logger.LogInformation("Skipping excluded hut {hutName}", parsedHut?.Name);
-                        return null;
-                    }
-
-                    if (parsedHut != null)
-                    {
-                        parsedHut.Link = url;
-
-                        if (existingHut != null)
-                        {
-                            if (existingHut.Latitude == null || existingHut.Longitude == null ||
-                                string.IsNullOrEmpty(existingHut.Country))
-                            {
-                                var (latitude, longitude) =
-                                    await Helpers.SearchHutCoordinates(parsedHut.Name, httpClient, _logger);
-                                if (latitude != null && longitude != null)
-                                {
-                                    parsedHut.Latitude = latitude;
-                                    parsedHut.Longitude = longitude;
-
-                                    var (country, region) = await Helpers.GetCountryAndRegion((double)latitude,
-                                        (double)longitude, httpClient, _logger);
-                                    parsedHut.Country = country ?? parsedHut.Country;
-                                    parsedHut.Region = region ?? parsedHut.Region;
-                                }
-                            }
-
-                            existingHut.Name = parsedHut.Name;
-                            if (existingHut.Enabled == false && parsedHut.Enabled == true)
-                            {
-                                existingHut.Activated = DateTime.Today;
-                            }
-
-                            existingHut.Enabled = parsedHut.Enabled;
-                            existingHut.Link = parsedHut.Link;
-                            existingHut.HutWebsite = parsedHut.HutWebsite;
-                            existingHut.Latitude = parsedHut.Latitude ?? existingHut.Latitude;
-                            existingHut.Longitude = parsedHut.Longitude ?? existingHut.Longitude;
-                            existingHut.Country = parsedHut.Country ?? existingHut.Country;
-                            existingHut.Region = parsedHut.Region ?? existingHut.Region;
-                            existingHut.LastUpdated = DateTime.UtcNow;
-                            dbContext.Update(existingHut);
-                        }
-                        else
-                        {
-                            parsedHut.Added = DateTime.Today;
-                            if (parsedHut.Enabled == true)
-                            {
-                                parsedHut.Activated = DateTime.Today;
-                            }
-
-                            dbContext.Huts.Add(parsedHut);
-                        }
-
-                        await dbContext.SaveChangesAsync();
-
-                        return existingHut ?? parsedHut;
-                    }
-                    else
-                    {
-                        _logger.LogError("Error parsing hut page for ID={hutId}", hutId);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(default, e, "Exception in http call to provider");
-            }
-
-            return null;
-        }
-
-        private async Task<HtmlDocument> LoadWebsite(string url, HttpClient httpClient)
-        {
-            _logger.LogDebug("Executing http GET against {url}", url);
-
-            var responseStream = await httpClient.GetStreamAsync(url);
-            var doc = new HtmlDocument();
-            doc.Load(responseStream);
-
-            // Load the hut web page for parsing using HtmlAgilityPack
-            //_logger.LogTrace($"HTTP Response body:\n {doc.ParsedText}");
-            return doc;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FetchDataFunctions.Models;
 
-public class AvailabilityV2
+public class AvailabilityData
 {
     public Dictionary<string, int> freeBedsPerCategory { get; set; }
     public int freeBeds { get; set; }

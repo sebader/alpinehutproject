@@ -13,10 +13,10 @@ namespace FetchDataFunctions.Models
 
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Link { get; set; }
-        public string HutWebsite { get; set; }
-        public string Country { get; set; }
-        public string Region { get; set; }
+        public string? Link { get; set; }
+        public string? HutWebsite { get; set; }
+        public string? Country { get; set; }
+        public string? Region { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public int? Altitude { get; set; }
@@ -27,7 +27,7 @@ namespace FetchDataFunctions.Models
 
         public virtual ICollection<Availability> Availability { get; set; }
 
-        public string ShortHutWebsite()
+        public string? ShortHutWebsite()
         {
             if (!string.IsNullOrEmpty(HutWebsite))
             {

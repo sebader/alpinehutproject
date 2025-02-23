@@ -32,23 +32,29 @@ namespace FetchDataFunctions.Models
                 entity.HasOne(a => a.BedCategory)
                     .WithMany(b => b.Availabilities)
                     .HasForeignKey(a => a.BedCategoryId);
-
             });
 
             modelBuilder.Entity<BedCategory>(entity =>
             {
                 entity.HasOne(a => a.SharesNameWith)
-                .WithMany(b => b.SameNamesAsThis)
-                .HasForeignKey(c => c.SharesNameWithBedCateogryId)
-                .HasConstraintName("FK_BedCategory_SameAs");
+                    .WithMany(b => b.SameNamesAsThis)
+                    .HasForeignKey(c => c.SharesNameWithBedCateogryId)
+                    .HasConstraintName("FK_BedCategory_SameAs");
             });
 
             modelBuilder.Entity<Hut>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                //entity.Property(e => e.Coordinates).HasMaxLength(100);
+                entity.Property(e => e.Added);
+                entity.Property(e => e.Enabled);
+                entity.Property(e => e.Activated);
+                entity.Property(e => e.LastUpdated);
 
+                entity.Property(e => e.Longitude);
+                entity.Property(e => e.Latitude);
+                entity.Property(e => e.Altitude);
+                
                 entity.Property(e => e.Country).HasMaxLength(100);
 
                 entity.Property(e => e.Region).HasMaxLength(100);
@@ -57,15 +63,10 @@ namespace FetchDataFunctions.Models
 
                 entity.Property(e => e.Link).HasMaxLength(100);
 
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(100);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             });
 
-            modelBuilder.Entity<FreeBedUpdateSubscription>(entity =>
-            {
-                entity.HasKey(pr => new { pr.HutId, pr.Date, pr.EmailAddress });
-            });
+            modelBuilder.Entity<FreeBedUpdateSubscription>(entity => { entity.HasKey(pr => new { pr.HutId, pr.Date, pr.EmailAddress }); });
         }
     }
 }

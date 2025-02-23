@@ -140,10 +140,20 @@ namespace FetchDataFunctions
                 var hutInfoResponse = await httpClient.GetAsync(url);
 
                 // If 404, hut does not exist
-                if (hutInfoResponse.StatusCode == HttpStatusCode.NotFound)
+                if (hutInfoResponse.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    _logger.LogInformation("Hut with ID={hutId} not found", hutId);
-                    return null;
+                    if ((await hutInfoResponse.Content.ReadAsStringAsync()).Contains("Hut Id not found"))
+                    {
+                        _logger.LogInformation("Hut with ID={hutId} not found", hutId);
+                        if (existingHut != null)
+                        {
+                            _logger.LogInformation("Deleting hut with ID={hutId} from database", hutId);
+                            dbContext.Huts.Remove(existingHut);
+                            await dbContext.SaveChangesAsync();
+                        }
+
+                        return null;
+                    }
                 }
 
                 if (!hutInfoResponse.IsSuccessStatusCode)
@@ -156,6 +166,19 @@ namespace FetchDataFunctions
                 if (hutInfo == null)
                 {
                     _logger.LogError("Error deserializing hut info for ID={hutId}", hutId);
+                    return null;
+                }
+
+                if (Helpers.ExcludedHutNames.Contains(hutInfo.hutName))
+                {
+                    _logger.LogInformation("Skipping excluded hut {hutName}", hutInfo.hutName);
+                    if (existingHut != null)
+                    {
+                        _logger.LogInformation("Deleting hut with ID={hutId} from database", hutId);
+                        dbContext.Huts.Remove(existingHut);
+                        await dbContext.SaveChangesAsync();
+                    }
+
                     return null;
                 }
 
@@ -192,7 +215,7 @@ namespace FetchDataFunctions
             }
             catch (Exception e)
             {
-                _logger.LogError(default, e, "Exception in http call to provider");
+                _logger.LogError(default, e, "Exception in http call to provider: {Message}", e.Message);
             }
 
             return null;

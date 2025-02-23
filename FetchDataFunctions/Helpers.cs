@@ -29,11 +29,11 @@ namespace FetchDataFunctions
         /// </summary>
         public readonly static string[] ExcludedHutNames = new[]
         {
-            "testhuette_elca, ELCA",
-            "ZZZ TEST Monbijouhütte, SAC GS",
-            "TEST123, TEST",
-            "ZZZ TEST, TEST",
-            "AV Testhütte, DAV Bundesgeschäftsstelle",
+            "testhuette_elca",
+            "ZZZ TEST Monbijouhütte",
+            "TEST123",
+            "ZZZ TEST",
+            "AV Testhütte",
             "Test",
             "Domžalski dom Test",
             "ZZZ TEST - Demo Cabane CAS Gruyere, CAS Gruyere",

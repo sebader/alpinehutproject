@@ -142,6 +142,12 @@ namespace FetchDataFunctions
                     _logger.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
                 }
 
+                if (existingHut?.ManuallyEdited == true)
+                {
+                    _logger.LogInformation("Hut with ID={hutId} was manually edited. Skipping update", hutId);
+                    return existingHut;
+                }
+
                 var httpClient = _clientFactory.CreateClient("HttpClient");
 
                 var url = string.Format(Helpers.GetHutInfosUrlV2, hutId);
@@ -194,16 +200,25 @@ namespace FetchDataFunctions
 
                 hut.Id = hutInfo.hutId;
                 hut.Enabled = hutInfo.hutUnlocked;
-                hut.Country = hutInfo.tenantCountry;
+                hut.Country = hutInfo.CountryNormalized;
                 hut.Longitude = hutInfo.Longitude;
                 hut.Latitude = hutInfo.Latitude;
                 hut.Name = hutInfo.hutName;
-                hut.HutWebsite = hutInfo.hutWebsite;
+                hut.HutWebsite = hutInfo.HutWebsiteNormalized;
                 hut.Link = string.Format(Helpers.HutBookingUrlV2, hutId);
                 hut.LastUpdated = DateTime.UtcNow;
                 hut.Added = existingHut?.Added ?? DateTime.UtcNow;
                 hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);
                 hut.Altitude = hutInfo.AltitudeInt;
+
+                if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
+                {
+                    _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
+                    var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
+
+                    hut.Latitude = coordinates.latitude;
+                    hut.Longitude = coordinates.longitude;
+                }
 
                 if (hut is { Latitude: not null, Longitude: not null })
                 {

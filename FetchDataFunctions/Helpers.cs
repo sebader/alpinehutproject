@@ -29,10 +29,12 @@ namespace FetchDataFunctions
             "TEST123",
             "ZZZ TEST",
             "AV Testhütte",
+            "AVS Testhütte",
             "Test",
             "Domžalski dom Test",
             "ZZZ TEST - Demo Cabane CAS Gruyere, CAS Gruyere",
-            "Testhütte Carolin"
+            "Testhütte Carolin",
+            "Hüttenrunde Gipfelwege"
         ];
 
         public static AlpinehutsDbContext GetDbContext()
@@ -58,7 +60,7 @@ namespace FetchDataFunctions
         /// <returns></returns>
         public static async Task<(double? latitude, double? longitude)> SearchHutCoordinates(string hutName, HttpClient httpClient, ILogger log)
         {
-            const string baseSearchUrl = "https://nominatim.openstreetmap.org/search.php?format=json&limit=5";
+            const string baseSearchUrl = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5";
             string? searchUrl = null;
             try
             {

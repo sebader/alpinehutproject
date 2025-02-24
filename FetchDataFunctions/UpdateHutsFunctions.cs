@@ -200,7 +200,7 @@ namespace FetchDataFunctions
 
                 hut.Id = hutInfo.hutId;
                 hut.Enabled = hutInfo.hutUnlocked;
-                hut.Country = hutInfo.tenantCountry;
+                hut.Country = hutInfo.CountryNormalized;
                 hut.Longitude = hutInfo.Longitude;
                 hut.Latitude = hutInfo.Latitude;
                 hut.Name = hutInfo.hutName;
@@ -213,7 +213,7 @@ namespace FetchDataFunctions
 
                 if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
                 {
-                    _logger.LogInformation("Hut with ID={hutId} has no coordinates. Trying to look up hut online", hutId);
+                    _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
                     var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
 
                     hut.Latitude = coordinates.latitude;

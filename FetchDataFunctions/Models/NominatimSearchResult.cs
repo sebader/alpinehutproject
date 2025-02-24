@@ -10,8 +10,7 @@ namespace FetchDataFunctions.Models
         public string lon { get; set; }
         public string display_name { get; set; }
 
-        [JsonProperty("class")]
-        public string _class { get; set; }
+        public string category { get; set; }
         public string type { get; set; }
         public float importance { get; set; }
     }

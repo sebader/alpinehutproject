@@ -58,7 +58,7 @@ public class HutInfoV2
             return int.TryParse(trimmed, out var result) ? result : null;
         }
     }
-    
+
     public string? HutWebsiteNormalized
     {
         get
@@ -71,6 +71,24 @@ public class HutInfoV2
                 return normalized;
 
             return "http://" + normalized;
+        }
+    }
+
+    public string? CountryNormalized
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(tenantCountry))
+                return null;
+
+            return tenantCountry switch
+            {
+                "AT" => "Österreich",
+                "CH" => "Schweiz",
+                "DE" => "Deutschland",
+                "IT" => "Italien",
+                _ => tenantCountry
+            };
         }
     }
 }

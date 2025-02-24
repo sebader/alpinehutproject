@@ -93,7 +93,7 @@ namespace FetchDataFunctions
                     var lon = double.Parse(sr.lon, CultureInfo.InvariantCulture);
 
                     // Do some simple sanity check if this location is somewhere in central Europe
-                    if (lon < 4 || lon > 17 || lat > 53 || lat < 44)
+                    if (!CoordinatesSanityCheck(lon, lat))
                     {
                         log.LogWarning($"Unrealistic coordinates found for hut={hutName} lat={lat} long={lon}. Discarding result");
                     }
@@ -176,6 +176,17 @@ namespace FetchDataFunctions
             }
 
             return (null, null);
+        }
+        
+        public static bool CoordinatesSanityCheck(double longitude, double latitude)
+        {
+            // Do some simple sanity check if this location is somewhere in central Europe
+            if (longitude < 4 || longitude > 17 || latitude > 53 || latitude < 44)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

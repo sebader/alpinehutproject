@@ -142,6 +142,12 @@ namespace FetchDataFunctions
                     _logger.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
                 }
 
+                if (existingHut?.ManuallyEdited == true)
+                {
+                    _logger.LogInformation("Hut with ID={hutId} was manually edited. Skipping update", hutId);
+                    return existingHut;
+                }
+
                 var httpClient = _clientFactory.CreateClient("HttpClient");
 
                 var url = string.Format(Helpers.GetHutInfosUrlV2, hutId);
@@ -205,15 +211,13 @@ namespace FetchDataFunctions
                 hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);
                 hut.Altitude = hutInfo.AltitudeInt;
 
-                if (hut.Latitude == null || hut.Longitude == null)
+                if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
                 {
                     _logger.LogInformation("Hut with ID={hutId} has no coordinates. Trying to look up hut online", hutId);
                     var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
-                    if (coordinates is { longitude: not null, latitude: not null })
-                    {
-                        hut.Latitude = coordinates.latitude;
-                        hut.Longitude = coordinates.longitude;
-                    }
+
+                    hut.Latitude = coordinates.latitude;
+                    hut.Longitude = coordinates.longitude;
                 }
 
                 if (hut is { Latitude: not null, Longitude: not null })

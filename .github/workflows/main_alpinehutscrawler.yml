@@ -1,12 +1,14 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy dotnet core app to Azure Function App - alpinehutscrawler
+name: Deploy alpinehutscrawler to Azure Function
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'FetchDataFunctions/**'
   workflow_dispatch:
 
 env:

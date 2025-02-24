@@ -216,8 +216,8 @@ namespace FetchDataFunctions
                     _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
                     var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
 
-                    hut.Latitude = coordinates.latitude;
-                    hut.Longitude = coordinates.longitude;
+                    hut.Latitude = coordinates.latitude ?? existingHut?.Latitude;
+                    hut.Longitude = coordinates.longitude ?? existingHut?.Longitude;
                 }
 
                 if (hut is { Latitude: not null, Longitude: not null })

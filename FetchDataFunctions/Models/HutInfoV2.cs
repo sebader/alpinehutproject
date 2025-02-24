@@ -58,6 +58,21 @@ public class HutInfoV2
             return int.TryParse(trimmed, out var result) ? result : null;
         }
     }
+    
+    public string? HutWebsiteNormalized
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(hutWebsite))
+                return null;
+
+            var normalized = hutWebsite.Trim().ToLowerInvariant();
+            if (normalized.StartsWith("http://") || normalized.StartsWith("https://"))
+                return normalized;
+
+            return "http://" + normalized;
+        }
+    }
 }
 
 public class Picture

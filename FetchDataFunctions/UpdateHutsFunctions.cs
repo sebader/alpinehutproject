@@ -198,12 +198,23 @@ namespace FetchDataFunctions
                 hut.Longitude = hutInfo.Longitude;
                 hut.Latitude = hutInfo.Latitude;
                 hut.Name = hutInfo.hutName;
-                hut.HutWebsite = hutInfo.hutWebsite;
+                hut.HutWebsite = hutInfo.HutWebsiteNormalized;
                 hut.Link = string.Format(Helpers.HutBookingUrlV2, hutId);
                 hut.LastUpdated = DateTime.UtcNow;
                 hut.Added = existingHut?.Added ?? DateTime.UtcNow;
                 hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);
                 hut.Altitude = hutInfo.AltitudeInt;
+
+                if (hut.Latitude == null || hut.Longitude == null)
+                {
+                    _logger.LogInformation("Hut with ID={hutId} has no coordinates. Trying to look up hut online", hutId);
+                    var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
+                    if (coordinates is { longitude: not null, latitude: not null })
+                    {
+                        hut.Latitude = coordinates.latitude;
+                        hut.Longitude = coordinates.longitude;
+                    }
+                }
 
                 if (hut is { Latitude: not null, Longitude: not null })
                 {

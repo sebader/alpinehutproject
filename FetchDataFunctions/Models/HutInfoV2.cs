@@ -2,34 +2,34 @@ using System;
 
 namespace FetchDataFunctions.Models;
 
-public class HutInfoV2
+public record HutInfoV2
 {
-    public string hutWebsite { get; set; }
+    public string? hutWebsite { get; set; }
     public int hutId { get; set; }
     public string tenantCode { get; set; }
     public bool hutUnlocked { get; set; }
     public int maxNumberOfNights { get; set; }
     public string hutName { get; set; }
-    public string hutWarden { get; set; }
-    public string phone { get; set; }
-    public string coordinates { get; set; }
-    public string altitude { get; set; }
-    public string totalBedsInfo { get; set; }
+    public string? hutWarden { get; set; }
+    public string? phone { get; set; }
+    public string? coordinates { get; set; }
+    public string? altitude { get; set; }
+    public string? totalBedsInfo { get; set; }
     public string tenantCountry { get; set; }
-    public Picture picture { get; set; }
+    public Picture? picture { get; set; }
     public string[] hutLanguages { get; set; }
     public HutBedCategory[] hutBedCategories { get; set; }
     public string providerName { get; set; }
     public HutGeneralDescription[] hutGeneralDescriptions { get; set; }
-    public string supportLink { get; set; }
-    public bool waitingListEnabled { get; set; }
+    public string? supportLink { get; set; }
+    public bool? waitingListEnabled { get; set; }
 
     public double? Latitude
     {
         get
         {
             // Coordinates are in the format "lat, lon" or lat/lon"
-            var parts = coordinates.Split([',', '/'], StringSplitOptions.RemoveEmptyEntries);
+            var parts = coordinates?.Split([',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
             return parts.Length == 2 ? (double.TryParse(parts[0].Trim(), out var result) ? result : null) : null;
         }
     }
@@ -39,7 +39,7 @@ public class HutInfoV2
         get
         {
             // Coordinates are in the format "lat, lon" or lat/lon"
-            var parts = coordinates.Split([',', '/'], StringSplitOptions.RemoveEmptyEntries);
+            var parts = coordinates?.Split([',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
             return parts.Length == 2 ? (double.TryParse(parts[1].Trim(), out var result) ? result : null) : null;
         }
     }
@@ -48,8 +48,7 @@ public class HutInfoV2
     {
         get
         {
-            var trimmed = altitude
-                .Replace("H.ü.M", "")
+            var trimmed = altitude?.Replace("H.ü.M", "")
                 .Replace(".", "")
                 .Replace("m ü M", "")
                 .Replace("m", "")
@@ -93,7 +92,7 @@ public class HutInfoV2
     }
 }
 
-public class Picture
+public record Picture
 {
     public string fileType { get; set; }
     public string blobPath { get; set; }
@@ -101,7 +100,7 @@ public class Picture
     public object fileData { get; set; }
 }
 
-public class HutBedCategory
+public record HutBedCategory
 {
     public int index { get; set; }
     public int categoryID { get; set; }
@@ -114,7 +113,7 @@ public class HutBedCategory
     public int tenantBedCategoryId { get; set; }
 }
 
-public class HutBedCategoryLanguageData
+public record HutBedCategoryLanguageData
 {
     public string language { get; set; }
     public string label { get; set; }
@@ -122,7 +121,7 @@ public class HutBedCategoryLanguageData
     public string description { get; set; }
 }
 
-public class HutGeneralDescription
+public record HutGeneralDescription
 {
     public string description { get; set; }
     public string language { get; set; }

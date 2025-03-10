@@ -32,7 +32,7 @@ namespace WebsiteBackendFunctions
                       "JOIN dbo.BedCategories b ON a.TenantBedCategoryId = b.id " +
                       "LEFT OUTER JOIN dbo.BedCategories bc ON b.SharesNameWithBedCateogryId = bc.id " +
                       "WHERE a.hutid = @HutId AND a.Date >= CONVERT (date, GETDATE()) " +
-                      "ORDER BY a.date ASC",
+                      "ORDER BY a.date ASC, BedCategory ASC",
                 "DatabaseConnectionString",
                 CommandType.Text,
                 "@HutId={hutid}"

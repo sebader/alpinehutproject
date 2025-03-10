@@ -202,7 +202,7 @@ namespace FetchDataFunctions
                     {
                         // See if there is any existing availability entries that we should delete
                         var existingAva = await dbContext.Availability.Where(a =>
-                            a.Hutid == hutId && a.Date == day.date &&
+                            a.Hutid == hutId && a.Date == day.DateNormalized &&
                             a.BedCategoryId != BedCategory.HutClosedBedcatoryId).ToListAsync();
                         foreach (var obsoleteAva in existingAva)
                         {
@@ -210,14 +210,14 @@ namespace FetchDataFunctions
                         }
 
                         var existingCloseAva = await dbContext.Availability.FirstOrDefaultAsync(a =>
-                            a.Hutid == hutId && a.Date == day.date &&
+                            a.Hutid == hutId && a.Date == day.DateNormalized &&
                             a.BedCategoryId == BedCategory.HutClosedBedcatoryId);
                         if (existingCloseAva == null)
                         {
                             var newAva = new Availability
                             {
                                 BedCategoryId = BedCategory.HutClosedBedcatoryId,
-                                Date = day.date,
+                                Date = day.DateNormalized,
                                 FreeRoom = 0,
                                 TotalRoom = 0,
                                 Hutid = hutId,
@@ -245,7 +245,7 @@ namespace FetchDataFunctions
                             }
 
                             var existingAva = await dbContext.Availability.FirstOrDefaultAsync(a =>
-                                a.Hutid == hutId && a.Date == day.date &&
+                                a.Hutid == hutId && a.Date == day.DateNormalized &&
                                 a.BedCategoryId == bedCategoryId);
                             if (existingAva != null)
                             {
@@ -254,7 +254,7 @@ namespace FetchDataFunctions
                                 existingAva.LastUpdated = updateTime;
                                 existingAva.TenantBedCategoryId = matchingBedCategory.tenantBedCategoryId;
                                 _logger.LogDebug(
-                                    $"Updating existing availability for hutid={hutId} date={day.date} bedCategoryId={bedCategoryId} FreeRoom={freeBeds}");
+                                    $"Updating existing availability for hutid={hutId} date={day.DateNormalized} bedCategoryId={bedCategoryId} FreeRoom={freeBeds}");
                                 dbContext.Update(existingAva);
                             }
                             else
@@ -263,7 +263,7 @@ namespace FetchDataFunctions
                                 {
                                     BedCategoryId = bedCategoryId,
                                     TenantBedCategoryId = matchingBedCategory.tenantBedCategoryId,
-                                    Date = day.date,
+                                    Date = day.DateNormalized,
                                     FreeRoom = freeBeds,
                                     TotalRoom = matchingBedCategory.totalSleepingPlaces,
                                     Hutid = hutId,
@@ -275,11 +275,11 @@ namespace FetchDataFunctions
 
                             var allBedcategories = day.freeBedsPerCategory.Select(r => int.Parse(r.Key)).ToList();
                             var oldEntries = await dbContext.Availability.Where(a =>
-                                a.Hutid == hutId && a.Date == day.date &&
+                                a.Hutid == hutId && a.Date == day.DateNormalized &&
                                 !allBedcategories.Contains(a.BedCategoryId)).ToListAsync();
                             if (oldEntries.Count > 0)
                             {
-                                _logger.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.date);
+                                _logger.LogInformation("Found {count} orphaned availability entries for hut={hutid} date={date}", oldEntries.Count, hutId, day.DateNormalized);
                                 foreach (var entry in oldEntries)
                                 {
                                     _logger.LogInformation("Deleting entry with bedCategoryId={bed}", entry.BedCategoryId);

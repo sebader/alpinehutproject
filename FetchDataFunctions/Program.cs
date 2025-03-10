@@ -67,9 +67,12 @@ public class Program
             .HandleTransientHttpError()
             .OrResult(msg =>
                 msg.StatusCode ==
+                System.Net.HttpStatusCode.TooManyRequests) // Retry 429 as it seems to be rate limiting error
+            .OrResult(msg =>
+                msg.StatusCode ==
                 System.Net.HttpStatusCode.Forbidden) // Retry 403 as it seems to be some rate limiting error
             .Or<TimeoutRejectedException>()
-            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+            .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             .WrapAsync(Policy.TimeoutAsync(30)); // per request timeout
 
         return retryPolicy;

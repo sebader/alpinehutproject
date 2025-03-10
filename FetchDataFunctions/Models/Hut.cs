@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace FetchDataFunctions.Models
 {
-    public partial class Hut
+    public class Hut
     {
         public Hut()
         {

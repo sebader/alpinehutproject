@@ -152,7 +152,13 @@ export default {
         }
         return today;
       })(),
-      selectedBedCategory: "",
+      selectedBedCategory: (() => {
+        const queryBedCategory = this.$route.query.bedCategory;
+        if (queryBedCategory) {
+          return queryBedCategory;
+        }
+        return "";
+      })(),
       desiredNumberOfBeds: (() => {
         const queryNumBeds = this.$route.query.numBeds;
         if (queryNumBeds && !isNaN(parseInt(queryNumBeds)) && parseInt(queryNumBeds) > 0) {
@@ -302,6 +308,9 @@ export default {
     },
     desiredNumberOfBeds: function (newValue, oldValue) {
       this.$router.push({ query: { ...this.$route.query, numBeds: newValue } });
+    },
+    selectedBedCategory: function (newValue, oldValue) {
+      this.$router.push({ query: { ...this.$route.query, bedCategory: newValue } });
     }
   },
   async mounted() {
@@ -324,6 +333,7 @@ export default {
       var hut = this.huts.find(hut => hut.id == hutId);
       if (hut != null) {
         await this.hutSelected(hut);
+        this.$router.push({ query: { ...this.$route.query, hutId: hut.id } });
       }
     }
 

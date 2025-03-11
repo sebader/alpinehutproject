@@ -303,14 +303,20 @@ export default {
     dateFilter: async function (newValue, oldValue) {
       this.loading = true;
       await this.updateAvailabilityData();
-      this.$router.replace({ query: { ...this.$route.query, date: newValue } });
+      this.$nextTick(() => {
+        this.$router.replace({ query: { ...this.$route.query, date: newValue } });
+      });
       this.loading = false;
     },
     desiredNumberOfBeds: function (newValue, oldValue) {
-      this.$router.replace({ query: { ...this.$route.query, numBeds: newValue } });
+      this.$nextTick(() => {
+        this.$router.replace({ query: { ...this.$route.query, numBeds: newValue } });
+      });
     },
     selectedBedCategory: function (newValue, oldValue) {
-      this.$router.replace({ query: { ...this.$route.query, bedCategory: newValue } });
+      this.$nextTick(() => {
+        this.$router.replace({ query: { ...this.$route.query, bedCategory: newValue } });
+      });
     }
   },
   async mounted() {
@@ -333,7 +339,9 @@ export default {
       var hut = this.huts.find(hut => hut.id == hutId);
       if (hut != null) {
         await this.hutSelected(hut);
-        this.$router.replace({ query: { ...this.$route.query, hutId: hut.id } });
+        this.$nextTick(() => {
+          this.$router.replace({ query: { ...this.$route.query, hutId: hut.id } });
+        });
       }
     }
 

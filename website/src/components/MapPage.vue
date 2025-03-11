@@ -144,7 +144,14 @@ export default {
       email: '',
       formSubmitted: false,
       loading: true,
-      dateFilter: new Date().toISOString().split('T')[0],
+      dateFilter: (() => {
+        const queryDate = this.$route.query.date;
+        const today = new Date().toISOString().split('T')[0];
+        if (queryDate && !isNaN(Date.parse(queryDate)) && queryDate >= today) {
+          return queryDate;
+        }
+        return today;
+      })(),
       selectedBedCategory: "",
       desiredNumberOfBeds: 1,
       mapCenter: [48.00, 11.33], // initial map center

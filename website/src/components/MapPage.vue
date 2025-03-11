@@ -153,7 +153,13 @@ export default {
         return today;
       })(),
       selectedBedCategory: "",
-      desiredNumberOfBeds: 1,
+      desiredNumberOfBeds: (() => {
+        const queryNumBeds = this.$route.query.numBeds;
+        if (queryNumBeds && !isNaN(parseInt(queryNumBeds)) && parseInt(queryNumBeds) > 0) {
+          return parseInt(queryNumBeds);
+        }
+        return 1;
+      })(),
       mapCenter: [48.00, 11.33], // initial map center
       zoom: 7,  // initial zoom level
       tileProviders: [
@@ -291,7 +297,11 @@ export default {
     dateFilter: async function (newValue, oldValue) {
       this.loading = true;
       await this.updateAvailabilityData();
+      this.$router.push({ query: { ...this.$route.query, date: newValue } });
       this.loading = false;
+    },
+    desiredNumberOfBeds: function (newValue, oldValue) {
+      this.$router.push({ query: { ...this.$route.query, numBeds: newValue } });
     }
   },
   async mounted() {

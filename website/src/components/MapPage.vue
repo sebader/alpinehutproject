@@ -303,14 +303,14 @@ export default {
     dateFilter: async function (newValue, oldValue) {
       this.loading = true;
       await this.updateAvailabilityData();
-      this.$router.replace({ ...this.$router.currentRoute.query, query: { ...this.$route.query, date: newValue } });
+      this.$router.replace({ path: $route.path, query: { ...this.$route.query, date: newValue } });
       this.loading = false;
     },
     desiredNumberOfBeds: function (newValue, oldValue) {
-      this.$router.replace({ ...this.$router.currentRoute.query, query: { ...this.$route.query, numBeds: newValue } });
+      this.$router.replace({ path: $route.path, query: { ...this.$route.query, numBeds: newValue } });
     },
     selectedBedCategory: function (newValue, oldValue) {
-      this.$router.replace({ ...this.$router.currentRoute.query, query: { ...this.$route.query, bedCategory: newValue } });
+      this.$router.replace({ path: $route.path, query: { ...this.$route.query, bedCategory: newValue } });
     }
   },
   async mounted() {

@@ -303,16 +303,14 @@ export default {
     dateFilter: async function (newValue, oldValue) {
       this.loading = true;
       await this.updateAvailabilityData();
-      const url = new URL(window.location);
-      url.searchParams.set('date', newValue);
-      history.replaceState({}, '', url);
+      this.$router.replace({ ...this.$router.currentRoute, query: { ...this.$route.query, date: newValue } });
       this.loading = false;
     },
     desiredNumberOfBeds: function (newValue, oldValue) {
-      this.$router.replace({ query: { ...this.$route.query, numBeds: newValue } });
+      this.$router.replace({ ...this.$router.currentRoute, query: { ...this.$route.query, numBeds: newValue } });
     },
     selectedBedCategory: function (newValue, oldValue) {
-      this.$router.replace({ query: { ...this.$route.query, bedCategory: newValue } });
+      this.$router.replace({ ...this.$router.currentRoute, query: { ...this.$route.query, bedCategory: newValue } });
     }
   },
   async mounted() {

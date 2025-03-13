@@ -303,7 +303,9 @@ export default {
     dateFilter: async function (newValue, oldValue) {
       this.loading = true;
       await this.updateAvailabilityData();
-      this.$router.replace({ query: { ...this.$route.query, date: newValue } });
+      const url = new URL(window.location);
+      url.searchParams.set('date', newValue);
+      history.replaceState({}, '', url);
       this.loading = false;
     },
     desiredNumberOfBeds: function (newValue, oldValue) {

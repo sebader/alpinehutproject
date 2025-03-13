@@ -167,7 +167,10 @@ export default {
         return 1;
       })(),
       mapCenter: [48.00, 11.33], // initial map center
-      zoom: 7,  // initial zoom level
+      zoom: (() => {
+        const queryZoom = parseInt(this.$route.query.zoom);
+        return (!isNaN(queryZoom) && queryZoom >= 6 && queryZoom <= 17) ? queryZoom : 7;
+      })(),
       tileProviders: [
         {
           name: 'OpenStreetMap',
@@ -311,7 +314,10 @@ export default {
     },
     selectedBedCategory: function (newValue, oldValue) {
       this.$router.replace({ query: { ...this.$route.query, bedCategory: newValue } });
-    }
+    },
+    zoom: function (newValue, oldValue) {
+      this.$router.replace({ query: { ...this.$route.query, zoom: newValue } });
+    },
   },
   async mounted() {
     this.bedCategories = await this.$BedCategoryService.getAllBedCategories();

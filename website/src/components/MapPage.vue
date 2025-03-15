@@ -200,29 +200,22 @@ export default {
     updateQueryParams(paramName, paramValue) {
       // Get all current query params and update the specified param
       const queryParams = new URLSearchParams(this.latestQueryString);
-      //alert("Query params before: " + queryParams);
-      // Remove the leading ? if it exists in the search string
       queryParams.set(paramName, paramValue);
 
       // Get the hash fragment (if any)
-      const hashFragment = window.location.hash;
-
       // remove any query params from the hash fragment
-      const hashWithoutQuery = hashFragment.split('?')[0];
+      const hashWithoutQuery = window.location.hash.split('?')[0];
 
       // Get current path
       const currentPath = window.location.pathname;
 
       // Update URL with hash fragment and query params
       const queryString = queryParams.toString();
-      //alert("Query string: " + queryString);
-      //alert("Hash fragment: " + hashWithoutQuery);
 
       const newUrl = `${currentPath}${hashWithoutQuery}${queryString ? '?' + queryString : ''}`;
       window.history.replaceState({}, document.title, newUrl);
 
       this.latestQueryString = queryParams;
-
     },
     shortWebsiteUrl(url) {
       return shortWebsiteUrl(url);
@@ -364,7 +357,6 @@ export default {
       var hut = this.huts.find(hut => hut.id == hutId);
       if (hut != null) {
         await this.hutSelected(hut);
-        this.$router.replace({ query: { ...this.$route.query, hutId: hut.id } });
       }
     }
 

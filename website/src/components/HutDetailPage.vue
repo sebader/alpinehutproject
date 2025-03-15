@@ -178,9 +178,6 @@ export default {
       shortWebsiteUrl(url) {
          return shortWebsiteUrl(url);
       },
-      shortWebsiteUrl(url) {
-         return shortWebsiteUrl(url);
-      },
       toggleCollapse(month) {
          month.collapsed = !month.collapsed;
       },

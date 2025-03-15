@@ -8,11 +8,17 @@ Run each in their own terminals:
 
 ## Run DAB
 
-Set ENV variable for `DATABASE_CONNECTION_STRING`.
+Set the environment variable `DATABASE_CONNECTION_STRING` on MacOS by running:
+
+```bash
+export DATABASE_CONNECTION_STRING="Server=foobar;"
+```
+
+
 
 From the `saw-db-connections` folder, run
 
-    dab start -c .\staticwebapp.database.config.json --no-https-redirect true
+    dab start -c ./staticwebapp.database.config.json --no-https-redirect true
 
 ## Run Backend Functions
 
@@ -29,13 +35,13 @@ Create local.settings.json like
 
 From `WebsiteBackendFunctions` folder run
 
-    func start --csharp --port 7000
+    func start
 
 ## Run SAW
 
 From the `website` folder run
 
-    swa start --api-devserver-url http://localhost:7000 --data-api-devserver-url http://localhost:5000
+    swa start --api-devserver-url http://localhost:7071 --data-api-devserver-url http://localhost:5000
 
 
 Open http://localhost:4280

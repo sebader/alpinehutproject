@@ -144,11 +144,33 @@ export default {
       email: '',
       formSubmitted: false,
       loading: true,
-      dateFilter: new Date().toISOString().split('T')[0],
-      selectedBedCategory: "",
-      desiredNumberOfBeds: 1,
+      dateFilter: (() => {
+        const queryDate = this.$route.query.date;
+        const today = new Date().toISOString().split('T')[0];
+        if (queryDate && !isNaN(Date.parse(queryDate)) && queryDate >= today) {
+          return queryDate;
+        }
+        return today;
+      })(),
+      selectedBedCategory: (() => {
+        const queryBedCategory = this.$route.query.bedCategory;
+        if (queryBedCategory) {
+          return queryBedCategory;
+        }
+        return "";
+      })(),
+      desiredNumberOfBeds: (() => {
+        const queryNumBeds = this.$route.query.numBeds;
+        if (queryNumBeds && !isNaN(parseInt(queryNumBeds)) && parseInt(queryNumBeds) > 0 && parseInt(queryNumBeds) <= 10) {
+          return parseInt(queryNumBeds);
+        }
+        return 1;
+      })(),
       mapCenter: [48.00, 11.33], // initial map center
-      zoom: 7,  // initial zoom level
+      zoom: (() => {
+        const queryZoom = parseInt(this.$route.query.zoom);
+        return (!isNaN(queryZoom) && queryZoom >= 6 && queryZoom <= 17) ? queryZoom : 7;
+      })(),
       tileProviders: [
         {
           name: 'OpenStreetMap',
@@ -170,10 +192,31 @@ export default {
       ],
       huts: [],
       availabilityData: [],
-      bedCategories: []
+      bedCategories: [],
+      latestQueryString: this.$route.query,
     };
   },
   methods: {
+    updateQueryParams(paramName, paramValue) {
+      // Get all current query params and update the specified param
+      const queryParams = new URLSearchParams(this.latestQueryString);
+      queryParams.set(paramName, paramValue);
+
+      // Get the hash fragment (if any)
+      // remove any query params from the hash fragment
+      const hashWithoutQuery = window.location.hash.split('?')[0];
+
+      // Get current path
+      const currentPath = window.location.pathname;
+
+      // Update URL with hash fragment and query params
+      const queryString = queryParams.toString();
+
+      const newUrl = `${currentPath}${hashWithoutQuery}${queryString ? '?' + queryString : ''}`;
+      window.history.replaceState({}, document.title, newUrl);
+
+      this.latestQueryString = queryParams;
+    },
     shortWebsiteUrl(url) {
       return shortWebsiteUrl(url);
     },
@@ -285,6 +328,13 @@ export default {
       this.loading = true;
       await this.updateAvailabilityData();
       this.loading = false;
+      this.updateQueryParams('date', newValue);
+    },
+    desiredNumberOfBeds: function (newValue, oldValue) {
+      this.updateQueryParams('numBeds', newValue);
+    }, 
+    selectedBedCategory: function (newValue, oldValue) {
+      this.updateQueryParams('bedCategory', newValue);
     }
   },
   async mounted() {

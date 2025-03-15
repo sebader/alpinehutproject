@@ -27,9 +27,9 @@
                   <tr>
                      <td></td>
                      <td v-if="hut.enabled"><a :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking')
-                     }}</a></td>
+                           }}</a></td>
                      <td v-else><a :href="`${hut.link}`" target="_blank"><i>{{ $t('message.onlineBookingInactive')
-                     }}</i></a></td>
+                              }}</i></a></td>
                   </tr>
                   <tr>
                      <td>{{ $t('message.country') }} / {{ $t('message.region') }}</td>
@@ -40,8 +40,8 @@
                      <td>
                         <router-link v-if="hut.latitude != null && hut.longitude != null"
                            :to="{ name: 'mapPage', query: { hutId: hut.id } }" :title="$t('message.showOnMap')">{{
-                           hut.latitude }}/{{
-                           hut.longitude
+                              hut.latitude }}/{{
+                              hut.longitude
                            }}
                         </router-link>
                      </td>
@@ -77,19 +77,23 @@
                      </tr>
                   </thead>
                   <tbody>
-                     <template v-for="av in hut.availability">
-                        <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory">
-                           <td v-if="iSub === 0" :rowspan="av.roomAvailabilities.length">{{ new
-                           Date(av.date).toDateString("dddd, dd.MM.yyyy")
-                           }}</td>
-                           <td>{{ roomAv.freeBeds }} / {{ roomAv.totalBeds }}</td>
-                           <td>{{ roomAv.bedCategory }}</td>
+                     <template v-for="month in this.availabilityByMonth" :key="month">
+                        <tr @click="toggleCollapse(month)" style="cursor: pointer;">
+                           <th colspan="3">{{ month.month }} <span v-if="month.collapsed">▼</span><span v-else>▲</span>
+                           </th>
                         </tr>
-                        <tr v-if="av.hutClosed">
-                           <td>{{ new Date(av.date).toDateString("dddd, dd.MM.yyyy")
-                           }}</td>
-                           <td colspan="2">{{ $t('message.hutClosed') }}</td>
-                        </tr>
+                        <template v-if="!month.collapsed" v-for="av in month.availabilities">
+                           <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory">
+                              <td v-if="iSub === 0" :rowspan="av.roomAvailabilities.length">{{ new
+                                 Date(av.date).toDateString() }}</td>
+                              <td>{{ roomAv.freeBeds }} / {{ roomAv.totalBeds }}</td>
+                              <td>{{ roomAv.bedCategory }}</td>
+                           </tr>
+                           <tr v-if="av.hutClosed">
+                              <td>{{ new Date(av.date).toDateString() }}</td>
+                              <td colspan="2">{{ $t('message.hutClosed') }}</td>
+                           </tr>
+                        </template>
                      </template>
                   </tbody>
                </table>
@@ -112,6 +116,7 @@
 
 <script>
 import { shortWebsiteUrl } from "../utils"
+import Vue from 'vue'
 import { Constants } from '../utils';
 import { EventBus } from "../main"
 
@@ -138,6 +143,7 @@ export default {
    data: function () {
       return {
          hut: null,
+         availabilityByMonth: [],
          loading: false,
          mapCenter: null,
          zoom: 10,
@@ -172,6 +178,22 @@ export default {
       shortWebsiteUrl(url) {
          return shortWebsiteUrl(url);
       },
+      toggleCollapse(month) {
+         month.collapsed = !month.collapsed;
+      },
+      groupByMonth(availabilities) {
+         const months = {};
+         availabilities.forEach(av => {
+            const month = new Date(av.date).toLocaleString('default', { month: 'long', year: 'numeric' });
+            if (!months[month]) {
+               months[month] = { month, availabilities: [], collapsed: true };
+            }
+            months[month].availabilities.push(av);
+            // current month is always expanded
+            months[month].collapsed = new Date(av.date).getMonth() !== new Date().getMonth() || new Date(av.date).getFullYear() !== new Date().getFullYear();
+         });
+         return Object.values(months);
+      },
    },
    async created() {
       this.loading = true;
@@ -183,6 +205,7 @@ export default {
          else {
             this.hut = await this.$HutService.getHutByIdAsync(hutId);
             this.hut.availability = await this.$AvailabilityService.getAvailabilityForHut(this.hut.id);
+            this.availabilityByMonth = this.groupByMonth(this.hut.availability);
             this.mapCenter = [this.hut.latitude, this.hut.longitude];
          }
       }

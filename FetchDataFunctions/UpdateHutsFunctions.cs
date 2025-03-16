@@ -141,13 +141,7 @@ namespace FetchDataFunctions
                 {
                     _logger.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
                 }
-
-                if (existingHut?.ManuallyEdited == true)
-                {
-                    _logger.LogInformation("Hut with ID={hutId} was manually edited. Skipping update", hutId);
-                    return existingHut;
-                }
-
+                
                 var httpClient = _clientFactory.CreateClient("HttpClient");
 
                 var url = string.Format(Helpers.GetHutInfosUrlV2, hutId);
@@ -185,7 +179,7 @@ namespace FetchDataFunctions
 
                 if (Helpers.ExcludedHutNames.Contains(hutInfo.hutName))
                 {
-                    _logger.LogInformation("Skipping excluded hut {hutName}", hutInfo.hutName);
+                    _logger.LogInformation("Skipping excluded hut name {hutName}", hutInfo.hutName);
                     if (existingHut != null)
                     {
                         _logger.LogInformation("Deleting hut with ID={hutId} from database", hutId);
@@ -197,36 +191,43 @@ namespace FetchDataFunctions
                 }
 
                 var hut = existingHut ?? new Hut();
-
                 hut.Id = hutInfo.hutId;
                 hut.Enabled = hutInfo.hutUnlocked;
-                hut.Country = hutInfo.CountryNormalized;
-                hut.Longitude = hutInfo.Longitude;
-                hut.Latitude = hutInfo.Latitude;
                 hut.Name = hutInfo.hutName;
                 hut.HutWebsite = hutInfo.HutWebsiteNormalized;
                 hut.Link = string.Format(Helpers.HutBookingUrlV2, hutId);
                 hut.LastUpdated = DateTime.UtcNow;
                 hut.Added = existingHut?.Added ?? DateTime.UtcNow;
                 hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);
-                hut.Altitude = hutInfo.AltitudeInt;
-
-                if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
+                
+                if (existingHut?.ManuallyEdited == true)
                 {
-                    _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
-                    var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
-
-                    hut.Latitude = coordinates.latitude ?? existingHut?.Latitude;
-                    hut.Longitude = coordinates.longitude ?? existingHut?.Longitude;
+                    _logger.LogInformation("Hut with ID={hutId} was manually edited. Not updating location information", hutId);
                 }
-
-                if (hut is { Latitude: not null, Longitude: not null })
+                else
                 {
-                    var (country, region) = await Helpers.GetCountryAndRegion(hut.Latitude.Value, hut.Longitude.Value, httpClient, _logger);
-                    if (country != null)
-                        hut.Country = country;
-                    if (region != null)
-                        hut.Region = region;
+                    hut.Country = hutInfo.CountryNormalized;
+                    hut.Altitude = hutInfo.AltitudeInt;
+                    hut.Longitude = hutInfo.Longitude;
+                    hut.Latitude = hutInfo.Latitude;
+                    
+                    if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
+                    {
+                        _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
+                        var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
+
+                        hut.Latitude = coordinates.latitude ?? existingHut?.Latitude;
+                        hut.Longitude = coordinates.longitude ?? existingHut?.Longitude;
+                    }
+
+                    if (hut is { Latitude: not null, Longitude: not null })
+                    {
+                        var (country, region) = await Helpers.GetCountryAndRegion(hut.Latitude.Value, hut.Longitude.Value, httpClient, _logger);
+                        if (country != null)
+                            hut.Country = country;
+                        if (region != null)
+                            hut.Region = region;
+                    }
                 }
 
                 if (existingHut == null)

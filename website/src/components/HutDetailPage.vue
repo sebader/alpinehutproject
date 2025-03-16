@@ -50,7 +50,7 @@
             </div>
             <div class="col-sm">
                <div style="height: 35vh;">
-                  <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
+                    <l-map v-if="hut.latitude != null && hut.longitude != null" ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
                      <l-control-layers position="topright"></l-control-layers>
                      <l-tile-layer v-for="tileProvider in tileProviders" :key="tileProvider.name"
                         :name="tileProvider.name" :visible="tileProvider.visible" :url="tileProvider.url"

@@ -179,8 +179,8 @@ namespace FetchDataFunctions
                     return result;
                 }
                 
-                // Filter out availability entries that are more than 1 year in the future
-                availability = availability.Where(a => a.DateNormalized > DateTime.UtcNow.AddYears(1));
+                // Filter out availability entries that are more than 9 months in the future
+                availability = availability.Where(a => a.DateNormalized < DateTime.UtcNow.AddMonths(9));
 
                 var updateTime = DateTime.UtcNow;
 

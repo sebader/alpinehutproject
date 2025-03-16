@@ -92,7 +92,7 @@ namespace FetchDataFunctions
                     _logger.LogWarning("Could not parse '{hutId}'. Ignoring", hutId);
                 }
 
-                tasks.Add(GetHutFromProviderActivityV2(parsedId));
+                tasks.Add(GetHutFromProviderActivity(parsedId));
             }
 
             var huts = await Task.WhenAll(tasks);
@@ -115,7 +115,7 @@ namespace FetchDataFunctions
             // Fan-out. Every day we check 1/7 of all hut IDs in the range
             for (int i = startHutId; i <= MaxHutId; i += 7)
             {
-                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivityV2), i));
+                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivity), i));
             }
 
             // Fan in. Wait for all to be finished
@@ -124,12 +124,12 @@ namespace FetchDataFunctions
             log.LogInformation("MaxHutId {MaxHutId} reached. Ending hut updating now.", MaxHutId);
         }
 
-        [Function(nameof(GetHutFromProviderActivityV2))]
-        public async Task<Hut?> GetHutFromProviderActivityV2([ActivityTrigger] int hutId)
+        [Function(nameof(GetHutFromProviderActivity))]
+        public async Task<Hut?> GetHutFromProviderActivity([ActivityTrigger] int hutId)
         {
             try
             {
-                _logger.LogInformation("Executing " + nameof(GetHutFromProviderActivityV2) + " for hutid={hutId}", hutId);
+                _logger.LogInformation("Executing " + nameof(GetHutFromProviderActivity) + " for hutid={hutId}", hutId);
                 var dbContext = Helpers.GetDbContext();
 
                 var existingHut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == hutId);

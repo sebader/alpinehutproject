@@ -200,7 +200,11 @@ export default {
     updateQueryParams(paramName, paramValue) {
       // Get all current query params and update the specified param
       const queryParams = new URLSearchParams(this.latestQueryString);
-      queryParams.set(paramName, paramValue);
+      if (paramValue === null || paramValue === '' || paramValue === undefined) {
+        queryParams.delete(paramName);
+      } else {
+        queryParams.set(paramName, paramValue);
+      }
 
       // Get the hash fragment (if any)
       // remove any query params from the hash fragment
@@ -325,12 +329,18 @@ export default {
   },
   watch: {
     dateFilter: async function (newValue, oldValue) {
+      if(newValue == null || newValue == "") {
+        this.dateFilter = new Date().toISOString().split('T')[0];
+      }
       this.loading = true;
       await this.updateAvailabilityData();
       this.loading = false;
       this.updateQueryParams('date', newValue);
     },
     desiredNumberOfBeds: function (newValue, oldValue) {
+      if (newValue < 1 || newValue > 10) {
+        this.desiredNumberOfBeds = 1;
+      }
       this.updateQueryParams('numBeds', newValue);
     }, 
     selectedBedCategory: function (newValue, oldValue) {

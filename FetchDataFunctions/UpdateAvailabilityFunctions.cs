@@ -82,7 +82,7 @@ namespace FetchDataFunctions
                 }
                 else
                 {
-                    var result = await UpdateHutAvailabilityV2(parsedId);
+                    var result = await UpdateHutAvailability(parsedId);
                     numRowsWritten += result.NumberOfRowsWritten;
                 }
             }
@@ -106,7 +106,7 @@ namespace FetchDataFunctions
             foreach (var hutId in hutIds)
             {
                 orchestratorLogger.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
-                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailabilityV2), hutId));
+                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutId));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
                 if (tasks.Count >= 10)
@@ -137,8 +137,8 @@ namespace FetchDataFunctions
             orchestratorLogger.LogInformation($"Update availability orchestrator finished");
         }
 
-        [Function(nameof(UpdateHutAvailabilityV2))]
-        public async Task<UpdateAvailabilityResult> UpdateHutAvailabilityV2([ActivityTrigger] int hutId)
+        [Function(nameof(UpdateHutAvailability))]
+        public async Task<UpdateAvailabilityResult> UpdateHutAvailability([ActivityTrigger] int hutId)
         {
             var result = new UpdateAvailabilityResult
             {
@@ -178,6 +178,9 @@ namespace FetchDataFunctions
                     _logger.LogError("Could not parse availability for hutid={hutId}", hutId);
                     return result;
                 }
+                
+                // Filter out availability entries that are more than 9 months in the future
+                availability = availability.Where(a => a.DateNormalized < DateTime.UtcNow.AddMonths(9));
 
                 var updateTime = DateTime.UtcNow;
 

@@ -157,7 +157,7 @@ namespace FetchDataFunctions
 
             try
             {
-                log.LogInformation($"Attempting to get country and region on Azure maps for coordinates={latitude},={longitude}");
+                log.LogInformation($"Attempting to get country and region on Azure maps for coordinates={latitude},{longitude}");
                 string searchUrl = $"{baseSearchUrl}&subscription-key={apiKey}&query={latitude.ToString("##.#####", CultureInfo.InvariantCulture)},{longitude.ToString("##.#####", CultureInfo.InvariantCulture)}";
                 var result = await httpClient.GetAsync(searchUrl);
                 result.EnsureSuccessStatusCode();

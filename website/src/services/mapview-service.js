@@ -22,5 +22,4 @@ export default class MapviewService {
       }
       return this.availabilityData[dateFilter];
    }
-
 }

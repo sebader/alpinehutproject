@@ -63,6 +63,7 @@ namespace WebsiteBackendFunctions
             }
 
             _logger.LogInformation("Retrieved {count} availabilites for hut id {hutid}", result.Count, hutId);
+            req.HttpContext.Response.Headers.Append("cache-control", "public, max-age=600");
             return new OkObjectResult(result);
         }
     }

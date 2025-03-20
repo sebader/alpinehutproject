@@ -313,7 +313,7 @@ export default {
     async submitNotificationForm(hutId) {
       try {
         // Perform AJAX request using Fetch API
-        await fetch(`/api/freebednotification/${hutId}`, {
+        await fetch(`/api/freebednotifications/${hutId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

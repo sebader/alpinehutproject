@@ -58,7 +58,7 @@ namespace WebsiteBackendFunctions
                     }).ToList()
             }).ToList();
             
-            req.HttpContext.Response.Headers.Append("cache-control", "public, max-age=600");
+            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(res);
         }
     }

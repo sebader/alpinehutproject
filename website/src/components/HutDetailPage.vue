@@ -164,6 +164,15 @@ export default {
                maxZoom: 17,
                attribution:
                   'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            },
+            {
+               name: 'TracesTrack',
+               visible: false,
+               url: 'https://tile.tracestrack.com/topo__/{z}/{x}/{y}.png?key=366d03ac32a75030ef201d32a2f995fc',
+               minZoom: 6,
+               maxZoom: 17,
+               attribution:
+                  '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors. Tiles courtesy of <a href="https://www.tracestrack.com/" target="_blank">Tracestrack Maps</a>',
             }
          ],
          markerIcon: L.icon({

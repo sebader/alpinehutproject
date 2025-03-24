@@ -5,7 +5,7 @@ const API_ENDPOINT = window.API_URL;
 export default class AvailabilityService {
 
    async getAvailabilityForHut(hutId) {
-      var res = await fetch(`${API_ENDPOINT}/Hut/${hutId}/Availability`);
+      var res = await fetch(`${API_ENDPOINT}/huts/${hutId}/Availability`);
 
       if (res.ok) {
          return await res.json();

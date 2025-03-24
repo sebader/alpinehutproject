@@ -23,7 +23,7 @@ namespace WebsiteBackendFunctions
         [Function(nameof(GetHutAvailability))]
         public IActionResult GetHutAvailability(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get",
-                Route = "hut/{hutid:int}/availability")]
+                Route = "huts/{hutid:int}/availability")]
             HttpRequest req,
             [SqlInput("SELECT a.hutId as HutId, a.AvailabilityId as AvailabilityId, " +
                       "CASE WHEN bc.name IS NOT NULL THEN bc.name ELSE b.name END as BedCategory, " +
@@ -62,7 +62,8 @@ namespace WebsiteBackendFunctions
                 result.Add(avw);
             }
 
-            _logger.LogInformation("Retrieved {count} availabilites for hut id {hutid}", result.Count, hutId);
+            _logger.LogInformation("Retrieved {count} availabilities for hut id {hutId}", result.Count, hutId);
+            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(result);
         }
     }

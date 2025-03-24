@@ -50,14 +50,15 @@ namespace WebsiteBackendFunctions
                 TotalBeds = a.Sum(r => r.TotalRoom),
                 HutClosed = a.Sum(r => r.TotalRoom) == 0,
                 RoomAvailabilities = a.Where(r => r.TotalRoom > 0).Select(r =>
-                    new RoomAvailabilityViewModel() // Filter out "H�tte Geschlossen (0/0)
+                    new RoomAvailabilityViewModel() // Filter out "Hütte Geschlossen (0/0)
                     {
                         BedCategory = r.BedCategory,
                         FreeBeds = (int)r.FreeRoom,
                         TotalBeds = (int)r.TotalRoom
                     }).ToList()
             }).ToList();
-
+            
+            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(res);
         }
     }

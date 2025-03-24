@@ -29,7 +29,7 @@ namespace WebsiteBackendFunctions.WebsiteFunctions
 
         [Function(nameof(CreateFreeBedNotificationSubscription))]
         public async Task<OutputType> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "freebednotification/{hutId:int}")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "freebednotifications/{hutId:int}")]
             HttpRequestData req,
             [SqlInput("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
                 "DatabaseConnectionString",

@@ -112,6 +112,7 @@
 import { Constants } from '../utils';
 import { EventBus } from "../main"
 import { shortWebsiteUrl } from "../utils"
+import { tileProviders } from "../services/mapview-service";
 
 import L from 'leaflet';
 import {
@@ -171,25 +172,7 @@ export default {
         const queryZoom = parseInt(this.$route.query.zoom);
         return (!isNaN(queryZoom) && queryZoom >= 6 && queryZoom <= 17) ? queryZoom : 7;
       })(),
-      tileProviders: [
-        {
-          name: 'OpenStreetMap',
-          visible: true,
-          minZoom: 6,
-          attribution:
-            '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        },
-        {
-          name: 'OpenTopoMap',
-          visible: false,
-          url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-          minZoom: 6,
-          maxZoom: 17,
-          attribution:
-            'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-        }
-      ],
+      tileProviders,
       huts: [],
       availabilityData: [],
       bedCategories: [],
@@ -304,7 +287,7 @@ export default {
     async submitNotificationForm(hutId) {
       try {
         // Perform AJAX request using Fetch API
-        await fetch(`/api/freebednotification/${hutId}`, {
+        await fetch(`/api/freebednotifications/${hutId}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

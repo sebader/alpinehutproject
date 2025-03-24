@@ -21,7 +21,7 @@ namespace WebsiteBackendFunctions
 
         [Function(nameof(GetAllBedCategories))]
         public IActionResult GetAllBedCategories(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bedcategory")]
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "bedcategories")]
             HttpRequest req,
             [SqlInput(
                 "SELECT DISTINCT name FROM [dbo].[BedCategories] WHERE SharesNameWithBedCateogryId IS NULL AND Id <> -1",

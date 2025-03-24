@@ -21,7 +21,7 @@ namespace WebsiteBackendFunctions
 
         [Function(nameof(GetHut))]
         public IActionResult GetHut(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "hut/{hutid:int}")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "huts/{hutid:int}")]
             HttpRequest req,
             [SqlInput("SELECT * FROM [dbo].[Huts] WHERE id = @Id",
                 "DatabaseConnectionString",
@@ -30,14 +30,15 @@ namespace WebsiteBackendFunctions
             IEnumerable<Hut> result,
             int hutId)
         {
-            if (result == null || !result.Any())
+            var hut = result?.FirstOrDefault();
+            if (hut == null)
             {
-                _logger.LogInformation("Not hut found for id {hutid}", hutId);
+                _logger.LogInformation("Not hut found for id {hutId}", hutId);
                 return new NotFoundResult();
             }
 
-            var hut = result.FirstOrDefault();
-            _logger.LogInformation("Retrieved hut {hutName} for id {hutid}", hut?.Name, hutId);
+            _logger.LogInformation("Retrieved hut {hutName} for hut id {hutId}", hut.Name, hutId);
+            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(hut);
         }
     }

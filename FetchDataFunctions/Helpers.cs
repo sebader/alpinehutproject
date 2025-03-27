@@ -150,7 +150,7 @@ namespace FetchDataFunctions
         /// <returns></returns>
         public static async Task<(string? country, string? region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
         {
-            var apiKey = Environment.GetEnvironmentVariable("AzureMapsApiKey");
+            var apiKey = Environment.GetEnvironmentVariable("AzureMaps__ApiKey");
 
             var searchOptions = new MapsSearchClientOptions(language: SearchLanguage.German);
             MapsSearchClient client;
@@ -160,8 +160,9 @@ namespace FetchDataFunctions
             }
             else
             {
-                var clientId = Environment.GetEnvironmentVariable("AZURE_MAPS_CLIENT_ID");
-                client = new MapsSearchClient(new DefaultAzureCredential(), clientId, searchOptions);
+                var azureMapsClientId = Environment.GetEnvironmentVariable("AzureMaps__clientId");
+                var credentialClientId = Environment.GetEnvironmentVariable("AzureMaps__Credential__clientId");
+                client = new MapsSearchClient(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = credentialClientId }), azureMapsClientId, searchOptions);
             }
 
             try

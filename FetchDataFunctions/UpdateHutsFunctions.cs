@@ -222,7 +222,7 @@ namespace FetchDataFunctions
 
                     if (hut is { Latitude: not null, Longitude: not null })
                     {
-                        var (country, region) = await Helpers.GetCountryAndRegion(hut.Latitude.Value, hut.Longitude.Value, httpClient, _logger);
+                        var (country, region) = await Helpers.GetCountryAndRegion(hut.Latitude.Value, hut.Longitude.Value, _logger);
                         if (country != null)
                             hut.Country = country;
                         if (region != null)

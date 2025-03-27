@@ -10,6 +10,10 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Core.GeoJson;
+using Azure.Identity;
+using Azure.Maps.Search;
 
 namespace FetchDataFunctions
 {
@@ -142,35 +146,40 @@ namespace FetchDataFunctions
         /// </summary>
         /// <param name="latitude"></param>
         /// <param name="longitude"></param>
-        /// <param name="httpClient"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        public static async Task<(string? country, string? region)> GetCountryAndRegion(double latitude, double longitude, HttpClient httpClient, ILogger log)
+        public static async Task<(string? country, string? region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
         {
-            const string baseSearchUrl = "https://atlas.microsoft.com/search/address/reverse/json?api-version=1.0&language=de";
+            var apiKey = Environment.GetEnvironmentVariable("AzureMaps__ApiKey");
 
-            var apiKey = Environment.GetEnvironmentVariable("AzureMapsApiKey");
-            if (string.IsNullOrEmpty(apiKey))
+            var searchOptions = new MapsSearchClientOptions(language: SearchLanguage.German);
+            MapsSearchClient client;
+            if (!string.IsNullOrEmpty(apiKey))
             {
-                throw new ArgumentException("AzureMapsApiKey missing in AppSettings");
+                client = new MapsSearchClient(new AzureKeyCredential(apiKey), searchOptions);
+            }
+            else
+            {
+                var azureMapsClientId = Environment.GetEnvironmentVariable("AzureMaps__clientId");
+                var credentialClientId = Environment.GetEnvironmentVariable("AzureMaps__Credential__clientId");
+                client = new MapsSearchClient(new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = credentialClientId }), azureMapsClientId, searchOptions);
             }
 
             try
             {
                 log.LogInformation($"Attempting to get country and region on Azure maps for coordinates={latitude},{longitude}");
-                string searchUrl = $"{baseSearchUrl}&subscription-key={apiKey}&query={latitude.ToString("##.#####", CultureInfo.InvariantCulture)},{longitude.ToString("##.#####", CultureInfo.InvariantCulture)}";
-                var result = await httpClient.GetAsync(searchUrl);
-                result.EnsureSuccessStatusCode();
 
-                var searchResult = await result.Content.ReadFromJsonAsync<AzureMapsResult>();
-                if (searchResult?.addresses?.Length > 0)
+                var mapsSearchResult = await client.GetReverseGeocodingAsync(new GeoPosition(longitude, latitude));
+                var address = mapsSearchResult?.Value?.Features?.FirstOrDefault()?.Properties?.Address;
+                if (address == null)
                 {
-                    var address = searchResult.addresses.First().address;
-                    return (address.country, address.countrySubdivision);
+                    log.LogWarning($"No result for reverse address lookup on Azure maps for coordinates={latitude},{longitude}");
                 }
                 else
                 {
-                    log.LogWarning($"No result for reverse address lookup on Azure maps for coordinates={latitude},{longitude}");
+                    var district = address.AdminDistricts.FirstOrDefault()?.Name;
+                    var country = address.CountryRegion.Name;
+                    return (country, district);
                 }
             }
             catch (Exception e)
@@ -180,7 +189,7 @@ namespace FetchDataFunctions
 
             return (null, null);
         }
-        
+
         public static bool CoordinatesSanityCheck(double longitude, double latitude)
         {
             // Do some simple sanity check if this location is somewhere in central Europe

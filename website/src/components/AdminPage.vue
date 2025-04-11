@@ -15,6 +15,11 @@
                :sort-type="sortType"
                @update-sort="updateSort"
             >
+               <template #item-name="item">
+                  <router-link :to="{ name: 'hutDetailsPage', params: { hutId: item.id } }" :title="$t('message.showHutDetails')">
+                     {{ item.name }}
+                  </router-link>
+               </template>
                <template #item-enabled="item">
                   <span v-if="item.enabled" class="badge bg-success">{{ $t('message.yes') }}</span>
                   <span v-else class="badge bg-danger">{{ $t('message.no') }}</span>

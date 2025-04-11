@@ -127,18 +127,6 @@ export default {
          selectedHut: null,
          editModal: null,
          deleteModal: null,
-         tableHeaders: [
-            { text: "ID", value: "id", sortable: true },
-            { text: this.$t('message.hut'), value: "name", sortable: true },
-            { text: this.$t('message.country') + " / " + this.$t('message.region'), value: "countryRegion", sortable: true },
-            { text: this.$t('message.coordinates'), value: "latitude", sortable: false },
-            { text: "Link", value: "link", sortable: false },
-            ...(this.isAuthenticated ? [
-               { text: this.$t('message.enabled'), value: "enabled", sortable: true },
-               { text: this.$t('message.manuallyEdited'), value: "manuallyEdited", sortable: true },
-               { text: this.$t('message.actions'), value: "actions", sortable: false }
-            ] : [])
-         ],
          searchValue: "",
          sortBy: localStorage.getItem('sortBy') || "id",
          sortType: localStorage.getItem('sortType') || "asc"
@@ -154,6 +142,26 @@ export default {
             }
             return h;
          });
+      },
+      // Table headers that react to authentication status
+      tableHeaders() {
+         const baseHeaders = [
+            { text: "ID", value: "id", sortable: true },
+            { text: this.$t('message.hut'), value: "name", sortable: true },
+            { text: this.$t('message.country') + " / " + this.$t('message.region'), value: "countryRegion", sortable: true },
+            { text: this.$t('message.coordinates'), value: "latitude", sortable: false },
+            { text: "Link", value: "link", sortable: false }
+         ];
+
+         if (this.isAuthenticated) {
+            baseHeaders.push(
+               { text: this.$t('message.enabled'), value: "enabled", sortable: true },
+               { text: this.$t('message.manuallyEdited'), value: "manuallyEdited", sortable: true },
+               { text: this.$t('message.actions'), value: "actions", sortable: false }
+            );
+         }
+
+         return baseHeaders;
       }
    },
    async mounted() {

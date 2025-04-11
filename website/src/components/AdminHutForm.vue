@@ -47,6 +47,20 @@
       </div>
 
       <div class="mb-3">
+         <div class="map-container">
+            <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17" style="height: 400px; width: 100%;" @ready="onMapReady">
+               <l-control-layers position="topright"></l-control-layers>
+               <l-tile-layer v-for="tileProvider in tileProviders" :key="tileProvider.name" :name="tileProvider.name"
+                  :visible="tileProvider.visible" :url="tileProvider.url" :attribution="tileProvider.attribution"
+                  layer-type="base" />
+               <l-marker v-if="form.latitude && form.longitude" :lat-lng="[form.latitude, form.longitude]" draggable
+                  @moveend="updateMarkerPosition" :icon="markerIcon">
+               </l-marker>
+            </l-map>
+         </div>
+      </div>
+
+      <div class="mb-3">
          <div class="form-check">
             <input type="checkbox" class="form-check-input" id="enabled" v-model="form.enabled">
             <label class="form-check-label" for="enabled">{{ $t('message.enabled') }}</label>
@@ -65,7 +79,30 @@
 </template>
 
 <script>
+import { tileProviders } from "../services/mapview-service";
+import {
+   LMap,
+   LTileLayer,
+   LMarker,
+   LControlLayers,
+} from "@vue-leaflet/vue-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from 'leaflet';
+
+const markerIcon = L.icon({
+   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+   iconSize: [25, 41],
+   iconAnchor: [12, 41],
+   popupAnchor: [1, -34]
+});
+
 export default {
+   components: {
+      LMap,
+      LTileLayer,
+      LMarker,
+      LControlLayers,
+   },
    props: {
       hut: {
          type: Object,
@@ -73,8 +110,13 @@ export default {
       }
    },
    data() {
+      const form = this.initForm();
       return {
-         form: this.initForm()
+         form,
+         zoom: 10,
+         mapCenter: form.latitude && form.longitude ? [form.latitude, form.longitude] : [47.5, 13.5],
+         tileProviders,
+         markerIcon
       }
    },
    methods: {
@@ -98,14 +140,54 @@ export default {
       },
       handleSubmit() {
          this.$emit('save', { ...this.form });
+      },
+      updateMarkerPosition(event) {
+         const latLng = event.target.getLatLng();
+         this.form.latitude = Number(latLng.lat.toFixed(8));
+         this.form.longitude = Number(latLng.lng.toFixed(8));
+      },
+      onMapReady(mapObject) {
+         setTimeout(() => {
+            mapObject.invalidateSize();
+            // Re-center map after initialization
+            if (this.form.latitude && this.form.longitude) {
+               mapObject.setView([this.form.latitude, this.form.longitude], this.zoom);
+            }
+         }, 500);
       }
    },
    watch: {
       hut: {
          handler(newHut) {
             this.form = this.initForm();
+            if (newHut.latitude && newHut.longitude) {
+               this.mapCenter = [newHut.latitude, newHut.longitude];
+               // Update map view when hut changes
+               this.$nextTick(() => {
+                  const map = this.$refs.map;
+                  if (map) {
+                     map.leafletObject.setView([newHut.latitude, newHut.longitude], 12);
+                  }
+               });
+            }
          },
          deep: true
+      },
+      'form.latitude': function(val) {
+         if (val && this.form.longitude) {
+            this.mapCenter = [val, this.form.longitude];
+         }
+      },
+      'form.longitude': function(val) {
+         if (val && this.form.latitude) {
+            this.mapCenter = [this.form.latitude, val];
+         }
+      }
+   },
+   mounted() {
+      if (this.form.latitude && this.form.longitude) {
+         this.mapCenter = [this.form.latitude, this.form.longitude];
+         this.zoom = 12;
       }
    }
 }
@@ -119,5 +201,10 @@ export default {
 .modal-footer {
    padding: 1rem 0 0 0;
    border-top: 1px solid #dee2e6;
+}
+
+.map-container {
+   border: 1px solid #dee2e6;
+   border-radius: 0.25rem;
 }
 </style>

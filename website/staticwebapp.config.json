@@ -4,10 +4,6 @@
   },
   "routes": [
     {
-      "route": "/admin/*",
-      "allowedRoles": ["admin"]
-    },
-    {
       "route": "/api/huts/*",
       "methods": ["PUT", "DELETE"],
       "allowedRoles": ["admin"]

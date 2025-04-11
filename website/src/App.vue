@@ -6,7 +6,6 @@
       <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
       <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
       <template v-if="isAdmin">
-        <a href="/admin">{{ $t("message.admin") }}</a> |
         <a href="/logout">{{ $t("message.logout") }}</a>
       </template>
       <template v-else>
@@ -27,7 +26,7 @@
 
       <SystemMessage />
     </div>
-    <router-view :key="$route.fullPath"></router-view>
+    <router-view :key="$route.fullPath" :isAuthenticated="isAdmin"></router-view>
 
     <hr />
 

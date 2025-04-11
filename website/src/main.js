@@ -256,11 +256,6 @@ const router = createRouter({
          name: "infoPage",
          component: components.InfoPage
       },
-      {
-         path: "/admin",
-         name: "adminPage",
-         component: components.AdminPage
-      }
    ]
 });
 

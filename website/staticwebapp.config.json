@@ -13,7 +13,15 @@
       "allowedRoles": ["admin"]
     },
     {
-      "route": "/*",
+      "route": "/map",
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
+      "route": "/hut/*",
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
+      "route": "/info",
       "allowedRoles": ["anonymous", "authenticated"]
     },
     {

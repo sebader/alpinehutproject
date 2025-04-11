@@ -1,5 +1,35 @@
 {
   "platform": {
     "apiRuntime": "dotnet-isolated:8.0"
+  },
+  "routes": [
+    {
+      "route": "/admin/*",
+      "allowedRoles": ["admin"]
+    },
+    {
+      "route": "/api/huts/*",
+      "methods": ["PUT", "DELETE"],
+      "allowedRoles": ["admin"]
+    },
+    {
+      "route": "/*",
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
+        "route": "/login",
+        "redirect": "/.auth/login/aad"
+    },
+    {
+        "route": "/logout",
+        "redirect": "/.auth/logout"
+    },
+    {
+        "route": "/.auth/login/github",
+        "statusCode": 404
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html"
   }
 }

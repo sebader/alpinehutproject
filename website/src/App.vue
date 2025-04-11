@@ -4,7 +4,8 @@
       <h4>{{ $t("message.siteTitle") }}</h4>
       <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
       <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
-      <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link>
+      <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
+      <router-link :to="{ name: 'adminPage' }">{{ $t("message.admin") }}</router-link>
 
       <span style="float:right;">
         <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">

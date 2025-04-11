@@ -29,13 +29,13 @@
          <div class="col">
             <div class="mb-3">
                <label for="latitude" class="form-label">{{ $t('message.latitude') }}</label>
-               <input type="number" step="0.000001" class="form-control" id="latitude" v-model="form.latitude">
+               <input type="number" step="0.00000000000001" class="form-control" id="latitude" v-model="form.latitude">
             </div>
          </div>
          <div class="col">
             <div class="mb-3">
                <label for="longitude" class="form-label">{{ $t('message.longitude') }}</label>
-               <input type="number" step="0.000001" class="form-control" id="longitude" v-model="form.longitude">
+               <input type="number" step="0.00000000000001" class="form-control" id="longitude" v-model="form.longitude">
             </div>
          </div>
          <div class="col">

@@ -5,39 +5,29 @@
       <div v-if="!loading">
          <h1>{{ $t('message.admin') }}</h1>
 
-         <div class="table-responsive">
-            <table class="table">
-               <thead>
-                  <tr>
-                     <th>ID</th>
-                     <th>{{ $t('message.name') }}</th>
-                     <th>{{ $t('message.country') }}</th>
-                     <th>{{ $t('message.region') }}</th>
-                     <th>{{ $t('message.enabled') }}</th>
-                     <th>{{ $t('message.actions') }}</th>
-                  </tr>
-               </thead>
-               <tbody>
-                  <tr v-for="hut in huts" :key="hut.id">
-                     <td>{{ hut.id }}</td>
-                     <td>{{ hut.name }}</td>
-                     <td>{{ hut.country }}</td>
-                     <td>{{ hut.region }}</td>
-                     <td>
-                        <span v-if="hut.enabled" class="badge bg-success">{{ $t('message.yes') }}</span>
-                        <span v-else class="badge bg-danger">{{ $t('message.no') }}</span>
-                     </td>
-                     <td>
-                        <button class="btn btn-sm btn-primary me-2" @click="editHut(hut)">
-                           {{ $t('message.edit') }}
-                        </button>
-                        <button class="btn btn-sm btn-danger" @click="confirmDelete(hut)">
-                           {{ $t('message.delete') }}
-                        </button>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
+         <div class="table-container">
+            <EasyDataTable 
+               :headers="tableHeaders" 
+               :items="huts" 
+               alternating 
+               :rows-per-page="rowsPerPage"
+               :sort-by="sortBy"
+               :sort-type="sortType"
+               @update-sort="updateSort"
+            >
+               <template #item-enabled="item">
+                  <span v-if="item.enabled" class="badge bg-success">{{ $t('message.yes') }}</span>
+                  <span v-else class="badge bg-danger">{{ $t('message.no') }}</span>
+               </template>
+               <template #item-actions="item">
+                  <button class="btn btn-sm btn-primary me-2" @click="editHut(item)">
+                     {{ $t('message.edit') }}
+                  </button>
+                  <button class="btn btn-sm btn-danger" @click="confirmDelete(item)">
+                     {{ $t('message.delete') }}
+                  </button>
+               </template>
+            </EasyDataTable>
          </div>
       </div>
 
@@ -100,10 +90,27 @@ export default {
          loading: false,
          selectedHut: null,
          editModal: null,
-         deleteModal: null
+         deleteModal: null,
+         rowsPerPage: 1000,
+         tableHeaders: [
+            { text: "ID", value: "id", sortable: true },
+            { text: this.$t('message.name'), value: "name", sortable: true },
+            { text: this.$t('message.country'), value: "country", sortable: true },
+            { text: this.$t('message.region'), value: "region", sortable: true },
+            { text: this.$t('message.enabled'), value: "enabled", sortable: false },
+            { text: this.$t('message.actions'), value: "actions", sortable: false }
+         ],
+         sortBy: localStorage.getItem('adminSortBy') || "id",
+         sortType: localStorage.getItem('adminSortType') || "asc"
       }
    },
    methods: {
+      updateSort(sortOptions) {
+         this.sortBy = sortOptions.sortBy;
+         this.sortType = sortOptions.sortType;
+         localStorage.setItem('adminSortBy', this.sortBy);
+         localStorage.setItem('adminSortType', this.sortType);
+      },
       async loadHuts(forceRefresh = false) {
          this.loading = true;
          try {
@@ -154,7 +161,7 @@ export default {
 </script>
 
 <style scoped>
-.table {
+.table-container {
    margin-top: 2rem;
 }
 

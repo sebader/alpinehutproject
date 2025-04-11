@@ -24,6 +24,9 @@
                   <span v-if="item.enabled" class="badge bg-success">{{ $t('message.yes') }}</span>
                   <span v-else class="badge bg-danger">{{ $t('message.no') }}</span>
                </template>
+               <template #item-manuallyEdited="item">
+                  <span v-if="item.manuallyEdited" class="text-primary">✓</span>
+               </template>
                <template #item-actions="item">
                   <button class="btn btn-sm btn-primary me-2" @click="editHut(item)">
                      {{ $t('message.edit') }}
@@ -103,6 +106,7 @@ export default {
             { text: this.$t('message.country'), value: "country", sortable: true },
             { text: this.$t('message.region'), value: "region", sortable: true },
             { text: this.$t('message.enabled'), value: "enabled", sortable: false },
+            { text: "Manually Edited", value: "manuallyEdited", sortable: false },
             { text: this.$t('message.actions'), value: "actions", sortable: false }
          ],
          sortBy: localStorage.getItem('adminSortBy') || "id",

@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { ApplicationInsights } from '@microsoft/applicationinsights-web'
 import emitter from 'tiny-emitter/instance'
 
@@ -68,6 +68,28 @@ const messages = {
          hutNotYetActive: 'Hut not yet activated',
          submit: 'Submit',
          formSuccessfullySubmitted: 'Successfully submitted',
+         admin: 'Admin',
+         editHut: 'Edit Hut',
+         delete: 'Delete',
+         edit: 'Edit',
+         save: 'Save',
+         cancel: 'Cancel',
+         confirmDelete: 'Confirm Delete',
+         confirmDeleteText: 'Are you sure you want to delete the hut',
+         yes: 'Yes',
+         no: 'No',
+         enabled: 'Enabled',
+         website: 'Website',
+         onlineBookingLink: 'Online Booking Link',
+         latitude: 'Latitude',
+         longitude: 'Longitude',
+         altitude: 'Altitude',
+         actions: 'Actions',
+         name: 'Name',
+         login: 'Login (admin)',
+         logout: 'Logout',
+         manuallyEdited: 'Manually Edited',
+         addLocation: 'Add Location',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -127,6 +149,28 @@ const messages = {
          hutNotYetActive: 'Hütte noch nicht aktiviert',
          submit: 'Absenden',
          formSuccessfullySubmitted: 'Erfolgreich abgesendet',
+         admin: 'Admin',
+         editHut: 'Hütte bearbeiten',
+         delete: 'Löschen',
+         edit: 'Bearbeiten',
+         save: 'Speichern',
+         cancel: 'Abbrechen',
+         confirmDelete: 'Löschen bestätigen',
+         confirmDeleteText: 'Sind Sie sicher, dass Sie die Hütte löschen möchten',
+         yes: 'Ja',
+         no: 'Nein',
+         enabled: 'Aktiviert',
+         website: 'Webseite',
+         onlineBookingLink: 'Online-Buchungslink',
+         latitude: 'Breitengrad',
+         longitude: 'Längengrad',
+         altitude: 'Höhe',
+         actions: 'Aktionen',
+         name: 'Name',
+         login: 'Anmelden (admin)',
+         logout: 'Abmelden',
+         manuallyEdited: 'Manuell bearbeitet',
+         addLocation: 'Standort hinzufügen',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',
@@ -188,7 +232,7 @@ export const EventBus = {
 }
 
 const router = createRouter({
-   history: createWebHashHistory(),
+   history: createWebHistory(),
    routes: [
       {
          path: '/',

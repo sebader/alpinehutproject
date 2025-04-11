@@ -41,7 +41,6 @@ From `WebsiteBackendFunctions` folder run
 
 From the `website` folder run
 
-    swa start --api-devserver-url http://localhost:7071 --data-api-devserver-url http://localhost:5000
-
+    swa start --api-devserver-url http://localhost:7071
 
 Open http://localhost:4280

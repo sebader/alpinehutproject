@@ -22,6 +22,13 @@ export default {
       EventBus.$on(Constants.EVENT_SUCCESS, data => {
          this.type = Constants.EVENT_SUCCESS;
          this.message = data;
+         
+         // Auto clear success message after 3 seconds
+         setTimeout(() => {
+            if (this.type === Constants.EVENT_SUCCESS) {
+               this.message = '';
+            }
+         }, 3000);
       });
    },
    watch: {

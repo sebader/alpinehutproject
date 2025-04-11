@@ -29,7 +29,6 @@ namespace WebsiteBackendFunctions
             IEnumerable<Hut> result)
         {
             _logger.LogInformation("Retrieved {count} huts from database", result?.Count());
-            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(result);
         }
     }

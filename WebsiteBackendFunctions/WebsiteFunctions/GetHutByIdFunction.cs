@@ -38,7 +38,6 @@ namespace WebsiteBackendFunctions
             }
 
             _logger.LogInformation("Retrieved hut {hutName} for hut id {hutId}", hut.Name, hutId);
-            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(hut);
         }
     }

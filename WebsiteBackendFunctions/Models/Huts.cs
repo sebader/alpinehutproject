@@ -17,5 +17,7 @@ namespace WebsiteBackendFunctions.Models
         public DateTime? LastUpdated { get; set; }
         public DateTime? Added { get; set; }
         public DateTime? Activated { get; set; }
+        
+        public bool? ManuallyEdited { get; set; }
     }
 }

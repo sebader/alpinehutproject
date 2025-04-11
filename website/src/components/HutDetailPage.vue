@@ -46,6 +46,10 @@
                         </router-link>
                      </td>
                   </tr>
+                  <tr v-if="hut.altitude != null">
+                     <td>{{ $t('message.altitude') }}</td>
+                     <td>{{ hut.altitude }}m</td>
+                  </tr>
                </table>
             </div>
             <div class="col-sm">

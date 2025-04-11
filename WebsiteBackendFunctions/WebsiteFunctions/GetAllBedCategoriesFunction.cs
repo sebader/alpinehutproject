@@ -30,7 +30,7 @@ namespace WebsiteBackendFunctions
             IEnumerable<BedCategoryViewModel> result)
         {
             _logger.LogInformation("Retrieved {count} bed categories from database", result?.Count());
-
+            req.HttpContext.Response.Headers.Append("cache-control", Utils.CacheControlHeader);
             return new OkObjectResult(result);
         }
     }

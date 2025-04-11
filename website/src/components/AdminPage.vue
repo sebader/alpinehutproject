@@ -106,7 +106,7 @@ export default {
             { text: this.$t('message.country'), value: "country", sortable: true },
             { text: this.$t('message.region'), value: "region", sortable: true },
             { text: this.$t('message.enabled'), value: "enabled", sortable: false },
-            { text: "Manually Edited", value: "manuallyEdited", sortable: false },
+            { text: this.$t('message.manuallyEdited'), value: "manuallyEdited", sortable: false },
             { text: this.$t('message.actions'), value: "actions", sortable: false }
          ],
          sortBy: localStorage.getItem('adminSortBy') || "id",

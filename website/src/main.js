@@ -86,6 +86,9 @@ const messages = {
          altitude: 'Altitude',
          actions: 'Actions',
          name: 'Name',
+         login: 'Login (admin)',
+         logout: 'Logout',
+         manuallyEdited: 'Manually Edited',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -163,6 +166,9 @@ const messages = {
          altitude: 'Höhe',
          actions: 'Aktionen',
          name: 'Name',
+         login: 'Anmelden (admin)',
+         logout: 'Abmelden',
+         manuallyEdited: 'Manuell bearbeitet',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',

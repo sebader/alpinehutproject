@@ -139,7 +139,7 @@ export default {
             await this.$HutService.deleteHutAsync(this.selectedHut.id);
             EventBus.$emit(Constants.EVENT_SUCCESS, "Hut deleted successfully");
             this.deleteModal.hide();
-            await this.loadHuts();
+            await this.loadHuts(true);
          } catch (e) {
             EventBus.$emit(Constants.EVENT_ERROR, "Error deleting hut: " + e.message);
          }

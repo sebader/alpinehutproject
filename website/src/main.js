@@ -89,6 +89,7 @@ const messages = {
          login: 'Login (admin)',
          logout: 'Logout',
          manuallyEdited: 'Manually Edited',
+         addLocation: 'Add Location',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -169,6 +170,7 @@ const messages = {
          login: 'Anmelden (admin)',
          logout: 'Abmelden',
          manuallyEdited: 'Manuell bearbeitet',
+         addLocation: 'Standort hinzufügen',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',

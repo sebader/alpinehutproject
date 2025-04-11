@@ -25,26 +25,35 @@
          <input type="url" class="form-control" id="link" v-model="form.link">
       </div>
 
-      <div class="row">
-         <div class="col">
-            <div class="mb-3">
-               <label for="latitude" class="form-label">{{ $t('message.latitude') }}</label>
-               <input type="number" step="0.00000000000001" class="form-control" id="latitude" v-model="form.latitude">
+      <template v-if="form.latitude && form.longitude">
+         <div class="row">
+            <div class="col">
+               <div class="mb-3">
+                  <label for="latitude" class="form-label">{{ $t('message.latitude') }}</label>
+                  <input type="number" step="0.00000000000001" class="form-control" id="latitude" v-model="form.latitude">
+               </div>
+            </div>
+            <div class="col">
+               <div class="mb-3">
+                  <label for="longitude" class="form-label">{{ $t('message.longitude') }}</label>
+                  <input type="number" step="0.00000000000001" class="form-control" id="longitude" v-model="form.longitude">
+               </div>
+            </div>
+            <div class="col">
+               <div class="mb-3">
+                  <label for="altitude" class="form-label">{{ $t('message.altitude') }}</label>
+                  <input type="number" class="form-control" id="altitude" v-model="form.altitude">
+               </div>
             </div>
          </div>
-         <div class="col">
-            <div class="mb-3">
-               <label for="longitude" class="form-label">{{ $t('message.longitude') }}</label>
-               <input type="number" step="0.00000000000001" class="form-control" id="longitude" v-model="form.longitude">
-            </div>
+      </template>
+      <template v-else>
+         <div class="mb-3">
+            <button type="button" class="btn btn-secondary" @click="addLocation">
+               {{ $t('message.addLocation') }}
+            </button>
          </div>
-         <div class="col">
-            <div class="mb-3">
-               <label for="altitude" class="form-label">{{ $t('message.altitude') }}</label>
-               <input type="number" class="form-control" id="altitude" v-model="form.altitude">
-            </div>
-         </div>
-      </div>
+      </template>
 
       <div class="mb-3">
          <div class="map-container">
@@ -120,6 +129,14 @@ export default {
       }
    },
    methods: {
+      addLocation() {
+         const map = this.$refs.map;
+         if (map) {
+            const center = map.leafletObject.getCenter();
+            this.form.latitude = Number(center.lat.toFixed(8));
+            this.form.longitude = Number(center.lng.toFixed(8));
+         }
+      },
       initForm() {
          return {
             id: this.hut.id,

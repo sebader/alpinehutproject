@@ -29,7 +29,7 @@ public record HutInfoV2
         get
         {
             // Coordinates are in the format "lat, lon" or lat/lon"
-            var parts = coordinates?.Split([',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
+            var parts = coordinates?.Split((char[]?)[',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
             return parts.Length == 2 ? (double.TryParse(parts[0].Trim(), out var result) ? result : null) : null;
         }
     }
@@ -39,7 +39,7 @@ public record HutInfoV2
         get
         {
             // Coordinates are in the format "lat, lon" or lat/lon"
-            var parts = coordinates?.Split([',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
+            var parts = coordinates?.Split((char[]?)[',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
             return parts.Length == 2 ? (double.TryParse(parts[1].Trim(), out var result) ? result : null) : null;
         }
     }

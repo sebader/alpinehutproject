@@ -5,7 +5,7 @@
       <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
       <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
       <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
-      <router-link :to="{ name: 'adminPage' }">{{ $t("message.admin") }}</router-link>
+      <a href="/admin">{{ $t("message.admin") }}</a>
 
       <span style="float:right;">
         <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">

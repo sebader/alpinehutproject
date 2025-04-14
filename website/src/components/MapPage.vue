@@ -13,8 +13,10 @@
         </div>
         <div class="control-group">
           <label>{{ $t('mapPage.numberOfBeds') }}</label>
-          <div class="input-group">
+          <div class="input-group number-input">
+            <button class="number-btn" @click="decrementBeds" :disabled="desiredNumberOfBeds <= 1">−</button>
             <input v-model="desiredNumberOfBeds" type="number" min="1" max="10" inputmode="numeric" class="form-control" />
+            <button class="number-btn" @click="incrementBeds" :disabled="desiredNumberOfBeds >= 10">+</button>
           </div>
         </div>
         <div class="control-group">
@@ -321,6 +323,16 @@ export default {
     },
     onPopupClose() {
       this.formSubmitted = false;
+    },
+    incrementBeds() {
+      if (this.desiredNumberOfBeds < 10) {
+        this.desiredNumberOfBeds++;
+      }
+    },
+    decrementBeds() {
+      if (this.desiredNumberOfBeds > 1) {
+        this.desiredNumberOfBeds--;
+      }
     }
   },
   watch: {
@@ -538,6 +550,54 @@ select.form-control {
 .disabled-link {
   color: #999;
   cursor: default;
+}
+
+.number-input {
+  display: flex;
+  align-items: center;
+  width: 160px;
+}
+
+.number-input input[type="number"] {
+  text-align: center;
+  -moz-appearance: textfield;
+  width: 60px !important;
+  padding: 8px 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+.number-input input[type="number"]::-webkit-outer-spin-button,
+.number-input input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-btn {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  min-width: 36px;
+}
+
+.number-btn:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.number-btn:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.number-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+}
+
+.number-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (max-width: 768px) {

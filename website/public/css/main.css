@@ -202,5 +202,19 @@ button.action-button:hover {
 }
 
 @media (hover: none) {
-	.leaflet-tooltip-pane { display: none; }
+.leaflet-tooltip-pane { display: none; }
+}
+
+@media screen and (max-width: 576px) {
+  table td, table th {
+    padding: 8px 5px;
+    font-size: 14px;
+    word-break: break-word;
+  }
+  
+  /* Ensure numeric cells (like bed counts) don't break */
+  td:nth-child(2) {
+    white-space: nowrap;
+    min-width: 70px;
+  }
 }

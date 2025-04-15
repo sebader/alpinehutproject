@@ -22,6 +22,9 @@
     "vue3-easy-data-table": "^1.5.47",
     "vue3-simple-typeahead": "^1.0.10"
   },
+  "engines": {
+    "node": "^20.0.0"
+  },
   "devDependencies": {
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "@vue/cli-service": "^5.0.8",

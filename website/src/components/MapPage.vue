@@ -55,9 +55,9 @@
             <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">
               <a href="#" :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale"
                 @click.prevent="$i18n.locale = locale">
-                {{ $t("message.locale" + locale) }}
+                {{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}
               </a>
-              <span v-else>{{ $t("message.locale" + locale) }}</span>
+              <span v-else>{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
               <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
             </span>
           </div>
@@ -539,7 +539,7 @@ select.form-control {
 }
 
 .language-select {
-  font-size: 0.9em;
+  font-size: 1.2em;
 }
 
 .language-select a {
@@ -548,8 +548,9 @@ select.form-control {
 }
 
 .disabled-link {
-  color: #999;
+  opacity: 0.5;
   cursor: default;
+  text-decoration: none;
 }
 
 .number-input {

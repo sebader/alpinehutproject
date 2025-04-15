@@ -19,8 +19,8 @@
             <router-link
               :to="{ name: $route.name, params: $route.params, query: $route.query, hash: $route.hash, replace: true }"
               :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale"
-              @click.native="$i18n.locale = locale">{{ $t("message.locale" + locale) }}</router-link>
-            <span v-else>{{ $t("message.locale" + locale) }}</span>
+              @click.native="$i18n.locale = locale">{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</router-link>
+            <span v-else>{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
             <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
           </span>
         </span>
@@ -95,4 +95,11 @@ export default {
 footer {
   font-style: italic;
   font-size: 0.8em;
+}
+
+.disabled-link {
+  opacity: 0.5;
+  cursor: default;
+  text-decoration: none;
+  font-size: 1.2em;
 }</style>

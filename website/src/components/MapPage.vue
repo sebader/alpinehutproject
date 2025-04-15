@@ -380,8 +380,62 @@ export default {
   transition: transform 0.3s ease;
   max-width: 350px;
   width: calc(100% - 92px);
+  height: auto;
   max-height: calc(100vh - 80px);
+}
+
+.controls-content {
+  position: relative;
+  padding: 15px;
+  height: auto;
+}
+
+.vue3-simple-typeahead-list {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 4px;
+  z-index: 2000;
+  width: 100%;
+  max-height: 200px;
   overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.input-group {
+  position: relative;
+}
+
+.vue3-simple-typeahead {
+  position: static;
+}
+
+.vue3-simple-typeahead-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 4px;
+  z-index: 2000;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.vue3-simple-typeahead {
+  position: relative;
+}
+
+.input-group {
+  position: relative;
+}
+
+.commandbar {
+  overflow: visible !important;
 }
 
 .commandbar.collapsed {
@@ -500,6 +554,16 @@ select.form-control {
   border: 1px solid #ddd;
   border-radius: 4px;
   margin-top: 4px;
+  position: absolute;
+  z-index: 1600;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.vue3-simple-typeahead {
+  position: relative;
 }
 
 .number-input {

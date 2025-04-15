@@ -101,6 +101,16 @@
 .badge {
    padding: 0.5em 0.75em;
 }
+
+:deep(.vue3-easy-data-table) {
+   width: 100%;
+   overflow-x: auto;
+   display: block;
+}
+
+:deep(.vue3-easy-data-table__main) {
+   min-width: 800px;
+}
 </style>
 
 <script>

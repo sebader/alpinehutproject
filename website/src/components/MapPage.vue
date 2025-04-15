@@ -154,7 +154,10 @@ export default {
   },
   data() {
     return {
-      isCollapsed: false,
+      isCollapsed: (() => {
+        const savedState = localStorage.getItem('mapMenuCollapsed');
+        return savedState !== null ? savedState === 'true' : false;
+      })(),
       email: '',
       formSubmitted: false,
       loading: true,
@@ -330,6 +333,9 @@ export default {
     },
     selectedBedCategory: function (newValue, oldValue) {
       this.updateQueryParams('bedCategory', newValue);
+    },
+    isCollapsed: function(newValue) {
+      localStorage.setItem('mapMenuCollapsed', newValue);
     }
   },
   async mounted() {

@@ -378,6 +378,7 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   z-index: 1500;
   transition: transform 0.3s ease;
+  overflow: visible !important;
   max-width: 350px;
   width: calc(100% - 92px);
   height: auto;
@@ -390,53 +391,62 @@ export default {
   height: auto;
 }
 
-.vue3-simple-typeahead-list {
-  position: absolute;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-top: 4px;
-  z-index: 2000;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.control-group {
+  position: relative !important;
+  margin-bottom: 15px !important;
+}
+
+.control-group:last-child {
+  margin-bottom: 0 !important;
 }
 
 .input-group {
-  position: relative;
+  position: relative !important;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: flex-start !important;
 }
 
-.vue3-simple-typeahead {
-  position: static;
+.control-group .input-group {
+  position: static !important;
 }
 
-.vue3-simple-typeahead-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-top: 4px;
-  z-index: 2000;
-  max-height: 200px;
-  overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.control-group .vue3-simple-typeahead {
+  position: static !important;
+  width: 100% !important;
 }
 
-.vue3-simple-typeahead {
-  position: relative;
+.control-group .vue3-simple-typeahead input {
+  width: 100% !important;
+  padding: 8px !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
 }
 
-.input-group {
-  position: relative;
+.control-group .vue3-simple-typeahead-list {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  width: 100% !important;
+  background: white !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  margin-top: 4px !important;
+  z-index: 2000 !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-.commandbar {
-  overflow: visible !important;
+.vue3-simple-typeahead-list-item {
+  padding: 4px 8px !important;
+  cursor: pointer !important;
 }
+
+.vue3-simple-typeahead-list-item:hover {
+  background-color: #f8f9fa !important;
+}
+
 
 .commandbar.collapsed {
   transform: translateX(-150%);
@@ -473,17 +483,6 @@ export default {
   left: 20px;
 }
 
-.controls-content {
-  padding: 15px;
-}
-
-.control-group {
-  margin-bottom: 15px;
-}
-
-.control-group:last-child {
-  margin-bottom: 0;
-}
 
 @media (max-width: 768px) {
   .commandbar {
@@ -508,19 +507,16 @@ export default {
   }
 
   input[type="date"].form-control,
-  input[type="number"].form-control {
-    width: 140px;
+  input[type="number"].form-control,
+  select.form-control {
+    width: 100%;
   }
 
-  .vue3-simple-typeahead {
-    max-width: 100%;
+  .vue3-simple-typeahead,
+  .vue3-simple-typeahead input,
+  .vue3-simple-typeahead-list {
+    width: 100%;
   }
-}
-
-.input-group {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
 }
 
 .form-control {
@@ -531,45 +527,18 @@ export default {
 
 input[type="date"].form-control,
 input[type="number"].form-control {
-  width: 160px;
+  width: 100%;
 }
 
 select.form-control {
   width: 100%;
 }
 
-.vue3-simple-typeahead {
-  width: 100%;
-}
-
-.vue3-simple-typeahead input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.vue3-simple-typeahead-list {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-top: 4px;
-  position: absolute;
-  z-index: 1600;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.vue3-simple-typeahead {
-  position: relative;
-}
 
 .number-input {
   display: flex;
   align-items: center;
-  width: 160px;
+  width: 100%;
 }
 
 .number-input input[type="number"] {

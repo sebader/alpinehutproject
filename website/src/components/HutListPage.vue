@@ -1,7 +1,5 @@
 <template>
    <section>
-      <h1>{{ $t('hutListPage.allHuts') }}</h1>
-
       <p v-show="loading">{{ $t('message.loading') }}...</p>
 
       <div v-show="!loading">
@@ -85,6 +83,11 @@
 </template>
 
 <style scoped>
+section {
+   padding: 0 16px;
+   margin-top: -1rem;
+}
+
 .table-container {
    margin-top: 2rem;
 }
@@ -100,6 +103,16 @@
 
 .badge {
    padding: 0.5em 0.75em;
+}
+
+:deep(.vue3-easy-data-table) {
+   width: 100%;
+   overflow-x: auto;
+   display: block;
+}
+
+:deep(.vue3-easy-data-table__main) {
+   min-width: 800px;
 }
 </style>
 

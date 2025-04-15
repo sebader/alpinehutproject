@@ -40,7 +40,7 @@ appInsights.trackPageView();
 const messages = {
    en: {
       message: {
-         siteTitle: 'Alpine Huts - Online Booking',
+         siteTitle: 'Alpine Huts Booking',
          map: 'Map',
          list: 'List',
          info: 'Info',
@@ -121,7 +121,7 @@ const messages = {
    },
    de: {
       message: {
-         siteTitle: 'AV-Hütten Onlinebuchung',
+         siteTitle: 'AV-Hüttenbuchung',
          map: 'Karte',
          list: 'Liste',
          info: 'Info',

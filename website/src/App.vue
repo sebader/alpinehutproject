@@ -1,9 +1,7 @@
 <template>
   <div :class="{ 'map-layout': $route.name === 'mapPage' }">
     <div class="header" :class="{ 'map-header': $route.name === 'mapPage' }">
-      <h4>{{ $t("message.siteTitle") }}{{ $route.name === 'infoPage' ? ' - ' + $t('message.info') : 
-          $route.name === 'hutListPage' ? ' - ' + $t('message.list') : 
-          $route.name === 'mapPage' ? ' - ' + $t('message.map') : '' }}</h4>
+      <h4>{{ pageTitle }}</h4>
       <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
       <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
       <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link>
@@ -55,7 +53,15 @@ export default {
       });
   },
   methods: {},
-  computed: {},
+  computed: {
+    pageTitle() {
+      const baseTitle = this.$t("message.siteTitle");
+      if (this.$route.name === 'infoPage') return `${baseTitle} - ${this.$t('message.info')}`;
+      if (this.$route.name === 'hutListPage') return `${baseTitle} - ${this.$t('message.list')}`;
+      if (this.$route.name === 'mapPage') return `${baseTitle} - ${this.$t('message.map')}`;
+      return baseTitle;
+    }
+  },
   components: {
     SystemMessage,
   },
@@ -95,4 +101,11 @@ footer {
   cursor: default;
   text-decoration: none;
   font-size: 1.2em;
+}
+
+.header h4 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 10px;
 }</style>

@@ -562,7 +562,6 @@ select.form-control {
   padding: 8px 12px;
   cursor: pointer;
   font-size: 16px;
-  line-height: 1;
   min-width: 36px;
 }
 

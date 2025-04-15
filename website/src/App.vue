@@ -1,17 +1,12 @@
 <template>
   <div :class="{ 'map-layout': $route.name === 'mapPage' }">
     <div class="header" :class="{ 'map-header': $route.name === 'mapPage' }">
-      <h4>{{ $t("message.siteTitle") }}</h4>
+      <h4>{{ $t("message.siteTitle") }}{{ $route.name === 'infoPage' ? ' - ' + $t('message.info') : 
+          $route.name === 'hutListPage' ? ' - ' + $t('message.list') : 
+          $route.name === 'mapPage' ? ' - ' + $t('message.map') : '' }}</h4>
       <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
       <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
-      <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
-      
-      <template v-if="isAdmin">
-        <a href="/logout">{{ $t("message.logout") }}</a>
-      </template>
-      <template v-else>
-        <a href="/login">{{ $t("message.login") }}</a>
-      </template>
+      <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link>
 
       <span style="float:right;">
         <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">

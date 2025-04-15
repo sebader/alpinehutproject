@@ -1,13 +1,12 @@
 #app {
-	font-family: Tenorite, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	/*margin: 5px;*/
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: #2c3e50;
-	margin-top: 0px;
-	padding-top: 10px;
-	overflow-x: hidden;
-
+font-family: Tenorite, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/*margin: 5px;*/
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+color: #2c3e50;
+margin-top: 0px;
+padding-top: 5px;
+overflow-x: hidden;
 }
 
 .header {
@@ -19,13 +18,20 @@
 	margin-left: 5px;
 }
 
-h1,
-h2 {
-	margin-top: 10pt;
+h1 {
+margin: 8px 0;
+font-size: 1.8em;
 }
 
 h2 {
-	font-weight: normal;
+margin: 8px 0;
+font-weight: normal;
+font-size: 1.5em;
+}
+
+h3 {
+margin: 8px 0;
+font-size: 1.3em;
 }
 
 hr {

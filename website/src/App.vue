@@ -2,29 +2,27 @@
   <div :class="{ 'map-layout': $route.name === 'mapPage' }">
     <div class="header" :class="{ 'map-header': $route.name === 'mapPage' }">
       <h4>{{ $t("message.siteTitle") }}</h4>
-      <template v-if="$route.name !== 'mapPage'">
-        <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
-        <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
-        <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
-        
-        <template v-if="isAdmin">
-          <a href="/logout">{{ $t("message.logout") }}</a>
-        </template>
-        <template v-else>
-          <a href="/login">{{ $t("message.login") }}</a>
-        </template>
-
-        <span style="float:right;">
-          <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">
-            <router-link
-              :to="{ name: $route.name, params: $route.params, query: $route.query, hash: $route.hash, replace: true }"
-              :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale"
-              @click.native="$i18n.locale = locale">{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</router-link>
-            <span v-else>{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
-            <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
-          </span>
-        </span>
+      <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
+      <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
+      <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
+      
+      <template v-if="isAdmin">
+        <a href="/logout">{{ $t("message.logout") }}</a>
       </template>
+      <template v-else>
+        <a href="/login">{{ $t("message.login") }}</a>
+      </template>
+
+      <span style="float:right;">
+        <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">
+          <router-link
+            :to="{ name: $route.name, params: $route.params, query: $route.query, hash: $route.hash, replace: true }"
+            :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale"
+            @click.native="$i18n.locale = locale">{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</router-link>
+          <span v-else>{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
+          <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
+        </span>
+      </span>
       <hr v-if="$route.name !== 'mapPage'" />
 
       <SystemMessage v-if="$route.name !== 'mapPage'" />

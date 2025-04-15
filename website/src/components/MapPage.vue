@@ -39,29 +39,6 @@
           </div>
         </div>
 
-        <div class="nav-links">
-          <div class="nav-group">
-            <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
-            <router-link :to="{ name: 'infoPage' }">{{ $t("message.info") }}</router-link> |
-            <template v-if="isAuthenticated">
-              <a href="/logout">{{ $t("message.logout") }}</a>
-            </template>
-            <template v-else>
-              <a href="/login">{{ $t("message.login") }}</a>
-            </template>
-          </div>
-
-          <div class="language-select">
-            <span v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`">
-              <a href="#" :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale"
-                @click.prevent="$i18n.locale = locale">
-                {{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}
-              </a>
-              <span v-else>{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
-              <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
-            </span>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -383,16 +360,18 @@ export default {
 <style>
 #mainmap {
   position: fixed;
-  top: 32px;
+  top: 60px;  /* Adjusted to account for header with navigation */
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 1;
 }
 
+/* Hide nav-links styles since they're not used anymore */
+
 .commandbar {
   position: fixed;
-  top: 42px;
+  top: 70px;  /* Adjusted to be below header */
   left: 72px;
   background: rgba(255, 255, 255, 0.98);
   border-radius: 8px;
@@ -412,7 +391,7 @@ export default {
 
 .toggle-btn {
   position: fixed;
-  top: 42px;
+  top: 70px;  /* Adjusted to be below header */
   left: 20px;
   background: white;
   border: 1px solid #ddd;
@@ -454,7 +433,7 @@ export default {
 
 @media (max-width: 768px) {
   .commandbar {
-    top: 45px;
+    top: 70px;  /* Keep consistent with non-mobile */
     left: 62px;
     width: calc(100% - 82px);
     max-width: 300px;
@@ -462,7 +441,7 @@ export default {
   }
 
   .toggle-btn {
-    top: 45px;
+    top: 70px;  /* Keep consistent with non-mobile */
     left: 10px;
   }
   
@@ -523,36 +502,6 @@ select.form-control {
   margin-top: 4px;
 }
 
-.nav-links {
-  margin-top: 15px;
-  padding-top: 12px;
-  border-top: 1px solid #ddd;
-}
-
-.nav-group {
-  margin-bottom: 10px;
-}
-
-.nav-group a {
-  color: #333;
-  text-decoration: none;
-}
-
-.language-select {
-  font-size: 1.2em;
-}
-
-.language-select a {
-  color: #333;
-  text-decoration: none;
-}
-
-.disabled-link {
-  opacity: 0.5;
-  cursor: default;
-  text-decoration: none;
-}
-
 .number-input {
   display: flex;
   align-items: center;
@@ -601,14 +550,4 @@ select.form-control {
   opacity: 0.6;
 }
 
-@media (max-width: 768px) {
-  .nav-links {
-    margin-top: 15px;
-    padding-top: 10px;
-  }
-  
-  .nav-group, .language-select {
-    font-size: 0.9em;
-  }
-}
 </style>

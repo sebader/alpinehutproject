@@ -671,15 +671,13 @@ select.form-control {
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
   padding: 0;
   overflow: hidden;
+  width: 320px !important;
 }
 
 .custom-popup .leaflet-popup-content {
   margin: 0;
-  width: 100% !important;
-}
-
-.custom-popup .leaflet-popup-tip {
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+  width: 320px !important;
+  padding: 0 !important;
 }
 
 .hut-popup-content {

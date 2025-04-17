@@ -129,7 +129,8 @@
                      </div>
                      
                      <div v-if="!month.collapsed" class="month-content">
-                        <div v-for="av in month.availabilities" :key="av.date" class="date-card">
+                        <!-- Date card - only render if hut is not closed -->
+                        <div v-for="av in month.availabilities.filter(a => !a.hutClosed)" :key="av.date" class="date-card">
                            <!-- Date header -->
                            <div class="date-header">
                               <div class="date-info">
@@ -138,13 +139,8 @@
                               </div>
                            </div>
                            
-                           <!-- Hut closed message -->
-                           <div v-if="av.hutClosed" class="closed-message">
-                              {{ $t('message.hutClosed') }}
-                           </div>
-                           
                            <!-- Room availability cards -->
-                           <div v-else-if="av.roomAvailabilities && av.roomAvailabilities.length > 0" class="room-availability-container">
+                           <div v-if="av.roomAvailabilities && av.roomAvailabilities.length > 0" class="room-availability-container">
                               <div v-for="(roomAv, index) in av.roomAvailabilities" 
                                    :key="`${av.date}-${roomAv.bedCategory}-${index}`" 
                                    :class="['room-availability-card', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">

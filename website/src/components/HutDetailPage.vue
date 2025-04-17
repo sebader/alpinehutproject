@@ -666,7 +666,12 @@ export default {
          });
       },
       groupByMonth(availabilities) {
-         const filteredAvailabilities = this.filterByWeekdays(availabilities);
+         // First filter out weekdays if selected
+         const weekdayFilteredAvailabilities = this.filterByWeekdays(availabilities);
+         
+         // Then filter out closed hut dates 
+         const filteredAvailabilities = weekdayFilteredAvailabilities.filter(av => !av.hutClosed);
+         
          const months = {};
          
          // Store current collapse states
@@ -682,9 +687,9 @@ export default {
             if (!months[month]) {
                // Use previous collapse state if available, otherwise use default
                const wasCollapsed = currentCollapseStates[month] !== undefined ? 
-                                   currentCollapseStates[month] : 
-                                   !(new Date(av.date).getMonth() === new Date().getMonth() && 
-                                     new Date(av.date).getFullYear() === new Date().getFullYear());
+                                 currentCollapseStates[month] : 
+                                 !(new Date(av.date).getMonth() === new Date().getMonth() && 
+                                   new Date(av.date).getFullYear() === new Date().getFullYear());
                
                months[month] = { 
                   month, 
@@ -699,6 +704,16 @@ export default {
          if (Object.keys(months).length === 0 && this.selectedWeekdays.length > 0) {
             return [{
                month: this.$t('message.noResultsFound'), 
+               availabilities: [],
+               collapsed: false,
+               isEmptyFilterResult: true
+            }];
+         }
+         
+         // If no months after filtering due to all dates being closed
+         if (Object.keys(months).length === 0 && this.selectedWeekdays.length === 0) {
+            return [{
+               month: this.$t('message.allDatesClosedTitle'), 
                availabilities: [],
                collapsed: false,
                isEmptyFilterResult: true

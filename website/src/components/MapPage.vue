@@ -102,7 +102,7 @@
                       <span class="btn-icon">🔖</span> {{ $t('message.onlineBookingInactive') }}
                     </span>
                     <a :href="`${hut.hutWebsite}`" target="_blank" class="popup-btn btn-secondary">
-                      <span class="btn-icon">🌐</span> {{ shortWebsiteUrl(hut.hutWebsite) }}
+                      <span class="btn-icon">🌐</span> {{ $t('message.hutWebsite') || 'Hut Website' }}
                     </a>
                   </div>
 

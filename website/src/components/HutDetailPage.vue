@@ -105,82 +105,57 @@
                   </div>
                </div>
                
-               <!-- Availability table -->
-               <div class="availability-table-container">
-                  <table class="enhanced-table">
-                     <thead>
-                        <tr>
-                           <th>{{ $t('message.date') }}</th>
-                           <th>{{ $t('message.beds') }}</th>
-                           <th>{{ $t('message.typeOfAccommodation') }}</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        <template v-for="month in this.availabilityByMonth" :key="month">
-                           <tr @click="toggleCollapse(month)" class="month-row">
-                              <th colspan="3" class="month-header">
-                                 {{ month.month }}
-                                 <span v-if="month.collapsed" class="collapse-icon">▼</span>
-                                 <span v-else class="collapse-icon">▲</span>
-                              </th>
-                           </tr>
-                           <template v-if="!month.collapsed">
-                              <!-- For each day with availability info -->
-                              <template v-for="av in month.availabilities" :key="av.date">
-                                 <!-- Skip rendering if hut is closed - we'll handle it separately -->
-                                 <template v-if="!av.hutClosed && av.roomAvailabilities.length > 0">
-                                    <!-- First row of each day -->
-                                    <tr class="availability-row">
-                                       <td :rowspan="av.roomAvailabilities.length" class="date-cell">
-                                          <span class="date-day">{{ new Date(av.date).getDate() }}</span>
-                                          <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
-                                       </td>
-                                       <td :class="['bed-cell', getAvailabilityClass(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)]">
-                                          <div class="bed-info">
-                                             <span class="bed-count">{{ av.roomAvailabilities[0].freeBeds }}</span>
-                                             <span class="bed-separator">/</span>
-                                             <span class="bed-total">{{ av.roomAvailabilities[0].totalBeds }}</span>
-                                          </div>
-                                          <div class="availability-indicator">
-                                             <div class="indicator-bar" :style="getAvailabilityBarStyle(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)"></div>
-                                          </div>
-                                       </td>
-                                       <td :class="['type-cell', getAvailabilityClass(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)]">
-                                          {{ av.roomAvailabilities[0].bedCategory }}
-                                       </td>
-                                    </tr>
-                                    
-                                    <!-- Additional rows for each day (without date cell) -->
-                                    <tr v-for="(roomAv, index) in av.roomAvailabilities.slice(1)" :key="`${av.date}-${roomAv.bedCategory}-${index}`" class="availability-row">
-                                       <td :class="['bed-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
-                                          <div class="bed-info">
-                                             <span class="bed-count">{{ roomAv.freeBeds }}</span>
-                                             <span class="bed-separator">/</span>
-                                             <span class="bed-total">{{ roomAv.totalBeds }}</span>
-                                          </div>
-                                          <div class="availability-indicator">
-                                             <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
-                                          </div>
-                                       </td>
-                                       <td :class="['type-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
-                                          {{ roomAv.bedCategory }}
-                                       </td>
-                                    </tr>
-                                 </template>
-                                 
-                                 <!-- Row for hut closed status -->
-                                 <tr v-if="av.hutClosed" class="hut-closed-row">
-                                    <td class="date-cell">
-                                       <span class="date-day">{{ new Date(av.date).getDate() }}</span>
-                                       <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
-                                    </td>
-                                    <td colspan="2" class="closed-message">{{ $t('message.hutClosed') }}</td>
-                                 </tr>
-                              </template>
-                           </template>
-                        </template>
-                     </tbody>
-                  </table>
+               <!-- Availability card-based layout -->
+               <div class="availability-container">
+                  <div v-for="month in this.availabilityByMonth" :key="month.month" class="availability-month">
+                     <div class="month-header" @click="toggleCollapse(month)">
+                        <h4 class="month-title">{{ month.month }}</h4>
+                        <span v-if="month.collapsed" class="collapse-icon">▼</span>
+                        <span v-else class="collapse-icon">▲</span>
+                     </div>
+                     
+                     <div v-if="!month.collapsed" class="month-content">
+                        <div v-for="av in month.availabilities" :key="av.date" class="date-card">
+                           <!-- Date header -->
+                           <div class="date-header">
+                              <div class="date-info">
+                                 <span class="date-day">{{ new Date(av.date).getDate() }}</span>
+                                 <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
+                              </div>
+                           </div>
+                           
+                           <!-- Hut closed message -->
+                           <div v-if="av.hutClosed" class="closed-message">
+                              {{ $t('message.hutClosed') }}
+                           </div>
+                           
+                           <!-- Room availability cards -->
+                           <div v-else-if="av.roomAvailabilities && av.roomAvailabilities.length > 0" class="room-availability-container">
+                              <div v-for="(roomAv, index) in av.roomAvailabilities" 
+                                   :key="`${av.date}-${roomAv.bedCategory}-${index}`" 
+                                   :class="['room-availability-card', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                                 <div class="room-type">{{ roomAv.bedCategory }}</div>
+                                 <div class="availability-details">
+                                    <div class="bed-info">
+                                       <span class="bed-count">{{ roomAv.freeBeds }}</span>
+                                       <span class="bed-separator">/</span>
+                                       <span class="bed-total">{{ roomAv.totalBeds }}</span>
+                                       <span class="beds-label"> {{ $t('message.beds') }}</span>
+                                    </div>
+                                    <div class="availability-indicator">
+                                       <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           
+                           <!-- No availability info -->
+                           <div v-else class="no-availability-info">
+                              {{ $t('message.noAvailabilityInfo') }}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
                </div>
             </div>
          </div>
@@ -308,30 +283,167 @@
    width: 100%;
 }
 
-/* Availability table specific */
+/* Availability section styling */
+.availability-section {
+   margin-top: 2rem;
+}
+
+.section-title {
+   font-size: 1.5rem;
+   margin-bottom: 1.5rem;
+   color: #333;
+}
+
+.filter-card {
+   background-color: #f8f9fa;
+   border-radius: 8px;
+   padding: 1.5rem;
+   margin-bottom: 1.5rem;
+   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-title {
+   margin-bottom: 1rem;
+   font-size: 1.1rem;
+   color: #333;
+}
+
+.custom-checkbox-group {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+}
+
+.custom-checkbox-option {
+   display: flex;
+   align-items: center;
+   margin-right: 12px;
+}
+
+.custom-checkbox {
+   margin-right: 6px;
+}
+
+/* New Card-based Availability Layout */
+.availability-container {
+   display: flex;
+   flex-direction: column;
+   gap: 1.5rem;
+}
+
+.availability-month {
+   border-radius: 8px;
+   overflow: hidden;
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+   background-color: white;
+}
+
+.month-header {
+   background-color: #f5f7fa;
+   padding: 14px 20px;
+   font-weight: 600;
+   color: #333;
+   cursor: pointer;
+   position: relative;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   transition: background-color 0.2s;
+}
+
+.month-header:hover {
+   background-color: #edf0f5;
+}
+
+.month-title {
+   margin: 0;
+   font-size: 1.1rem;
+}
+
 .collapse-icon {
-   position: absolute;
-   right: 16px;
-   top: 50%;
-   transform: translateY(-50%);
    font-size: 0.8rem;
    color: #7f8c8d;
 }
 
-.date-cell {
+.month-content {
+   padding: 10px;
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+   gap: 15px;
+}
+
+.date-card {
+   border: 1px solid #eaeaea;
+   border-radius: 8px;
+   overflow: hidden;
+   background-color: white;
+   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.date-header {
+   background-color: #f8f9fa;
+   padding: 12px 15px;
+   border-bottom: 1px solid #eaeaea;
+}
+
+.date-info {
    display: flex;
-   flex-direction: column;
-   white-space: nowrap;
+   align-items: baseline;
+   gap: 8px;
 }
 
 .date-day {
-   font-size: 1.2rem;
+   font-size: 1.3rem;
    font-weight: 600;
+   color: #333;
 }
 
 .date-weekday {
-   font-size: 0.8rem;
+   font-size: 0.9rem;
    color: #666;
+   font-weight: 500;
+}
+
+.room-availability-container {
+   padding: 12px;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+}
+
+.room-availability-card {
+   padding: 12px;
+   border-radius: 6px;
+   background-color: #f5f7fa;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+}
+
+.room-availability-card.availability-high {
+   background-color: rgba(46, 204, 113, 0.1);
+   border-left: 3px solid #2ecc71;
+}
+
+.room-availability-card.availability-medium {
+   background-color: rgba(243, 156, 18, 0.1);
+   border-left: 3px solid #f39c12;
+}
+
+.room-availability-card.availability-low {
+   background-color: rgba(231, 76, 60, 0.1);
+   border-left: 3px solid #e74c3c;
+}
+
+.room-type {
+   font-weight: 600;
+   color: #333;
+}
+
+.availability-details {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
 }
 
 .bed-info {
@@ -342,7 +454,7 @@
 
 .bed-count {
    font-weight: 600;
-   font-size: 1rem;
+   font-size: 1.1rem;
 }
 
 .bed-separator {
@@ -353,12 +465,16 @@
    color: #666;
 }
 
+.beds-label {
+   color: #777;
+   font-size: 0.9rem;
+}
+
 .availability-indicator {
    height: 4px;
    width: 100%;
    background-color: #f0f0f0;
    border-radius: 2px;
-   margin-top: 5px;
    overflow: hidden;
 }
 
@@ -367,14 +483,18 @@
    border-radius: 2px;
 }
 
-.hut-closed-row {
-   background-color: #f8f9fa;
-}
-
 .closed-message {
+   padding: 15px;
    font-style: italic;
    color: #e74c3c;
    text-align: center;
+}
+
+.no-availability-info {
+   padding: 15px;
+   color: #7f8c8d;
+   text-align: center;
+   font-style: italic;
 }
 
 /* Responsive adjustments */
@@ -397,6 +517,10 @@
    
    .info-label {
       margin-bottom: 5px;
+   }
+   
+   .month-content {
+      grid-template-columns: 1fr;
    }
 }
 </style>

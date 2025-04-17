@@ -124,53 +124,59 @@
                                  <span v-else class="collapse-icon">▲</span>
                               </th>
                            </tr>
-                           <template v-if="!month.collapsed" v-for="av in month.availabilities">
-                              <!-- First row of each day with rowspan -->
-                              <tr class="availability-row">
-                                 <td :rowspan="av.roomAvailabilities.length" class="date-cell">
-                                    <span class="date-day">{{ new Date(av.date).getDate() }}</span>
-                                    <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
-                                 </td>
-                                 <td v-if="av.roomAvailabilities.length > 0" :class="['bed-cell', getAvailabilityClass(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)]">
-                                    <div class="bed-info">
-                                       <span class="bed-count">{{ av.roomAvailabilities[0].freeBeds }}</span>
-                                       <span class="bed-separator">/</span>
-                                       <span class="bed-total">{{ av.roomAvailabilities[0].totalBeds }}</span>
-                                    </div>
-                                    <div class="availability-indicator">
-                                       <div class="indicator-bar" :style="getAvailabilityBarStyle(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)"></div>
-                                    </div>
-                                 </td>
-                                 <td v-if="av.roomAvailabilities.length > 0" :class="['type-cell', getAvailabilityClass(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)]">
-                                    {{ av.roomAvailabilities[0].bedCategory }}
-                                 </td>
-                              </tr>
-                              
-                              <!-- Additional rows for each day (without date cell) -->
-                              <tr v-for="roomAv in av.roomAvailabilities.slice(1)" :key="roomAv.bedCategory" class="availability-row">
-                                 <td :class="['bed-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
-                                    <div class="bed-info">
-                                       <span class="bed-count">{{ roomAv.freeBeds }}</span>
-                                       <span class="bed-separator">/</span>
-                                       <span class="bed-total">{{ roomAv.totalBeds }}</span>
-                                    </div>
-                                    <div class="availability-indicator">
-                                       <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
-                                    </div>
-                                 </td>
-                                 <td :class="['type-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
-                                    {{ roomAv.bedCategory }}
-                                 </td>
-                              </tr>
-                              
-                              <!-- Row for hut closed status -->
-                              <tr v-if="av.hutClosed" class="hut-closed-row">
-                                 <td class="date-cell">
-                                    <span class="date-day">{{ new Date(av.date).getDate() }}</span>
-                                    <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
-                                 </td>
-                                 <td colspan="2" class="closed-message">{{ $t('message.hutClosed') }}</td>
-                              </tr>
+                           <template v-if="!month.collapsed">
+                              <!-- For each day with availability info -->
+                              <template v-for="av in month.availabilities" :key="av.date">
+                                 <!-- Skip rendering if hut is closed - we'll handle it separately -->
+                                 <template v-if="!av.hutClosed && av.roomAvailabilities.length > 0">
+                                    <!-- First row of each day -->
+                                    <tr class="availability-row">
+                                       <td :rowspan="av.roomAvailabilities.length" class="date-cell">
+                                          <span class="date-day">{{ new Date(av.date).getDate() }}</span>
+                                          <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
+                                       </td>
+                                       <td :class="['bed-cell', getAvailabilityClass(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)]">
+                                          <div class="bed-info">
+                                             <span class="bed-count">{{ av.roomAvailabilities[0].freeBeds }}</span>
+                                             <span class="bed-separator">/</span>
+                                             <span class="bed-total">{{ av.roomAvailabilities[0].totalBeds }}</span>
+                                          </div>
+                                          <div class="availability-indicator">
+                                             <div class="indicator-bar" :style="getAvailabilityBarStyle(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)"></div>
+                                          </div>
+                                       </td>
+                                       <td :class="['type-cell', getAvailabilityClass(av.roomAvailabilities[0].freeBeds, av.roomAvailabilities[0].totalBeds)]">
+                                          {{ av.roomAvailabilities[0].bedCategory }}
+                                       </td>
+                                    </tr>
+                                    
+                                    <!-- Additional rows for each day (without date cell) -->
+                                    <tr v-for="(roomAv, index) in av.roomAvailabilities.slice(1)" :key="`${av.date}-${roomAv.bedCategory}-${index}`" class="availability-row">
+                                       <td :class="['bed-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                                          <div class="bed-info">
+                                             <span class="bed-count">{{ roomAv.freeBeds }}</span>
+                                             <span class="bed-separator">/</span>
+                                             <span class="bed-total">{{ roomAv.totalBeds }}</span>
+                                          </div>
+                                          <div class="availability-indicator">
+                                             <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
+                                          </div>
+                                       </td>
+                                       <td :class="['type-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                                          {{ roomAv.bedCategory }}
+                                       </td>
+                                    </tr>
+                                 </template>
+                                 
+                                 <!-- Row for hut closed status -->
+                                 <tr v-if="av.hutClosed" class="hut-closed-row">
+                                    <td class="date-cell">
+                                       <span class="date-day">{{ new Date(av.date).getDate() }}</span>
+                                       <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
+                                    </td>
+                                    <td colspan="2" class="closed-message">{{ $t('message.hutClosed') }}</td>
+                                 </tr>
+                              </template>
                            </template>
                         </template>
                      </tbody>

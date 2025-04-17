@@ -59,7 +59,7 @@
               <div v-if="hut.availability?.hutClosed"><i>{{ $t('message.hutClosed') }}</i></div> <!-- Blue marker -->
               <div v-if="!hut.enabled"><i>{{ $t('message.hutNotYetActive') }}</i></div> <!-- Grey marker -->
             </l-tooltip>
-            <l-popup :options='{ "closeButton": false, "maxWidth": 320, "className": "custom-popup" }' @remove="onPopupClose">
+            <l-popup :options='{ "closeButton": false, "maxWidth": 320, "minWidth": 320, "className": "custom-popup" }' @remove="onPopupClose">
               <div class="hut-popup-content">
                 <div class="hut-popup-header">
                   <h3 class="hut-popup-title">

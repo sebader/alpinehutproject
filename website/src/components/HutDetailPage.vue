@@ -98,9 +98,9 @@
                <div class="filter-card">
                   <h4 class="filter-title">{{ $t('message.filterByWeekdays') }}</h4>
                   <div class="custom-checkbox-group">
-                     <div v-for="weekday in weekdays" :key="weekday" class="custom-checkbox-option">
-                        <input type="checkbox" :id="weekday" :value="weekday" v-model="selectedWeekdays" class="custom-checkbox">
-                        <label :for="weekday" class="custom-checkbox-label">{{ weekday }}</label>
+                     <div v-for="weekday in weekdays" :key="weekday.key" class="custom-checkbox-option">
+                        <input type="checkbox" :id="weekday.key" :value="weekday.key" v-model="selectedWeekdays" class="custom-checkbox">
+                        <label :for="weekday.key" class="custom-checkbox-label">{{ $t(weekday.label) }}</label>
                      </div>
                   </div>
                </div>
@@ -616,7 +616,15 @@ export default {
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
          }),
-         weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+         weekdays: [
+            { key: 'sunday', label: 'message.sunday' },
+            { key: 'monday', label: 'message.monday' },
+            { key: 'tuesday', label: 'message.tuesday' },
+            { key: 'wednesday', label: 'message.wednesday' },
+            { key: 'thursday', label: 'message.thursday' },
+            { key: 'friday', label: 'message.friday' },
+            { key: 'saturday', label: 'message.saturday' }
+         ],
          selectedWeekdays: [],
          originalAvailability: [],
       }
@@ -640,7 +648,27 @@ export default {
       },
       filterByWeekdays(availabilities) {
          if (this.selectedWeekdays.length === 0) return availabilities;
-         return availabilities.filter(av => this.selectedWeekdays.includes(new Date(av.date).toLocaleString('default', { weekday: 'long' })));
+         
+         // Create a mapping of our weekday keys to the day of the week (0-6)
+         const weekdayMap = {
+            'sunday': 0,
+            'monday': 1, 
+            'tuesday': 2, 
+            'wednesday': 3, 
+            'thursday': 4, 
+            'friday': 5, 
+            'saturday': 6
+         };
+         
+         // Convert our selected weekday keys into day numbers
+         const selectedDayNumbers = this.selectedWeekdays.map(day => weekdayMap[day]);
+         
+         // Filter availabilities where the day of the week matches one of our selected days
+         return availabilities.filter(av => {
+            const date = new Date(av.date);
+            const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            return selectedDayNumbers.includes(dayOfWeek);
+         });
       },
       groupByMonth(availabilities) {
          const filteredAvailabilities = this.filterByWeekdays(availabilities);

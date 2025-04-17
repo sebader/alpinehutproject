@@ -962,6 +962,7 @@ select.form-control {
 
 .last-updated {
   font-style: italic;
+  font-size: 0.8rem;
 }
 
 .zoom-link {

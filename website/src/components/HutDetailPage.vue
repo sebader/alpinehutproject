@@ -96,12 +96,11 @@
                            </th>
                         </tr>
                         <template v-if="!month.collapsed" v-for="av in month.availabilities">
-                           <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory" 
-                               :class="getBedAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)">
+                           <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory">
                               <td v-if="iSub === 0" :rowspan="av.roomAvailabilities.length">{{ new
                                  Date(av.date).toDateString() }}</td>
-                              <td>{{ roomAv.freeBeds }} / {{ roomAv.totalBeds }}</td>
-                              <td>{{ roomAv.bedCategory }}</td>
+                              <td :class="getBedAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)">{{ roomAv.freeBeds }} / {{ roomAv.totalBeds }}</td>
+                              <td :class="getBedAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)">{{ roomAv.bedCategory }}</td>
                            </tr>
                            <tr v-if="av.hutClosed">
                               <td>{{ new Date(av.date).toDateString() }}</td>
@@ -146,26 +145,16 @@
 
 .bed-availability-high {
   background-color: rgba(75, 192, 75, 0.2);
+  color: #2c882c;
 }
 
 .bed-availability-medium {
   background-color: rgba(255, 159, 64, 0.2);
+  color: #b36c00;
 }
 
 .bed-availability-low {
   background-color: rgba(255, 99, 132, 0.2);
-}
-
-/* Make the text colors a bit darker for better readability */
-.bed-availability-high td {
-  color: #2c882c;
-}
-
-.bed-availability-medium td {
-  color: #b36c00;
-}
-
-.bed-availability-low td {
   color: #c92432;
 }
 

@@ -135,7 +135,7 @@
                            <div class="date-header">
                               <div class="date-info">
                                  <span class="date-day">{{ new Date(av.date).getDate() }}</span>
-                                 <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
+                                 <span class="date-weekday">{{ getWeekdayShort(av.date) }}</span>
                               </div>
                            </div>
                            
@@ -683,7 +683,7 @@ export default {
          }
          
          filteredAvailabilities.forEach(av => {
-            const month = new Date(av.date).toLocaleString('default', { month: 'long', year: 'numeric' });
+            const month = this.getMonthYearDisplay(av.date);
             if (!months[month]) {
                // Use previous collapse state if available, otherwise use default
                const wasCollapsed = currentCollapseStates[month] !== undefined ? 
@@ -703,7 +703,7 @@ export default {
          // If no months after filtering, preserve the empty state but with filtered message
          if (Object.keys(months).length === 0 && this.selectedWeekdays.length > 0) {
             return [{
-               month: 'Filtered Results', 
+               month: this.$t('message.noResultsFound'), 
                availabilities: [],
                collapsed: false,
                isEmptyFilterResult: true
@@ -744,6 +744,33 @@ export default {
             width: `${percentage}%`,
             backgroundColor: color
          };
+      },
+      getMonthYearDisplay(date) {
+         const d = new Date(date);
+         const month = d.getMonth(); // 0-11
+         const year = d.getFullYear();
+         
+         // Get the translated month name
+         const monthKey = [
+            'message.january', 'message.february', 'message.march', 'message.april',
+            'message.may', 'message.june', 'message.july', 'message.august',
+            'message.september', 'message.october', 'message.november', 'message.december'
+         ][month];
+         
+         return `${this.$t(monthKey)} ${year}`;
+      },
+      
+      getWeekdayShort(date) {
+         const d = new Date(date);
+         const day = d.getDay(); // 0-6, 0 is Sunday
+         
+         // Get the translated short weekday name
+         const dayKey = [
+            'message.sun', 'message.mon', 'message.tue', 'message.wed',
+            'message.thu', 'message.fri', 'message.sat'
+         ][day];
+         
+         return this.$t(dayKey);
       },
    },
    async created() {

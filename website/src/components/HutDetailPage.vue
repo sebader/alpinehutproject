@@ -96,7 +96,8 @@
                            </th>
                         </tr>
                         <template v-if="!month.collapsed" v-for="av in month.availabilities">
-                           <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory">
+                           <tr v-for="(roomAv, iSub) in av.roomAvailabilities" :key="roomAv.bedCategory" 
+                               :class="getBedAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)">
                               <td v-if="iSub === 0" :rowspan="av.roomAvailabilities.length">{{ new
                                  Date(av.date).toDateString() }}</td>
                               <td>{{ roomAv.freeBeds }} / {{ roomAv.totalBeds }}</td>
@@ -141,6 +142,40 @@
    display: flex;
    align-items: center;
    gap: 5px;
+}
+
+.bed-availability-high {
+  background-color: rgba(75, 192, 75, 0.2);
+}
+
+.bed-availability-medium {
+  background-color: rgba(255, 159, 64, 0.2);
+}
+
+.bed-availability-low {
+  background-color: rgba(255, 99, 132, 0.2);
+}
+
+/* Make the text colors a bit darker for better readability */
+.bed-availability-high td {
+  color: #2c882c;
+}
+
+.bed-availability-medium td {
+  color: #b36c00;
+}
+
+.bed-availability-low td {
+  color: #c92432;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table tr:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 </style>
 
@@ -223,6 +258,20 @@ export default {
             months[month].collapsed = new Date(av.date).getMonth() !== new Date().getMonth() || new Date(av.date).getFullYear() !== new Date().getFullYear();
          });
          return Object.values(months);
+      },
+      getBedAvailabilityClass(freeBeds, totalBeds) {
+         // No beds available
+         if (freeBeds === 0) {
+            return 'bed-availability-low';
+         }
+         
+         // At least 4 beds or 10% of total beds are available
+         if (freeBeds >= 4 || (freeBeds / totalBeds) >= 0.1) {
+            return 'bed-availability-high';
+         }
+         
+         // Otherwise (between 1-3 beds and less than 10%)
+         return 'bed-availability-medium';
       },
    },
    async created() {

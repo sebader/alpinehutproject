@@ -11,7 +11,6 @@
             <div class="hero-content">
                <h1 class="hut-name">{{ hut.name }}</h1>
                <div class="hut-location">
-                  <i class="location-icon">📍</i>
                   <span>{{ hut.country }}</span>
                   <span v-if="hut.region != null"> - {{ hut.region }}</span>
                   <span v-if="hut.altitude != null" class="altitude-badge">{{ hut.altitude }}m</span>
@@ -92,7 +91,7 @@
 
             <!-- Availability section -->
             <div class="availability-section" v-if="hut.enabled">
-               <h3 class="section-title">{{ $t('message.beds') }} {{ $t('message.typeOfAccommodation') }}</h3>
+               <h3 class="section-title">{{ $t('message.beds') }}</h3>
                
                <!-- Weekday filter -->
                <div class="filter-card">

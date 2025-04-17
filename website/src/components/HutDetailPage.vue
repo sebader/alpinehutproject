@@ -214,7 +214,7 @@
    left: 0;
    right: 0;
    bottom: 0;
-   background: url('https://images.unsplash.com/photo-1520681493044-2405cb9ce2bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1050&q=80') center/cover;
+   background: url('https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?ixlib=rb-4.0.3&auto=format&fit=crop&w=1050&q=80') center/cover;
    opacity: 0.3;
    z-index: 0;
 }

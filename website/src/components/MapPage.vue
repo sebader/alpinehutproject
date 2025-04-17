@@ -98,9 +98,9 @@
                     <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank" class="popup-btn btn-primary">
                       <span class="btn-icon">🔖</span> {{ $t('message.onlineBooking') }}
                     </a>
-                    <span v-else class="popup-inactive-notice">
+                    <div v-else class="popup-btn btn-inactive">
                       <span class="btn-icon">🔖</span> {{ $t('message.onlineBookingInactive') }}
-                    </span>
+                    </div>
                     <a :href="`${hut.hutWebsite}`" target="_blank" class="popup-btn btn-secondary">
                       <span class="btn-icon">🌐</span> {{ $t('message.hutWebsite') || 'Hut Website' }}
                     </a>
@@ -849,6 +849,13 @@ select.form-control {
 
 .popup-btn.btn-secondary:hover {
   background-color: #e9ecef;
+}
+
+.popup-btn.btn-inactive {
+  background-color: #f0f0f0;
+  color: #95a5a6;
+  border: 1px solid #ddd;
+  cursor: default;
 }
 
 .btn-icon {

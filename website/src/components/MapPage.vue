@@ -59,55 +59,99 @@
               <div v-if="hut.availability?.hutClosed"><i>{{ $t('message.hutClosed') }}</i></div> <!-- Blue marker -->
               <div v-if="!hut.enabled"><i>{{ $t('message.hutNotYetActive') }}</i></div> <!-- Grey marker -->
             </l-tooltip>
-            <l-popup :options='{ "closeButton": false }' @remove="onPopupClose">
-              <h6>
-                <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }"
-                  title="{{ $t('message.showHutDetails') }}">{{
-                  hut.name
-                  }}</router-link>
-              </h6>
-              <div>
-                <span v-if="hut.enabled">[{{ new Date(this.dateFilter).toLocaleDateString()
-                }}] </span>
-                <span v-if="hut.availability != null && !hut.availability.hutClosed">{{ $t('mapPage.freeBeds') }}: {{
-                  hut.availability.totalFreeBeds }} /
-                  {{ hut.availability.totalBeds }}</span>
-                <span v-if="hut.availability?.hutClosed">{{ $t('message.hutClosed') }}</span>
-                <span v-if="hut.availability == null && hut.enabled">{{ $t('mapPage.noAvailabilityInfo') }}</span>
-                <br />
-                <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank">{{ $t('message.onlineBooking') }}</a>
-                <span v-else><i>{{ $t('message.onlineBookingInactive') }}</i></span>
-                <br />
-                <a :href="`${hut.hutWebsite}`" target="_blank">{{ shortWebsiteUrl(hut.hutWebsite) }}</a>
-                <br />
-                <br />
-                <table v-if="hut.availability != null">
-                  <template v-for="availability in hut.availability?.roomAvailabilities">
-                    <tr>
-                      <td>{{ availability.bedCategory }}</td>
-                      <td>{{ availability.freeBeds }} / {{ availability.totalBeds }}
-                      </td>
-                    </tr>
-                  </template>
-                </table>
-                <br />
-                <template v-if="!hut.availability?.hutClosed && hut.availability?.totalFreeBeds == 0">
-                  <div>
-                    <div v-if="!formSubmitted">
-                      <label>{{ $t('message.hutfullNotify') }}</label>
-                      <br />
-                      <input type="email" id="email" v-model="email" placeholder="Email" required />
-                      <button @click="submitNotificationForm(hut.id)">{{ $t('message.submit') }}</button>
+            <l-popup :options='{ "closeButton": false, "maxWidth": 320, "className": "custom-popup" }' @remove="onPopupClose">
+              <div class="hut-popup-content">
+                <div class="hut-popup-header">
+                  <h3 class="hut-popup-title">
+                    <router-link :to="{ name: 'hutDetailsPage', params: { hutId: hut.id } }"
+                      :title="$t('message.showHutDetails')">
+                      {{ hut.name }}
+                    </router-link>
+                  </h3>
+                  <div class="hut-popup-meta" v-if="hut.enabled">
+                    <span class="date-badge">{{ new Date(this.dateFilter).toLocaleDateString() }}</span>
+                  </div>
+                </div>
+
+                <div class="hut-popup-body">
+                  <div class="popup-status-row">
+                    <div v-if="hut.availability != null && !hut.availability.hutClosed" class="availability-indicator">
+                      <div class="availability-badge" :class="getAvailabilityClass(hut.availability.totalFreeBeds, hut.availability.totalBeds)">
+                        <span class="bed-count">{{ hut.availability.totalFreeBeds }}</span>
+                        <span class="bed-separator">/</span>
+                        <span class="bed-total">{{ hut.availability.totalBeds }}</span>
+                        <span class="bed-label">{{ $t('mapPage.freeBeds') }}</span>
+                      </div>
+                      <div class="availability-bar">
+                        <div class="indicator-bar" :style="getAvailabilityBarStyle(hut.availability.totalFreeBeds, hut.availability.totalBeds)"></div>
+                      </div>
                     </div>
-                    <div v-else>
-                      <p>{{ $t('message.formSuccessfullySubmitted') }}</p>
+                    <div v-if="hut.availability?.hutClosed" class="hut-closed-status">
+                      <span class="status-icon">🔒</span> {{ $t('message.hutClosed') }}
+                    </div>
+                    <div v-if="hut.availability == null && hut.enabled" class="no-availability-status">
+                      <span class="status-icon">ℹ️</span> {{ $t('mapPage.noAvailabilityInfo') }}
                     </div>
                   </div>
-                </template>
-                <br />
-                <span>{{ $t('message.lastUpdated') }}: {{ new
-                  Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString()
-                }} (<a href="#" @click="hutSelected(hut)">Zoom in</a>)</span>
+
+                  <div class="popup-action-buttons">
+                    <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank" class="popup-btn btn-primary">
+                      <span class="btn-icon">🔖</span> {{ $t('message.onlineBooking') }}
+                    </a>
+                    <span v-else class="popup-inactive-notice">
+                      <span class="btn-icon">🔖</span> {{ $t('message.onlineBookingInactive') }}
+                    </span>
+                    <a :href="`${hut.hutWebsite}`" target="_blank" class="popup-btn btn-secondary">
+                      <span class="btn-icon">🌐</span> {{ shortWebsiteUrl(hut.hutWebsite) }}
+                    </a>
+                  </div>
+
+                  <div v-if="hut.availability != null && hut.availability.roomAvailabilities?.length > 0" class="room-availability-table">
+                    <h4 class="section-title">{{ $t('message.typeOfAccommodation') }}</h4>
+                    <table>
+                      <tbody>
+                        <tr v-for="availability in hut.availability?.roomAvailabilities" :key="availability.bedCategory" 
+                            :class="getAvailabilityClass(availability.freeBeds, availability.totalBeds)">
+                          <td class="room-type">{{ availability.bedCategory }}</td>
+                          <td class="room-availability">
+                            <div class="bed-info">
+                              <span class="bed-count">{{ availability.freeBeds }}</span>
+                              <span class="bed-separator">/</span>
+                              <span class="bed-total">{{ availability.totalBeds }}</span>
+                            </div>
+                            <div class="mini-availability-bar">
+                              <div class="indicator-bar" :style="getAvailabilityBarStyle(availability.freeBeds, availability.totalBeds)"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div v-if="!hut.availability?.hutClosed && hut.availability?.totalFreeBeds == 0" class="notification-form">
+                    <div v-if="!formSubmitted">
+                      <h4 class="section-title">{{ $t('message.hutfullNotify') }}</h4>
+                      <div class="form-group">
+                        <input type="email" id="email" v-model="email" placeholder="Email" required class="form-control" />
+                        <button @click="submitNotificationForm(hut.id)" class="popup-btn btn-primary">
+                          {{ $t('message.submit') }}
+                        </button>
+                      </div>
+                    </div>
+                    <div v-else class="form-success">
+                      <span class="success-icon">✓</span> {{ $t('message.formSuccessfullySubmitted') }}
+                    </div>
+                  </div>
+
+                  <div class="popup-footer">
+                    <span class="last-updated">
+                      {{ $t('message.lastUpdated') }}: {{ new Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString() }}
+                    </span>
+                    <a href="#" @click.prevent="hutSelected(hut)" class="zoom-link">
+                      <span class="zoom-icon">🔍</span> {{ $t('mapPage.zoomIn') || 'Zoom in' }}
+                    </a>
+                  </div>
+                </div>
               </div>
             </l-popup>
           </l-marker>
@@ -283,6 +327,39 @@ export default {
     },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
+    },
+    getAvailabilityClass(freeBeds, totalBeds) {
+      // No beds available
+      if (freeBeds === 0) {
+        return 'availability-low';
+      }
+      
+      // At least 4 beds or 10% of total beds are available
+      if (freeBeds >= 4 || (freeBeds / totalBeds) >= 0.1) {
+        return 'availability-high';
+      }
+      
+      // Otherwise (between 1-3 beds and less than 10%)
+      return 'availability-medium';
+    },
+    getAvailabilityBarStyle(freeBeds, totalBeds) {
+      if (totalBeds === 0) return { width: '0%', backgroundColor: '#e74c3c' };
+      
+      const percentage = Math.min(100, Math.round((freeBeds / totalBeds) * 100));
+      
+      let color = '#e74c3c'; // Default red
+      if (freeBeds === 0) {
+        color = '#e74c3c'; // Red
+      } else if (freeBeds >= 4 || (freeBeds / totalBeds) >= 0.1) {
+        color = '#2ecc71'; // Green
+      } else {
+        color = '#f39c12'; // Orange
+      }
+      
+      return {
+        width: `${percentage}%`,
+        backgroundColor: color
+      };
     },
     async submitNotificationForm(hutId) {
       try {
@@ -588,4 +665,320 @@ select.form-control {
   opacity: 0.6;
 }
 
+/* Styling for custom popup */
+.custom-popup .leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  overflow: hidden;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  width: 100% !important;
+}
+
+.custom-popup .leaflet-popup-tip {
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hut-popup-content {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.hut-popup-header {
+  background: linear-gradient(to right, #3494e6, #ec6ead);
+  color: white;
+  padding: 15px;
+  position: relative;
+}
+
+.hut-popup-title {
+  margin: 0 0 5px 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.hut-popup-title a {
+  color: white;
+  text-decoration: none;
+}
+
+.hut-popup-title a:hover {
+  text-decoration: underline;
+}
+
+.hut-popup-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-badge {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2px 12px;
+  font-size: 0.9rem;
+}
+
+.hut-popup-body {
+  padding: 15px;
+  background-color: white;
+}
+
+.popup-status-row {
+  margin-bottom: 15px;
+}
+
+.availability-indicator {
+  margin-bottom: 10px;
+}
+
+.availability-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.availability-badge.availability-high {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+}
+
+.availability-badge.availability-medium {
+  background-color: rgba(243, 156, 18, 0.15);
+  color: #f39c12;
+}
+
+.availability-badge.availability-low {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.bed-count {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.bed-separator {
+  margin: 0 2px;
+  opacity: 0.7;
+}
+
+.bed-total {
+  opacity: 0.7;
+}
+
+.bed-label {
+  margin-left: 8px;
+  font-size: 0.9rem;
+}
+
+.availability-bar {
+  height: 4px;
+  width: 100%;
+  background-color: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.indicator-bar {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.hut-closed-status, .no-availability-status {
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hut-closed-status {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.no-availability-status {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.status-icon {
+  font-size: 1.1rem;
+}
+
+.popup-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.popup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.popup-btn.btn-primary {
+  background-color: #3498db;
+  color: white;
+  border: none;
+}
+
+.popup-btn.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.popup-btn.btn-secondary {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  border: 1px solid #ddd;
+}
+
+.popup-btn.btn-secondary:hover {
+  background-color: #e9ecef;
+}
+
+.btn-icon {
+  font-size: 1rem;
+}
+
+.popup-inactive-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 8px 12px;
+}
+
+.room-availability-table {
+  margin: 15px 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #444;
+}
+
+.room-availability-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.room-availability-table tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.room-availability-table tr:last-child {
+  border-bottom: none;
+}
+
+.room-availability-table tr.availability-high {
+  background-color: rgba(46, 204, 113, 0.05);
+}
+
+.room-availability-table tr.availability-medium {
+  background-color: rgba(243, 156, 18, 0.05);
+}
+
+.room-availability-table tr.availability-low {
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+.room-availability-table td {
+  padding: 8px;
+}
+
+.room-type {
+  font-weight: 500;
+}
+
+.room-availability {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mini-availability-bar {
+  height: 3px;
+  width: 50px;
+  background-color: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.notification-form {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 15px 0;
+}
+
+.form-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.form-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #27ae60;
+  font-weight: 500;
+}
+
+.success-icon {
+  font-size: 1.2rem;
+}
+
+.popup-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+.last-updated {
+  font-style: italic;
+}
+
+.zoom-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #3498db;
+  text-decoration: none;
+}
+
+.zoom-link:hover {
+  text-decoration: underline;
+}
+
+.zoom-icon {
+  font-size: 1rem;
+}
 </style>

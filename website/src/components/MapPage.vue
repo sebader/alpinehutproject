@@ -148,7 +148,7 @@
                       {{ $t('message.lastUpdated') }}: {{ new Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString() }}
                     </span>
                     <a href="#" @click.prevent="hutSelected(hut)" class="zoom-link">
-                      <span class="zoom-icon">🔍</span> {{ $t('mapPage.zoomIn') || 'Zoom in' }}
+                      <span class="zoom-icon">🔍</span>
                     </a>
                   </div>
                 </div>

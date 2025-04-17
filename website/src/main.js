@@ -130,7 +130,7 @@ const messages = {
          freeBeds: 'Free beds',
          noAvailabilityInfo: 'No availability information available',
          anyBeds: 'any',
-         zoomIn: 'Zoom in',
+         zoomIn: 'Zoom',
       },
       hutListPage: {
          allHuts: 'All huts',
@@ -245,7 +245,7 @@ const messages = {
          freeBeds: 'Freie Betten',
          noAvailabilityInfo: 'Keine Information verfügbar',
          anyBeds: 'egal',
-         zoomIn: 'Zoom in',
+         zoomIn: 'Zoom',
       },
       hutListPage: {
          allHuts: 'Alle Hütten',

@@ -58,7 +58,7 @@
 
                      <div class="info-item">
                         <div class="info-label">{{ $t('message.lastUpdated') }}</div>
-                        <div class="info-value last-updated">{{ new Date(hut.lastUpdated).toLocaleString() }}</div>
+                        <div class="info-value">{{ new Date(hut.lastUpdated).toLocaleString() }}</div>
                      </div>
 
                      <div class="info-item">
@@ -271,11 +271,6 @@
 .info-value {
    flex: 0 0 60%;
    color: #333;
-}
-
-.info-value.last-updated {
-   font-size: 0.9rem;
-   color: #999;
 }
 
 .website-link, .coordinates-link {

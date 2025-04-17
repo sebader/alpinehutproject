@@ -107,7 +107,23 @@
                
                <!-- Availability card-based layout -->
                <div class="availability-container">
-                  <div v-for="month in this.availabilityByMonth" :key="month.month" class="availability-month">
+                  <!-- No results message when filtering returns empty -->
+                  <div v-if="selectedWeekdays.length > 0 && availabilityByMonth.length === 0" class="no-results-message">
+                     <p>{{ $t('message.noResultsFound') || 'No availability found for selected weekday(s)' }}</p>
+                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') || 'Clear Filter' }}</button>
+                  </div>
+                  
+                  <!-- Empty filter result message -->
+                  <div v-else-if="availabilityByMonth.length === 1 && availabilityByMonth[0].isEmptyFilterResult" class="no-results-message">
+                     <p>{{ $t('message.noResultsFound') || 'No availability found for selected weekday(s)' }}</p>
+                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') || 'Clear Filter' }}</button>
+                  </div>
+                  
+                  <!-- Display available months -->
+                  <div v-for="month in this.availabilityByMonth" 
+                       :key="month.month" 
+                       class="availability-month"
+                       v-else-if="!month.isEmptyFilterResult">
                      <div class="month-header" @click="toggleCollapse(month)">
                         <h4 class="month-title">{{ month.month }}</h4>
                         <span v-if="month.collapsed" class="collapse-icon">▼</span>
@@ -322,6 +338,42 @@
 
 .custom-checkbox {
    margin-right: 6px;
+}
+
+/* No results message */
+.no-results-message {
+   background-color: #f8f9fa;
+   border-radius: 8px;
+   padding: 2rem;
+   text-align: center;
+   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+   min-height: 200px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: 1rem;
+}
+
+.no-results-message p {
+   color: #666;
+   font-size: 1.1rem;
+   margin-bottom: 1rem;
+}
+
+.btn-clear-filter {
+   background-color: #3498db;
+   color: white;
+   border: none;
+   padding: 8px 16px;
+   border-radius: 4px;
+   cursor: pointer;
+   font-weight: 500;
+   transition: background-color 0.2s;
+}
+
+.btn-clear-filter:hover {
+   background-color: #2980b9;
 }
 
 /* New Card-based Availability Layout */
@@ -594,15 +646,43 @@ export default {
       groupByMonth(availabilities) {
          const filteredAvailabilities = this.filterByWeekdays(availabilities);
          const months = {};
+         
+         // Store current collapse states
+         const currentCollapseStates = {};
+         if (this.availabilityByMonth.length > 0) {
+            this.availabilityByMonth.forEach(month => {
+               currentCollapseStates[month.month] = month.collapsed;
+            });
+         }
+         
          filteredAvailabilities.forEach(av => {
             const month = new Date(av.date).toLocaleString('default', { month: 'long', year: 'numeric' });
             if (!months[month]) {
-               months[month] = { month, availabilities: [], collapsed: true };
+               // Use previous collapse state if available, otherwise use default
+               const wasCollapsed = currentCollapseStates[month] !== undefined ? 
+                                   currentCollapseStates[month] : 
+                                   !(new Date(av.date).getMonth() === new Date().getMonth() && 
+                                     new Date(av.date).getFullYear() === new Date().getFullYear());
+               
+               months[month] = { 
+                  month, 
+                  availabilities: [], 
+                  collapsed: wasCollapsed
+               };
             }
             months[month].availabilities.push(av);
-            // current month is always expanded
-            months[month].collapsed = new Date(av.date).getMonth() !== new Date().getMonth() || new Date(av.date).getFullYear() !== new Date().getFullYear();
          });
+         
+         // If no months after filtering, preserve the empty state but with filtered message
+         if (Object.keys(months).length === 0 && this.selectedWeekdays.length > 0) {
+            return [{
+               month: 'Filtered Results', 
+               availabilities: [],
+               collapsed: false,
+               isEmptyFilterResult: true
+            }];
+         }
+         
          return Object.values(months);
       },
       getAvailabilityClass(freeBeds, totalBeds) {

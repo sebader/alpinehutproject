@@ -90,6 +90,7 @@ const messages = {
          logout: 'Logout',
          manuallyEdited: 'Manually Edited',
          addLocation: 'Add Location',
+         filterByWeekdays: 'Filter by Weekdays',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -171,6 +172,7 @@ const messages = {
          logout: 'Abmelden',
          manuallyEdited: 'Manuell bearbeitet',
          addLocation: 'Standort hinzufügen',
+         filterByWeekdays: 'Filtern nach Wochentagen',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',

@@ -72,6 +72,15 @@
          <div class="row" v-if="hut.enabled">
             <br />
             <div class="col">
+               <div class="weekday-filter mb-3">
+                  <label for="weekday-select">{{ $t('message.filterByWeekdays') || 'Filter by Weekdays' }}:</label>
+                  <div class="weekday-checkboxes">
+                     <div v-for="weekday in weekdays" :key="weekday" class="weekday-option">
+                        <input type="checkbox" :id="weekday" :value="weekday" v-model="selectedWeekdays">
+                        <label :for="weekday">{{ weekday }}</label>
+                     </div>
+                  </div>
+               </div>
                <table>
                   <thead>
                      <tr>
@@ -116,6 +125,23 @@
 .availability-box .name {
    font-size: 9pt
 }
+
+.weekday-filter {
+   margin-top: 10px;
+}
+
+.weekday-checkboxes {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+   margin-top: 5px;
+}
+
+.weekday-option {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+}
 </style>
 
 <script>
@@ -157,7 +183,20 @@ export default {
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
-         })
+         }),
+         weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+         selectedWeekdays: [],
+         originalAvailability: [],
+      }
+   },
+   watch: {
+      selectedWeekdays: {
+         handler() {
+            if (this.hut && this.originalAvailability.length > 0) {
+               this.availabilityByMonth = this.groupByMonth(this.originalAvailability);
+            }
+         },
+         deep: true
       }
    },
    methods: {
@@ -167,9 +206,14 @@ export default {
       toggleCollapse(month) {
          month.collapsed = !month.collapsed;
       },
+      filterByWeekdays(availabilities) {
+         if (this.selectedWeekdays.length === 0) return availabilities;
+         return availabilities.filter(av => this.selectedWeekdays.includes(new Date(av.date).toLocaleString('default', { weekday: 'long' })));
+      },
       groupByMonth(availabilities) {
+         const filteredAvailabilities = this.filterByWeekdays(availabilities);
          const months = {};
-         availabilities.forEach(av => {
+         filteredAvailabilities.forEach(av => {
             const month = new Date(av.date).toLocaleString('default', { month: 'long', year: 'numeric' });
             if (!months[month]) {
                months[month] = { month, availabilities: [], collapsed: true };
@@ -191,6 +235,7 @@ export default {
          else {
             this.hut = await this.$HutService.getHutByIdAsync(hutId);
             this.hut.availability = await this.$AvailabilityService.getAvailabilityForHut(this.hut.id);
+            this.originalAvailability = [...this.hut.availability]; // Store original data
             this.availabilityByMonth = this.groupByMonth(this.hut.availability);
             this.mapCenter = [this.hut.latitude, this.hut.longitude];
          }

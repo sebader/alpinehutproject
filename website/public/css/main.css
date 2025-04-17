@@ -211,6 +211,19 @@ button.action-button:hover {
 .leaflet-tooltip-pane { display: none; }
 }
 
+/* Ensure consistent popup width throughout the app */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-content {
+  width: 320px !important;
+  min-width: 320px !important;
+  max-width: 320px !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 @media screen and (max-width: 576px) {
   table {
     width: 100%;

@@ -109,67 +109,64 @@
                <div class="availability-container">
                   <!-- No results message when filtering returns empty -->
                   <div v-if="selectedWeekdays.length > 0 && availabilityByMonth.length === 0" class="no-results-message">
-                     <p>{{ $t('message.noResultsFound') || 'No availability found for selected weekday(s)' }}</p>
-                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') || 'Clear Filter' }}</button>
+                     <p>{{ $t('message.noResultsFound') }}</p>
+                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') }}</button>
                   </div>
                   
                   <!-- Empty filter result message -->
                   <div v-else-if="availabilityByMonth.length === 1 && availabilityByMonth[0].isEmptyFilterResult" class="no-results-message">
-                     <p>{{ $t('message.noResultsFound') || 'No availability found for selected weekday(s)' }}</p>
-                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') || 'Clear Filter' }}</button>
+                     <p>{{ $t('message.noResultsFound') }}</p>
+                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') }}</button>
                   </div>
                   
                   <!-- Display available months -->
-                  <div v-for="month in this.availabilityByMonth" 
+                  <div v-else v-for="month in this.availabilityByMonth" 
                        :key="month.month" 
-                       class="availability-month"
-                       v-else>
-                     <div v-if="!month.isEmptyFilterResult" class="month-content-wrapper">
-                        <div class="month-header" @click="toggleCollapse(month)">
-                           <h4 class="month-title">{{ month.month }}</h4>
-                           <span v-if="month.collapsed" class="collapse-icon">▼</span>
-                           <span v-else class="collapse-icon">▲</span>
-                        </div>
-                        
-                        <div v-if="!month.collapsed" class="month-content">
-                           <div v-for="av in month.availabilities" :key="av.date" class="date-card">
-                              <!-- Date header -->
-                              <div class="date-header">
-                                 <div class="date-info">
-                                    <span class="date-day">{{ new Date(av.date).getDate() }}</span>
-                                    <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
-                                 </div>
+                       class="availability-month">
+                     <div class="month-header" @click="toggleCollapse(month)">
+                        <h4 class="month-title">{{ month.month }}</h4>
+                        <span v-if="month.collapsed" class="collapse-icon">▼</span>
+                        <span v-else class="collapse-icon">▲</span>
+                     </div>
+                     
+                     <div v-if="!month.collapsed" class="month-content">
+                        <div v-for="av in month.availabilities" :key="av.date" class="date-card">
+                           <!-- Date header -->
+                           <div class="date-header">
+                              <div class="date-info">
+                                 <span class="date-day">{{ new Date(av.date).getDate() }}</span>
+                                 <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
                               </div>
-                              
-                              <!-- Hut closed message -->
-                              <div v-if="av.hutClosed" class="closed-message">
-                                 {{ $t('message.hutClosed') }}
-                              </div>
-                              
-                              <!-- Room availability cards -->
-                              <div v-else-if="av.roomAvailabilities && av.roomAvailabilities.length > 0" class="room-availability-container">
-                                 <div v-for="(roomAv, index) in av.roomAvailabilities" 
-                                      :key="`${av.date}-${roomAv.bedCategory}-${index}`" 
-                                      :class="['room-availability-card', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
-                                    <div class="room-type">{{ roomAv.bedCategory }}</div>
-                                    <div class="availability-details">
-                                       <div class="bed-info">
-                                          <span class="bed-count">{{ roomAv.freeBeds }}</span>
-                                          <span class="bed-separator">/</span>
-                                          <span class="bed-total">{{ roomAv.totalBeds }}</span>
-                                          <span class="beds-label"> {{ $t('message.beds') }}</span>
-                                       </div>
-                                       <div class="availability-indicator">
-                                          <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
-                                       </div>
+                           </div>
+                           
+                           <!-- Hut closed message -->
+                           <div v-if="av.hutClosed" class="closed-message">
+                              {{ $t('message.hutClosed') }}
+                           </div>
+                           
+                           <!-- Room availability cards -->
+                           <div v-else-if="av.roomAvailabilities && av.roomAvailabilities.length > 0" class="room-availability-container">
+                              <div v-for="(roomAv, index) in av.roomAvailabilities" 
+                                   :key="`${av.date}-${roomAv.bedCategory}-${index}`" 
+                                   :class="['room-availability-card', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                                 <div class="room-type">{{ roomAv.bedCategory }}</div>
+                                 <div class="availability-details">
+                                    <div class="bed-info">
+                                       <span class="bed-count">{{ roomAv.freeBeds }}</span>
+                                       <span class="bed-separator">/</span>
+                                       <span class="bed-total">{{ roomAv.totalBeds }}</span>
+                                       <span class="beds-label"> {{ $t('message.beds') }}</span>
+                                    </div>
+                                    <div class="availability-indicator">
+                                       <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
                                     </div>
                                  </div>
                               </div>
-                              
-                              <!-- No availability info -->
-                              <div v-else class="no-availability-info">
-                                 {{ $t('message.noAvailabilityInfo') }}
-                              </div>
+                           </div>
+                           
+                           <!-- No availability info -->
+                           <div v-else class="no-availability-info">
+                              {{ $t('message.noAvailabilityInfo') }}
                            </div>
                         </div>
                      </div>

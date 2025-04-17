@@ -92,6 +92,9 @@ const messages = {
          addLocation: 'Add Location',
          filterByWeekdays: 'Filter by Weekdays',
          searchHuts: 'Search huts...',
+         noResultsFound: 'No availability found for selected weekday(s)',
+         clearFilter: 'Clear Filter',
+         noAvailabilityInfo: 'No availability information available',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -177,6 +180,9 @@ const messages = {
          addLocation: 'Standort hinzufügen',
          filterByWeekdays: 'Filtern nach Wochentagen',
          searchHuts: 'Hütten suchen...',
+         noResultsFound: 'Keine Verfügbarkeit für ausgewählte Wochentage gefunden',
+         clearFilter: 'Filter zurücksetzen',
+         noAvailabilityInfo: 'Keine Verfügbarkeitsinformationen verfügbar',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',

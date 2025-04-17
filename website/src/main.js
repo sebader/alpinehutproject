@@ -91,6 +91,7 @@ const messages = {
          manuallyEdited: 'Manually Edited',
          addLocation: 'Add Location',
          filterByWeekdays: 'Filter by Weekdays',
+         searchHuts: 'Search huts...',
       },
       mapPage: {
          availabilityAtDate: 'Availability on',
@@ -102,6 +103,7 @@ const messages = {
       },
       hutListPage: {
          allHuts: 'All huts',
+         hutCount: '{count} Huts',
       },
       infoPage: {
          infoHeader: 'Welcome',
@@ -173,6 +175,7 @@ const messages = {
          manuallyEdited: 'Manuell bearbeitet',
          addLocation: 'Standort hinzufügen',
          filterByWeekdays: 'Filtern nach Wochentagen',
+         searchHuts: 'Hütten suchen...',
       },
       mapPage: {
          availabilityAtDate: 'Verfügbarkeit am',
@@ -184,6 +187,7 @@ const messages = {
       },
       hutListPage: {
          allHuts: 'Alle Hütten',
+         hutCount: '{count} Hütten',
       },
       infoPage: {
          infoHeader: 'Willkommen',

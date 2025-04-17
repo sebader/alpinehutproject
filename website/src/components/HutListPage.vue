@@ -11,7 +11,7 @@
          <div class="hero-section">
             <div class="hero-content">
                <h1 class="page-title">{{ $t('hutListPage.allHuts') }}</h1>
-               <p class="page-subtitle">{{ $t('message.siteTitle') }} - {{ huts.length }} {{ $t('message.hut') }}s</p>
+               <p class="page-subtitle">{{ $t('message.siteTitle') }} - {{ $t('hutListPage.hutCount', { count: huts.length }) }}</p>
             </div>
          </div>
          
@@ -20,7 +20,7 @@
             <div class="search-container">
                <label for="search-input" class="search-label">{{ $t('message.search') }}</label>
                <div class="search-input-wrapper">
-                  <input type="text" id="search-input" v-model="searchValue" class="search-input" placeholder="Search huts...">
+                  <input type="text" id="search-input" v-model="searchValue" class="search-input" :placeholder="$t('message.searchHuts')">
                   <span class="search-icon">🔍</span>
                </div>
             </div>

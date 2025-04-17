@@ -1,5 +1,5 @@
 <template>
-   <section class="hut-detail-container">
+   <section class="container-fluid">
       <div v-show="loading" class="loading-container">
          <div class="spinner"></div>
          <p>{{ $t('message.loading') }}...</p>
@@ -17,12 +17,12 @@
                   <span v-if="hut.altitude != null" class="altitude-badge">{{ hut.altitude }}m</span>
                </div>
                <div class="booking-buttons" v-if="hut.enabled">
-                  <a :href="`${hut.link}`" target="_blank" class="btn btn-primary booking-btn">
+                  <a :href="`${hut.link}`" target="_blank" class="action-btn btn-primary">
                      <i class="booking-icon">🔖</i> {{ $t('message.onlineBooking') }}
                   </a>
                </div>
                <div v-else class="booking-inactive">
-                  <a :href="`${hut.link}`" target="_blank" class="btn btn-secondary">
+                  <a :href="`${hut.link}`" target="_blank" class="action-btn btn-secondary">
                      <i class="booking-icon">🔖</i> {{ $t('message.onlineBookingInactive') }}
                   </a>
                </div>
@@ -97,17 +97,17 @@
                <!-- Weekday filter -->
                <div class="filter-card">
                   <h4 class="filter-title">{{ $t('message.filterByWeekdays') }}</h4>
-                  <div class="weekday-filter">
-                     <div v-for="weekday in weekdays" :key="weekday" class="weekday-option">
-                        <input type="checkbox" :id="weekday" :value="weekday" v-model="selectedWeekdays" class="weekday-checkbox">
-                        <label :for="weekday" class="weekday-label">{{ weekday }}</label>
+                  <div class="custom-checkbox-group">
+                     <div v-for="weekday in weekdays" :key="weekday" class="custom-checkbox-option">
+                        <input type="checkbox" :id="weekday" :value="weekday" v-model="selectedWeekdays" class="custom-checkbox">
+                        <label :for="weekday" class="custom-checkbox-label">{{ weekday }}</label>
                      </div>
                   </div>
                </div>
                
                <!-- Availability table -->
                <div class="availability-table-container">
-                  <table class="availability-table">
+                  <table class="enhanced-table">
                      <thead>
                         <tr>
                            <th>{{ $t('message.date') }}</th>
@@ -130,7 +130,7 @@
                                     <span class="date-day">{{ new Date(av.date).getDate() }}</span>
                                     <span class="date-weekday">{{ new Date(av.date).toLocaleString('default', { weekday: 'short' }) }}</span>
                                  </td>
-                                 <td :class="['bed-cell', getBedAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                                 <td :class="['bed-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
                                     <div class="bed-info">
                                        <span class="bed-count">{{ roomAv.freeBeds }}</span>
                                        <span class="bed-separator">/</span>
@@ -140,7 +140,7 @@
                                        <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
                                     </div>
                                  </td>
-                                 <td :class="['type-cell', getBedAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                                 <td :class="['type-cell', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
                                     {{ roomAv.bedCategory }}
                                  </td>
                               </tr>
@@ -163,14 +163,7 @@
 </template>
 
 <style scoped>
-/* General Layout */
-.hut-detail-container {
-   max-width: 1200px;
-   margin: 0 auto;
-   padding: 0 20px;
-   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
+/* Component-specific styles */
 .hut-detail {
    display: flex;
    flex-direction: column;
@@ -181,30 +174,6 @@
    display: flex;
    flex-direction: column;
    gap: 2rem;
-}
-
-/* Loading Animation */
-.loading-container {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-   height: 200px;
-}
-
-.spinner {
-   width: 40px;
-   height: 40px;
-   border: 4px solid rgba(0, 0, 0, 0.1);
-   border-radius: 50%;
-   border-top: 4px solid #3498db;
-   animation: spin 1s linear infinite;
-   margin-bottom: 1rem;
-}
-
-@keyframes spin {
-   0% { transform: rotate(0deg); }
-   100% { transform: rotate(360deg); }
 }
 
 /* Hero Section */
@@ -266,67 +235,11 @@
    margin-top: 1rem;
 }
 
-.booking-btn {
-   display: inline-flex;
-   align-items: center;
-   gap: 8px;
-   padding: 10px 24px;
-   border-radius: 8px;
-   background-color: #2ecc71;
-   color: white;
-   text-decoration: none;
-   font-weight: 600;
-   transition: all 0.2s ease;
-   border: none;
-   cursor: pointer;
-}
-
-.booking-btn:hover {
-   background-color: #27ae60;
-   transform: translateY(-2px);
-   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.booking-inactive .btn {
-   background-color: #95a5a6;
-   color: white;
-   display: inline-flex;
-   align-items: center;
-   gap: 8px;
-   padding: 10px 24px;
-   border-radius: 8px;
-   text-decoration: none;
-   font-weight: 600;
-   transition: all 0.2s ease;
-   border: none;
-}
-
-.booking-inactive .btn:hover {
-   background-color: #7f8c8d;
-}
-
 .booking-icon {
    font-size: 1.2rem;
 }
 
-/* Info Card */
-.info-card {
-   background-color: white;
-   border-radius: 12px;
-   padding: 1.5rem;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-   height: 100%;
-}
-
-.card-title {
-   font-size: 1.4rem;
-   margin-bottom: 1.5rem;
-   color: #333;
-   font-weight: 600;
-   border-bottom: 2px solid #f5f5f5;
-   padding-bottom: 10px;
-}
-
+/* Info items */
 .info-item {
    display: flex;
    margin-bottom: 1rem;
@@ -363,133 +276,13 @@
    font-size: 0.9rem;
 }
 
-/* Map Card */
-.map-card {
-   background-color: white;
-   border-radius: 12px;
-   overflow: hidden;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-   height: 100%;
-}
-
+/* Map container */
 .map-container {
    height: 350px;
    width: 100%;
 }
 
-/* Availability Section */
-.availability-section {
-   margin-top: 1rem;
-}
-
-.section-title {
-   font-size: 1.6rem;
-   margin-bottom: 1.5rem;
-   color: #333;
-   font-weight: 600;
-}
-
-/* Filter Card */
-.filter-card {
-   background-color: white;
-   border-radius: 12px;
-   padding: 1.5rem;
-   margin-bottom: 1.5rem;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.filter-title {
-   font-size: 1.2rem;
-   margin-bottom: 1rem;
-   color: #333;
-   font-weight: 600;
-}
-
-.weekday-filter {
-   display: flex;
-   flex-wrap: wrap;
-   gap: 12px;
-}
-
-.weekday-option {
-   position: relative;
-}
-
-.weekday-checkbox {
-   position: absolute;
-   opacity: 0;
-   cursor: pointer;
-   height: 0;
-   width: 0;
-}
-
-.weekday-label {
-   display: inline-block;
-   padding: 8px 16px;
-   border-radius: 30px;
-   background-color: #f5f5f5;
-   color: #666;
-   cursor: pointer;
-   transition: all 0.2s;
-   user-select: none;
-}
-
-.weekday-checkbox:checked + .weekday-label {
-   background-color: #3498db;
-   color: white;
-   box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
-}
-
-.weekday-checkbox:hover + .weekday-label {
-   background-color: #e0e0e0;
-}
-
-.weekday-checkbox:checked:hover + .weekday-label {
-   background-color: #2980b9;
-}
-
-/* Availability Table */
-.availability-table-container {
-   background-color: white;
-   border-radius: 12px;
-   overflow: hidden;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.availability-table {
-   width: 100%;
-   border-collapse: collapse;
-}
-
-.availability-table th, .availability-table td {
-   padding: 12px 16px;
-   border-bottom: 1px solid #f0f0f0;
-}
-
-.availability-table thead th {
-   background-color: #f8f9fa;
-   font-weight: 600;
-   color: #555;
-   text-align: left;
-}
-
-.month-row {
-   cursor: pointer;
-}
-
-.month-header {
-   background-color: #f0f4f8;
-   color: #2c3e50;
-   text-align: left;
-   font-weight: 600;
-   position: relative;
-   transition: background-color 0.2s;
-}
-
-.month-header:hover {
-   background-color: #e4ebf5;
-}
-
+/* Availability table specific */
 .collapse-icon {
    position: absolute;
    right: 16px;
@@ -513,10 +306,6 @@
 .date-weekday {
    font-size: 0.8rem;
    color: #666;
-}
-
-.bed-cell, .type-cell {
-   transition: background-color 0.2s;
 }
 
 .bed-info {
@@ -562,22 +351,6 @@
    text-align: center;
 }
 
-/* Availability colors - enhanced */
-.bed-availability-high {
-   background-color: rgba(46, 204, 113, 0.1);
-   color: #27ae60;
-}
-
-.bed-availability-medium {
-   background-color: rgba(255, 159, 64, 0.1);
-   color: #f39c12;
-}
-
-.bed-availability-low {
-   background-color: rgba(231, 76, 60, 0.1);
-   color: #c0392b;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
    .hero-section {
@@ -598,10 +371,6 @@
    
    .info-label {
       margin-bottom: 5px;
-   }
-   
-   .weekday-filter {
-      justify-content: center;
    }
 }
 </style>
@@ -686,19 +455,19 @@ export default {
          });
          return Object.values(months);
       },
-      getBedAvailabilityClass(freeBeds, totalBeds) {
+      getAvailabilityClass(freeBeds, totalBeds) {
          // No beds available
          if (freeBeds === 0) {
-            return 'bed-availability-low';
+            return 'availability-low';
          }
          
          // At least 4 beds or 10% of total beds are available
          if (freeBeds >= 4 || (freeBeds / totalBeds) >= 0.1) {
-            return 'bed-availability-high';
+            return 'availability-high';
          }
          
          // Otherwise (between 1-3 beds and less than 10%)
-         return 'bed-availability-medium';
+         return 'availability-medium';
       },
       getAvailabilityBarStyle(freeBeds, totalBeds) {
          if (totalBeds === 0) return { width: '0%', backgroundColor: '#e74c3c' };

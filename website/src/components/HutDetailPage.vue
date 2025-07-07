@@ -36,6 +36,15 @@
                      <h3 class="card-title">{{ $t('message.hut') }} {{ $t('message.info') }}</h3>
                      
                      <div class="info-item">
+                        <div class="info-label">{{ $t('message.source') }}</div>
+                        <div class="info-value">
+                           <span class="source-badge" :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }">
+                              {{ hut.source === 'HuettenHoliday' ? $t('message.sourceHuettenHoliday') : $t('message.sourceAlpenvereine') }}
+                           </span>
+                        </div>
+                     </div>
+
+                     <div class="info-item">
                         <div class="info-label">{{ $t('message.website') }}</div>
                         <div class="info-value">
                            <a :href="`${hut.hutWebsite}`" target="_blank" class="website-link">
@@ -285,6 +294,23 @@
 
 .external-link-icon, .map-icon {
    font-size: 0.9rem;
+}
+
+.source-badge {
+   display: inline-block;
+   padding: 4px 10px;
+   border-radius: 20px;
+   font-size: 0.8rem;
+   font-weight: 500;
+   background-color: rgba(52, 152, 219, 0.15);
+   color: #3498db;
+   border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.source-badge.source-huettenholiday {
+   background-color: rgba(255, 140, 0, 0.15);
+   color: #ff8c00;
+   border-color: rgba(255, 140, 0, 0.3);
 }
 
 /* Map container */

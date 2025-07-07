@@ -196,6 +196,7 @@ namespace FetchDataFunctions
                 hut.Name = hutInfo.hutName;
                 hut.HutWebsite = hutInfo.HutWebsiteNormalized;
                 hut.Link = string.Format(Helpers.HutBookingUrlV2, hutId);
+                hut.Source = "AV"; // AV = Alpenverein, the source of the hut data
                 hut.LastUpdated = DateTime.UtcNow;
                 hut.Added = existingHut?.Added ?? DateTime.UtcNow;
                 hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);

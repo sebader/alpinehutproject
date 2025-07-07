@@ -25,6 +25,8 @@ namespace FetchDataFunctions.Models
         public DateTime? Added { get; set; }
         public DateTime? Activated { get; set; }
         
+        public string? Source { get; set; }
+        
         public bool? ManuallyEdited { get; set; }
 
         public virtual ICollection<Availability> Availability { get; set; }

@@ -58,6 +58,8 @@ namespace FetchDataFunctions.Models
                 entity.Property(e => e.Country).HasMaxLength(100);
 
                 entity.Property(e => e.Region).HasMaxLength(100);
+                
+                entity.Property(e => e.Source).HasMaxLength(100);
 
                 entity.Property(e => e.HutWebsite).HasMaxLength(100);
 

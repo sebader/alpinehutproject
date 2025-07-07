@@ -281,9 +281,7 @@ export default {
       const greenIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
       const greyIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png'
       const blueIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png'
-      const yellowIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png'
-      const orangeIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png'
-
+      
       var icon = "";
       if (!hut.enabled) {
         icon = greyIcon
@@ -306,7 +304,7 @@ export default {
         
         if (freeBeds == null || hut.availability?.hutClosed) {
           // Use different colors for HuettenHoliday huts when no availability data
-          icon = hut.source === 'HuettenHoliday' ? orangeIcon : blueIcon
+          icon = blueIcon
         }
         else if (freeBeds >= this.desiredNumberOfBeds) {
           icon = greenIcon

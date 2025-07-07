@@ -141,7 +141,13 @@ namespace FetchDataFunctions
                 {
                     _logger.LogDebug("Found existing hut for id={hutId} in the database. name={HutName}", hutId, existingHut.Name);
                 }
-                
+
+                if (existingHut != null && existingHut.Source != "AV")
+                {
+                    _logger.LogInformation("Hut with ID={hutId} is not from Alpenverein source. Skipping update", hutId);
+                    return null;
+                }
+
                 var httpClient = _clientFactory.CreateClient("HttpClient");
 
                 var url = string.Format(Helpers.GetHutInfosUrlV2, hutId);
@@ -200,7 +206,7 @@ namespace FetchDataFunctions
                 hut.LastUpdated = DateTime.UtcNow;
                 hut.Added = existingHut?.Added ?? DateTime.UtcNow;
                 hut.Activated = existingHut?.Activated ?? (hutInfo.hutUnlocked ? DateTime.UtcNow : null);
-                
+
                 if (existingHut?.ManuallyEdited == true)
                 {
                     _logger.LogInformation("Hut with ID={hutId} was manually edited. Not updating location information", hutId);
@@ -211,7 +217,7 @@ namespace FetchDataFunctions
                     hut.Altitude = hutInfo.AltitudeInt;
                     hut.Longitude = hutInfo.Longitude;
                     hut.Latitude = hutInfo.Latitude;
-                    
+
                     if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
                     {
                         _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);

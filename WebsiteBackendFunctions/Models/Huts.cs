@@ -19,5 +19,6 @@ namespace WebsiteBackendFunctions.Models
         public DateTime? Activated { get; set; }
         
         public bool? ManuallyEdited { get; set; }
+        public string Source { get; set; }
     }
 }

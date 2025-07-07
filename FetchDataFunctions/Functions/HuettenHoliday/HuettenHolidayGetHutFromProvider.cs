@@ -28,26 +28,25 @@ public class HuettenHolidayGetHutFromProvider
     }
 
     [Function(nameof(HuettenHolidayUpdateHutHttpTriggered))]
-    public async Task<IActionResult> HuettenHolidayUpdateHutHttpTriggered([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req, int hutId)
+    public async Task<IActionResult> HuettenHolidayUpdateHutHttpTriggered([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req, string hutId)
     {
-        _logger.LogInformation("HuettenHolidayUpdateHutHttpTriggered called with hutId: {HutId}", hutId);
+        _logger.LogInformation("HuettenHolidayUpdateHutHttpTriggered called with hutIds: {HutId}", hutId);
 
-        hutId += HutIdOffset;
-
+        var hutIdsList = hutId.Split(',').Select(i => int.Parse(i) + HutIdOffset).ToList();
+        
         // Get all huts from the provider, then filter by hutId
-        var huts = await HuettenHolidayGetHutsFromProvider(hutId);
-        var hut = huts?.SingleOrDefault(h => h.Id == hutId);
-        if (hut == null)
+        var allHuts = await HuettenHolidayGetHutsFromProvider(null);
+        var huts = allHuts?.Where(h => hutIdsList.Contains(h.Id)).ToList();
+        if (huts == null)
         {
-            _logger.LogWarning("No huts found from HuettenHoliday provider.");
             return new NotFoundObjectResult("No huts found.");
         }
 
-        return new OkObjectResult(hut);
+        return new OkObjectResult(huts);
     }
 
     [Function(nameof(HuettenHolidayGetHutFromProvider))]
-    public async Task<IEnumerable<Hut>?> HuettenHolidayGetHutsFromProvider([ActivityTrigger] int? hutId)
+    public async Task<IEnumerable<Hut>?> HuettenHolidayGetHutsFromProvider([ActivityTrigger] string? input)
     {
         try
         {
@@ -134,15 +133,6 @@ public class HuettenHolidayGetHutFromProvider
                 }
 
                 await dbContext.SaveChangesAsync();
-
-                if (hutId.HasValue)
-                {
-                    if (huts.Any(h => h.Id == hutId.Value))
-                    {
-                        _logger.LogInformation("Found hut with ID {HutId} in the fetched huts", hutId.Value);
-                        return huts;
-                    }
-                }
 
                 url = response.next_page_url ?? null;
             } while (url != null);

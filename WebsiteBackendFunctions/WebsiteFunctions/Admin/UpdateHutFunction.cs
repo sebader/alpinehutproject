@@ -70,6 +70,7 @@ namespace WebsiteBackendFunctions.WebsiteFunctions.Admin
             {
                 requestBody.Added = hut.Added;
                 requestBody.Activated = hut.Activated;
+                requestBody.Source = hut.Source; // Preserve the source field
                 requestBody.LastUpdated = DateTime.UtcNow;
                 requestBody.ManuallyEdited = true;
                 _logger.LogInformation("Updating hut with id {id}", id);

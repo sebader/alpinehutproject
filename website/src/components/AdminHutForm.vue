@@ -152,7 +152,8 @@ export default {
             lastUpdated: this.hut.lastUpdated,
             added: this.hut.added,
             activated: this.hut.activated,
-            manuallyEdited: this.hut.manuallyEdited
+            manuallyEdited: this.hut.manuallyEdited,
+            source: this.hut.source
          }
       },
       handleSubmit() {

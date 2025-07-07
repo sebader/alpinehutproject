@@ -34,7 +34,7 @@ namespace FetchDataFunctions
         [Function(nameof(UpdateAvailabilityTimerTriggered))]
         public async Task UpdateAvailabilityTimerTriggered(
             [TimerTrigger("0 0 14,23 * * *")] TimerInfo myTimer,
-            [SqlInput("SELECT Id FROM [dbo].[Huts] WHERE Enabled = 1",
+            [SqlInput("SELECT Id FROM [dbo].[Huts] WHERE Enabled = 1 and Source = 'AV'",
                 "DatabaseConnectionString",
                 CommandType.Text, "")]
             IEnumerable<Hut> huts,
@@ -163,6 +163,12 @@ namespace FetchDataFunctions
                     return result;
                 }
 
+                if (hut.Source != "AV")
+                {
+                    _logger.LogError("Hut id={hutId} is not from AV source", hutId);
+                    return result;
+                }
+
                 var httpClient = _clientFactory.CreateClient("HttpClient");
                 // Call the base page for the hut once to get a cookie which we then need for the selectDate query. We only need to do a HEAD request
                 var availabilityResponse = await httpClient.GetAsync(string.Format(Helpers.GetHutAvailabilityUrlV2, hutId), HttpCompletionOption.ResponseHeadersRead);
@@ -178,7 +184,7 @@ namespace FetchDataFunctions
                     _logger.LogError("Could not parse availability for hutid={hutId}", hutId);
                     return result;
                 }
-                
+
                 // Filter out availability entries that are more than 9 months in the future
                 availability = availability.Where(a => a.DateNormalized < DateTime.UtcNow.AddMonths(9));
 

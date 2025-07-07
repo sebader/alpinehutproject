@@ -70,6 +70,9 @@
                   </h3>
                   <div class="hut-popup-meta" v-if="hut.enabled">
                     <span class="date-badge">{{ new Date(this.dateFilter).toLocaleDateString() }}</span>
+                    <span class="source-badge" :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }">
+                      {{ hut.source === 'HuettenHoliday' ? $t('message.sourceHuettenHoliday') : $t('message.sourceAlpenvereine') }}
+                    </span>
                   </div>
                 </div>
 
@@ -278,7 +281,7 @@ export default {
       const greenIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
       const greyIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png'
       const blueIcon = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png'
-
+      
       var icon = "";
       if (!hut.enabled) {
         icon = greyIcon
@@ -298,7 +301,9 @@ export default {
             freeBeds = 0;
           }
         }
+        
         if (freeBeds == null || hut.availability?.hutClosed) {
+          // Use different colors for HuettenHoliday huts when no availability data
           icon = blueIcon
         }
         else if (freeBeds >= this.desiredNumberOfBeds) {
@@ -718,6 +723,20 @@ select.form-control {
   border-radius: 20px;
   padding: 2px 12px;
   font-size: 0.9rem;
+}
+
+.source-badge {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 2px 12px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.source-badge.source-huettenholiday {
+  background-color: rgba(255, 165, 0, 0.2);
+  border-color: rgba(255, 165, 0, 0.5);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .hut-popup-body {

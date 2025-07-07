@@ -44,6 +44,11 @@
                      {{ hut.name }}
                   </router-link>
                </template>
+               <template #item-source="hut">
+                  <span class="source-badge" :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }">
+                     {{ hut.source === 'HuettenHoliday' ? $t('message.sourceHuettenHoliday') : $t('message.sourceAlpenvereine') }}
+                  </span>
+               </template>
                <template #item-latitude="hut">
                   <router-link v-if="hut.latitude != null && hut.longitude != null"
                      :to="{ name: 'mapPage', query: { hutId: hut.id } }" 
@@ -262,6 +267,24 @@
    text-decoration: underline;
 }
 
+
+.source-badge {
+   display: inline-block;
+   padding: 4px 10px;
+   border-radius: 20px;
+   font-size: 0.8rem;
+   font-weight: 500;
+   background-color: rgba(52, 152, 219, 0.15);
+   color: #3498db;
+   border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.source-badge.source-huettenholiday {
+   background-color: rgba(255, 140, 0, 0.15);
+   color: #ff8c00;
+   border-color: rgba(255, 140, 0, 0.3);
+}
+
 .coordinates-link, .booking-link {
    color: #3498db;
    text-decoration: none;
@@ -384,6 +407,7 @@ export default {
             { text: "ID", value: "id", sortable: true },
             { text: this.$t('message.hut'), value: "name", sortable: true },
             { text: this.$t('message.country') + " / " + this.$t('message.region'), value: "countryRegion", sortable: true },
+            { text: this.$t('message.source'), value: "source", sortable: true },
             { text: this.$t('message.coordinates'), value: "latitude", sortable: false },
             { text: "Link", value: "link", sortable: false }
          ];

@@ -33,7 +33,7 @@ public class HuettenHolidayGetHutFromProvider
         _logger.LogInformation("HuettenHolidayUpdateHutHttpTriggered called with hutIds: {HutId}", hutId);
 
         var hutIdsList = hutId.Split(',').Select(i => int.Parse(i) + HutIdOffset).ToList();
-        
+
         // Get all huts from the provider, then filter by hutId
         var allHuts = await HuettenHolidayGetHutsFromProvider(null);
         var huts = allHuts?.Where(h => hutIdsList.Contains(h.Id)).ToList();
@@ -85,6 +85,15 @@ public class HuettenHolidayGetHutFromProvider
                         }
                     }
 
+                    string? country = null;
+                    string? region = null;
+                    if (cabin.latitude != null && cabin.longitude != null)
+                    {
+                        var countryAndRegion = await Helpers.GetCountryAndRegion(cabin.latitude.Value, cabin.longitude.Value, _logger);
+                        country = countryAndRegion.country;
+                        region = countryAndRegion.region;
+                    }
+
                     var hut = await dbContext.Huts.SingleOrDefaultAsync(h => h.Id == cabin.id);
 
                     if (hut == null)
@@ -101,7 +110,8 @@ public class HuettenHolidayGetHutFromProvider
                             Latitude = cabin.latitude,
                             Longitude = cabin.longitude,
                             Altitude = (int?)cabin.altitude,
-                            Country = cabin.country.name.de,
+                            Country = !string.IsNullOrEmpty(cabin.country.name.de) ? cabin.country.name.de : country,
+                            Region = region,
                             Enabled = true,
                             Added = DateTime.UtcNow,
                             LastUpdated = DateTime.UtcNow,
@@ -124,7 +134,8 @@ public class HuettenHolidayGetHutFromProvider
                         hut.Latitude = cabin.latitude;
                         hut.Longitude = cabin.longitude;
                         hut.Altitude = (int?)cabin.altitude;
-                        hut.Country = cabin.country.name.de;
+                        hut.Country = !string.IsNullOrEmpty(cabin.country.name.de) ? cabin.country.name.de : country;
+                        hut.Region = region;
                         hut.Enabled = true;
                         hut.LastUpdated = DateTime.UtcNow;
                     }

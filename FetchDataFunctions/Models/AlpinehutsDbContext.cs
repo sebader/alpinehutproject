@@ -54,6 +54,9 @@ namespace FetchDataFunctions.Models
                 entity.Property(e => e.Longitude);
                 entity.Property(e => e.Latitude);
                 entity.Property(e => e.Altitude);
+
+                entity.Property(e => e.IsDeleted);
+                entity.Property(e => e.ManuallyEdited);
                 
                 entity.Property(e => e.Country).HasMaxLength(100);
 

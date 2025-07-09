@@ -71,6 +71,10 @@
                   <span v-if="hut.enabled" class="status-badge status-active">{{ $t('message.yes') }}</span>
                   <span v-else class="status-badge status-inactive">{{ $t('message.no') }}</span>
                </template>
+               <template v-if="isAuthenticated" #item-isDeleted="hut">
+                  <span v-if="hut.isDeleted" class="status-badge status-deleted">{{ $t('message.yes') }}</span>
+                  <span v-else class="status-badge status-active">{{ $t('message.no') }}</span>
+               </template>
                <template v-if="isAuthenticated" #item-manuallyEdited="hut">
                   <span v-if="hut.manuallyEdited" class="edited-mark">✓</span>
                </template>
@@ -234,7 +238,7 @@
 }
 
 :deep(.vue3-easy-data-table__main) {
-   min-width: 800px;
+   min-width: 1000px;
 }
 
 :deep(.vue3-easy-data-table__header) {
@@ -326,6 +330,11 @@
    color: #c0392b;
 }
 
+.status-deleted {
+   background-color: rgba(142, 68, 173, 0.15);
+   color: #8e44ad;
+}
+
 .edited-mark {
    color: #3498db;
    font-weight: bold;
@@ -415,6 +424,7 @@ export default {
          if (this.isAuthenticated) {
             baseHeaders.push(
                { text: this.$t('message.enabled'), value: "enabled", sortable: true },
+               { text: this.$t('message.isDeleted'), value: "isDeleted", sortable: true },
                { text: this.$t('message.manuallyEdited'), value: "manuallyEdited", sortable: true },
                { text: this.$t('message.actions'), value: "actions", sortable: false }
             );
@@ -472,7 +482,14 @@ export default {
       async loadHuts(forceRefresh = false) {
          this.loading = true;
          try {
-            this.huts = await this.$HutService.listHutsAsync(forceRefresh);
+            let huts = await this.$HutService.listHutsAsync(forceRefresh);
+            
+            // Filter out deleted huts unless user is admin
+            if (!this.isAuthenticated) {
+               huts = huts.filter(hut => !hut.isDeleted);
+            }
+            
+            this.huts = huts;
          } catch (e) {
             EventBus.$emit(Constants.EVENT_ERROR, "Error loading huts: " + e.message);
          }

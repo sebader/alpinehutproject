@@ -426,6 +426,11 @@ export default {
     var allHuts = await this.$HutService.listHutsAsync();
     var hutsWithLocation = allHuts.filter(hut => hut.latitude != null && hut.longitude != null);
 
+    // Filter out deleted huts unless user is admin
+    if (!this.isAuthenticated) {
+      hutsWithLocation = hutsWithLocation.filter(hut => !hut.isDeleted);
+    }
+
     hutsWithLocation.forEach(hut => {
       hut.availability = this.availabilityData.find(a => a.hutId == hut.id) || null;
     });

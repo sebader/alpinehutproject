@@ -28,6 +28,7 @@ namespace FetchDataFunctions.Models
         public string? Source { get; set; }
         
         public bool? ManuallyEdited { get; set; }
+        public bool? IsDeleted { get; set; }
 
         public virtual ICollection<Availability> Availability { get; set; }
 

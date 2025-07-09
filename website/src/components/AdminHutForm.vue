@@ -76,6 +76,13 @@
          </div>
       </div>
 
+      <div class="mb-3">
+         <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="isDeleted" v-model="form.isDeleted">
+            <label class="form-check-label" for="isDeleted">{{ $t('message.isDeleted') }}</label>
+         </div>
+      </div>
+
       <div class="modal-footer">
          <button type="button" class="btn btn-secondary" @click="$emit('cancel')">
             {{ $t('message.cancel') }}
@@ -153,7 +160,8 @@ export default {
             added: this.hut.added,
             activated: this.hut.activated,
             manuallyEdited: this.hut.manuallyEdited,
-            source: this.hut.source
+            source: this.hut.source,
+            isDeleted: this.hut.isDeleted
          }
       },
       handleSubmit() {

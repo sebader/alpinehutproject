@@ -14,14 +14,14 @@ using Microsoft.Extensions.Logging;
 
 namespace FetchDataFunctions.Functions.HuettenHoliday;
 
-public class HuettenHolidayGetHutFromProvider
+public class HuettenHolidayGetHutsFromProvider
 {
-    private readonly ILogger<HuettenHolidayGetHutFromProvider> _logger;
+    private readonly ILogger<HuettenHolidayGetHutsFromProvider> _logger;
     private readonly IHttpClientFactory _clientFactory;
 
     private const int HutIdOffset = 10000; // Offset to avoid conflicts with other hut IDs
 
-    public HuettenHolidayGetHutFromProvider(ILogger<HuettenHolidayGetHutFromProvider> logger, IHttpClientFactory clientFactory)
+    public HuettenHolidayGetHutsFromProvider(ILogger<HuettenHolidayGetHutsFromProvider> logger, IHttpClientFactory clientFactory)
     {
         _logger = logger;
         _clientFactory = clientFactory;
@@ -35,7 +35,7 @@ public class HuettenHolidayGetHutFromProvider
         var hutIdsList = hutId.Split(',').Select(i => int.Parse(i) + HutIdOffset).ToList();
 
         // Get all huts from the provider, then filter by hutId
-        var allHuts = await HuettenHolidayGetHutsFromProvider(null);
+        var allHuts = await HuettenHolidayUpdateHutsActivityTrigger(null);
         var huts = allHuts?.Where(h => hutIdsList.Contains(h.Id)).ToList();
         if (huts == null)
         {
@@ -45,8 +45,8 @@ public class HuettenHolidayGetHutFromProvider
         return new OkObjectResult(huts);
     }
 
-    [Function(nameof(HuettenHolidayGetHutFromProvider))]
-    public async Task<IEnumerable<Hut>?> HuettenHolidayGetHutsFromProvider([ActivityTrigger] string? input)
+    [Function(nameof(HuettenHolidayUpdateHutsActivityTrigger))]
+    public async Task<IEnumerable<Hut>?> HuettenHolidayUpdateHutsActivityTrigger([ActivityTrigger] string? input)
     {
         try
         {

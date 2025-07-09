@@ -222,6 +222,7 @@ public class HuettenHolidayUpdateAvailabilityFromProvider
                     // This is quite crude so far. Not sure, I fully understand the structure of the response yet. But it seems to be:
                     // Sum of booked_places gives the number of free beds
                     var totalFreeBeds = dateResult.rooms.Select(r => r.booked_places).Sum();
+                    totalFreeBeds = totalFreeBeds < 0 ? 0 : totalFreeBeds; // Ensure we don't have negative free beds
                     var totalBeds = dateResult.totalPlaces;
                     if (existingAvailability == null)
                     {

@@ -57,71 +57,71 @@ public class HuettenHolidayUpdateAvailabilityFromProvider
 
         return new OkObjectResult(availabilities);
     }
-    
+
     [Function(nameof(HuettenHolidayUpdateAvailabilityTimerTriggered))]
-        public async Task HuettenHolidayUpdateAvailabilityTimerTriggered(
-            [TimerTrigger("0 0 13,22 * * *")] TimerInfo myTimer,
-            [SqlInput("SELECT Id FROM [dbo].[Huts] WHERE Enabled = 1 and Source = 'HuettenHoliday'",
-                "DatabaseConnectionString",
-                CommandType.Text, "")]
-            IEnumerable<Hut> huts,
-            [DurableClient] DurableTaskClient starter)
+    public async Task HuettenHolidayUpdateAvailabilityTimerTriggered(
+        [TimerTrigger("0 0 13,22 * * *")] TimerInfo myTimer,
+        [SqlInput("SELECT Id FROM [dbo].[Huts] WHERE Enabled = 1 and Source = 'HuettenHoliday'",
+            "DatabaseConnectionString",
+            CommandType.Text, "")]
+        IEnumerable<Hut> huts,
+        [DurableClient] DurableTaskClient starter)
+    {
+        if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
         {
-            if (Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") == "Development")
-            {
-                return;
-            }
-
-            _logger.LogInformation($"{nameof(HuettenHolidayUpdateAvailabilityTimerTriggered)} function executed at: {DateTime.Now}");
-
-            string instanceId =
-                await starter.ScheduleNewOrchestrationInstanceAsync(nameof(HuettenHolidayUpdateAvailabilityOrchestrator), huts.Select(h => h.Id).ToList());
-            _logger.LogInformation($"{nameof(HuettenHolidayUpdateAvailabilityOrchestrator)} started. Instance ID={instanceId}");
+            return;
         }
-        
 
-        [Function(nameof(HuettenHolidayUpdateAvailabilityOrchestrator))]
-        public async Task HuettenHolidayUpdateAvailabilityOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+        _logger.LogInformation($"{nameof(HuettenHolidayUpdateAvailabilityTimerTriggered)} function executed at: {DateTime.Now}");
+
+        string instanceId =
+            await starter.ScheduleNewOrchestrationInstanceAsync(nameof(HuettenHolidayUpdateAvailabilityOrchestrator), huts.Select(h => h.Id).ToList());
+        _logger.LogInformation($"{nameof(HuettenHolidayUpdateAvailabilityOrchestrator)} started. Instance ID={instanceId}");
+    }
+
+
+    [Function(nameof(HuettenHolidayUpdateAvailabilityOrchestrator))]
+    public async Task HuettenHolidayUpdateAvailabilityOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+    {
+        var orchestratorLogger = context.CreateReplaySafeLogger<UpdateAvailabilityFunctions>();
+
+        var hutIds = context.GetInput<List<int>>();
+
+        orchestratorLogger.LogInformation($"Starting HuettenHoliday orchestrator with {hutIds!.Count} hut IDs");
+
+        var tasks = new List<Task>();
+
+        // Fan-out
+        foreach (var hutId in hutIds)
         {
-            var orchestratorLogger = context.CreateReplaySafeLogger<UpdateAvailabilityFunctions>();
+            orchestratorLogger.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
+            tasks.Add(context.CallActivityAsync(nameof(HuettenHolidayUpdateAvailabilityActivityTrigger), hutId));
 
-            var hutIds = context.GetInput<List<int>>();
-
-            orchestratorLogger.LogInformation($"Starting HuettenHoliday orchestrator with {hutIds!.Count} hut IDs");
-
-            var tasks = new List<Task>();
-
-            // Fan-out
-            foreach (var hutId in hutIds)
+            // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
+            if (tasks.Count >= 10)
             {
-                orchestratorLogger.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
-                tasks.Add(context.CallActivityAsync(nameof(HuettenHolidayUpdateAvailabilityActivityTrigger), hutId));
+                orchestratorLogger.LogInformation("Delaying next batch for 1 minute, last hutId={hutid}", hutId);
+                await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
 
-                // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
-                if (tasks.Count >= 10)
-                {
-                    orchestratorLogger.LogInformation("Delaying next batch for 1 minute, last hutId={hutid}", hutId);
-                    await context.CreateTimer(context.CurrentUtcDateTime.AddMinutes(1), CancellationToken.None);
+                orchestratorLogger.LogInformation("Waiting for batch to finishing UpdateHutAvailability Activity Functions");
+                // Fan-in (wait for all tasks to be completed)
+                await Task.WhenAll(tasks);
+                orchestratorLogger.LogInformation("Finished batch");
 
-                    orchestratorLogger.LogInformation("Waiting for batch to finishing UpdateHutAvailability Activity Functions");
-                    // Fan-in (wait for all tasks to be completed)
-                    await Task.WhenAll(tasks);
-                    orchestratorLogger.LogInformation("Finished batch");
-
-                    tasks.Clear();
-                }
+                tasks.Clear();
             }
-
-            orchestratorLogger.LogInformation("All UpdateHutAvailability Activity Functions scheduled. Waiting for finishing last batch");
-
-            // Fan-in (wait for all tasks to be completed)
-            await Task.WhenAll(tasks);
-
-            // Call stored proc to update reporting table
-            //await context.CallActivityAsync(nameof(UpdateAvailabilityReporting), new object()); // using new object instead of null to satisfy analyzer warning
-
-            orchestratorLogger.LogInformation($"HuettenHoliday Update availability orchestrator finished");
         }
+
+        orchestratorLogger.LogInformation("All UpdateHutAvailability Activity Functions scheduled. Waiting for finishing last batch");
+
+        // Fan-in (wait for all tasks to be completed)
+        await Task.WhenAll(tasks);
+
+        // Call stored proc to update reporting table
+        //await context.CallActivityAsync(nameof(UpdateAvailabilityReporting), new object()); // using new object instead of null to satisfy analyzer warning
+
+        orchestratorLogger.LogInformation($"HuettenHoliday Update availability orchestrator finished");
+    }
 
     [Function(nameof(HuettenHolidayUpdateAvailabilityActivityTrigger))]
     public async Task<IEnumerable<Availability>?> HuettenHolidayUpdateAvailabilityActivityTrigger([ActivityTrigger] int hutId)
@@ -207,7 +207,7 @@ public class HuettenHolidayUpdateAvailabilityFromProvider
                 var responseData = (await response.Content.ReadFromJsonAsync<IEnumerable<AvailabilityResult>>())?.ToList();
                 if (responseData == null || responseData.Count == 0)
                 {
-                    _logger.LogInformation("No availability data found for hutId {HutId}", hutId);
+                    _logger.LogInformation("No availability data found for hutId {HutId} in month {Month}-{Year}", hutId, content.selectedMonth.monthNumber, content.selectedMonth.year);
                     continue;
                 }
 

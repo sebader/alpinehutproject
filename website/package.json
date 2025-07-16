@@ -16,7 +16,7 @@
     "leaflet": "^1.9.4",
     "tiny-emitter": "^2.1.0",
     "vue": "^3.5.17",
-    "vue-i18n": "^11.1.9",
+    "vue-i18n": "^11.1.10",
     "vue-loading-overlay": "^6.0.6",
     "vue-router": "^4.5.1",
     "vue3-easy-data-table": "^1.5.47",

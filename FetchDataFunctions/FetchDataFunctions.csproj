@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.7.1" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.SendGrid" Version="3.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Sql" Version="3.1.527" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="6.7.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" Version="6.8.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.2" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask.Netherite" Version="3.1.0" />

@@ -44,7 +44,7 @@
                         </div>
                      </div>
 
-                     <div class="info-item">
+                     <div class="info-item" v-if="hut.hutWebsite != null">
                         <div class="info-label">{{ $t('message.website') }}</div>
                         <div class="info-value">
                            <a :href="`${hut.hutWebsite}`" target="_blank" class="website-link">

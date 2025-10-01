@@ -104,7 +104,7 @@
                     <div v-else class="popup-btn btn-inactive">
                       <span class="btn-icon">🔖</span> {{ $t('message.onlineBookingInactive') }}
                     </div>
-                    <a :href="`${hut.hutWebsite}`" target="_blank" class="popup-btn btn-secondary">
+                    <a v-if="hut.hutWebsite != null" :href="`${hut.hutWebsite}`" target="_blank" class="popup-btn btn-secondary">
                       <span class="btn-icon">🌐</span> {{ $t('message.hutWebsite') || 'Hut Website' }}
                     </a>
                   </div>

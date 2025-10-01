@@ -265,3 +265,6 @@ PublishProfiles/
 .env
 __blobstorage__
 __azurite_
+
+# Vue build output
+website/dist/

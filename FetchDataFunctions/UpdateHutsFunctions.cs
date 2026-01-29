@@ -70,7 +70,7 @@ namespace FetchDataFunctions
         {
             _logger.LogInformation("Update Hut HTTP trigger function received a request");
 
-            string hutIds = req.Query["hutid"];
+            string? hutIds = req.Query["hutid"];
             if (string.IsNullOrEmpty(hutIds))
             {
                 return new BadRequestObjectResult("Please pass a comma-separated list of hutid(s) in the query string");

@@ -13,7 +13,7 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'FetchDataFunctions' # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '8.0.x' # set this to the dotnet version to use
+  DOTNET_VERSION: '10.0.x' # set this to the dotnet version to use
 
 jobs:
   build-and-deploy:
@@ -35,6 +35,8 @@ jobs:
         shell: pwsh
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          # Remove global.json to use the SDK version installed by setup-dotnet instead
+          Remove-Item ../global.json -ErrorAction SilentlyContinue
           dotnet build --configuration Release --output ./output
           popd
       

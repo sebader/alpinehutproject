@@ -23,7 +23,7 @@
     "vue3-simple-typeahead": "^1.0.10"
   },
   "engines": {
-    "node": "^20.0.0"
+    "node": "^22.0.0"
   },
   "devDependencies": {
     "@vue-leaflet/vue-leaflet": "^0.10.1",

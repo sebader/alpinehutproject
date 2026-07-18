@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Sql;
+using Microsoft.Extensions.Logging;
 using WebsiteBackendFunctions.Models;
 
 namespace WebsiteBackendFunctions

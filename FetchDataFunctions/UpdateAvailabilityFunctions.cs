@@ -1,8 +1,3 @@
-using FetchDataFunctions.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,10 +6,15 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using FetchDataFunctions.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Sql;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Mail;
 
 namespace FetchDataFunctions

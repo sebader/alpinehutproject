@@ -220,11 +220,23 @@ namespace FetchDataFunctions
 
                     if (hut.Latitude == null || hut.Longitude == null || !Helpers.CoordinatesSanityCheck(hut.Longitude.Value, hut.Latitude.Value))
                     {
-                        _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
-                        var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
+                        // Some Swiss huts come with coordinates in the Swiss national grid (CH1903/LV03) instead of
+                        // WGS84. Try to convert those first before falling back to an online name-based search.
+                        if (hut.Latitude != null && hut.Longitude != null &&
+                            Helpers.TryConvertSwissGridToWgs84(hut.Latitude.Value, hut.Longitude.Value, out var swissLat, out var swissLon))
+                        {
+                            _logger.LogInformation("Hut with ID={hutId} had Swiss national grid coordinates. Converted to WGS84 lat={lat} long={lon}", hutId, swissLat, swissLon);
+                            hut.Latitude = swissLat;
+                            hut.Longitude = swissLon;
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Hut with ID={hutId} has no or unrealistic coordinates. Trying to look up hut online", hutId);
+                            var coordinates = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, _logger);
 
-                        hut.Latitude = coordinates.latitude ?? existingHut?.Latitude;
-                        hut.Longitude = coordinates.longitude ?? existingHut?.Longitude;
+                            hut.Latitude = coordinates.latitude ?? existingHut?.Latitude;
+                            hut.Longitude = coordinates.longitude ?? existingHut?.Longitude;
+                        }
                     }
 
                     if (hut is { Latitude: not null, Longitude: not null })

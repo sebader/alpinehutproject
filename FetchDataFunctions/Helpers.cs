@@ -150,6 +150,16 @@ namespace FetchDataFunctions
         /// <returns></returns>
         public static async Task<(string? country, string? region)> GetCountryAndRegion(double latitude, double longitude, ILogger log)
         {
+            // Azure Maps (and any WGS84 reverse geocoder) only accepts latitude in [-90, 90] and longitude in [-180, 180].
+            // Some providers return coordinates in a projected / national grid system instead of WGS84 - e.g. certain
+            // Swiss huts from hut-reservation.org come as CH1903 / LV03 kilometres (values like 587.168 / 234.694).
+            // Those would produce a guaranteed BadRequest, so skip the lookup rather than calling the API.
+            if (!IsValidWgs84Coordinate(latitude, longitude))
+            {
+                log.LogWarning($"Skipping reverse address lookup on Azure maps for out-of-range coordinates={latitude},{longitude}. These are not valid WGS84 coordinates (looks like a projected / national grid system)");
+                return (null, null);
+            }
+
             var apiKey = Environment.GetEnvironmentVariable("AzureMaps__ApiKey");
 
             var searchOptions = new MapsSearchClientOptions(language: SearchLanguage.German);
@@ -199,6 +209,83 @@ namespace FetchDataFunctions
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks whether the given coordinates are valid WGS84 values, i.e. latitude within [-90, 90]
+        /// and longitude within [-180, 180]. Anything outside (including NaN / infinity) is rejected.
+        /// </summary>
+        public static bool IsValidWgs84Coordinate(double latitude, double longitude)
+        {
+            return latitude is >= -90 and <= 90 && longitude is >= -180 and <= 180;
+        }
+
+        /// <summary>
+        /// Some providers (e.g. certain Swiss huts on hut-reservation.org) return coordinates in the Swiss national
+        /// grid (CH1903 / LV03 or CH1903+ / LV95) instead of WGS84. This tries to detect such a pair of values and
+        /// convert it to WGS84 latitude/longitude. Returns false if the values are not recognizable Swiss grid coordinates.
+        /// The two input values may be given in either order and either kilometres or metres.
+        /// </summary>
+        public static bool TryConvertSwissGridToWgs84(double value1, double value2, out double latitude, out double longitude)
+        {
+            latitude = 0;
+            longitude = 0;
+
+            // In the Swiss grid the easting (E/Y) is always larger than the northing (N/X), so we can identify them
+            // regardless of the order they were stored in.
+            var easting = Math.Max(value1, value2);
+            var northing = Math.Min(value1, value2);
+
+            // Values may arrive in kilometres (e.g. 587.168) or metres (587168). Scale up to metres if needed.
+            while (easting is > 0 and < 480000)
+            {
+                easting *= 1000;
+                northing *= 1000;
+            }
+
+            // Convert LV95 (CH1903+, false origin 2 600 000 / 1 200 000) to LV03 by removing the offsets.
+            if (easting >= 2000000)
+            {
+                easting -= 2000000;
+                northing -= 1000000;
+            }
+
+            // Only accept values that fall inside the Swiss LV03 bounding box, otherwise this is not Swiss grid data.
+            if (easting is < 480000 or > 840000 || northing is < 70000 or > 300000)
+            {
+                return false;
+            }
+
+            (latitude, longitude) = Ch1903ToWgs84(easting, northing);
+            return true;
+        }
+
+        /// <summary>
+        /// Converts CH1903 / LV03 coordinates (in metres) to WGS84 latitude/longitude using swisstopo's
+        /// approximate formulas (accuracy ~1 m), which is more than enough for map display.
+        /// See https://www.swisstopo.admin.ch/en/coordinates-conversion-navref
+        /// </summary>
+        public static (double latitude, double longitude) Ch1903ToWgs84(double easting, double northing)
+        {
+            // Auxiliary values relative to the projection origin in Bern.
+            var y = (easting - 600000) / 1_000_000;
+            var x = (northing - 200000) / 1_000_000;
+
+            var longitude = 2.6779094
+                + 4.728982 * y
+                + 0.791484 * y * x
+                + 0.1306 * y * x * x
+                - 0.0436 * y * y * y;
+
+            var latitude = 16.9023892
+                + 3.238272 * x
+                - 0.270978 * y * y
+                - 0.002528 * x * x
+                - 0.0447 * y * y * x
+                - 0.0140 * x * x * x;
+
+            // The formulas yield values in units of 10000"; convert to decimal degrees.
+            return (latitude * 100 / 36, longitude * 100 / 36);
         }
     }
 }

@@ -579,10 +579,10 @@ export default {
    position: fixed;
    top: 80px; /* Adjusted to match new map spacing */
    left: 72px;
-   background: rgba(255, 255, 255, 0.98);
+   background: var(--surface);
    border-radius: 10px;
-   border-top: 3px solid #2ecc71;
-   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+   border-top: 3px solid var(--accent);
+   box-shadow: 0 4px 16px var(--shadow-strong);
    z-index: 1500;
    transition: transform 0.3s ease;
    overflow: visible !important;
@@ -604,7 +604,7 @@ export default {
    justify-content: space-between;
    margin-bottom: 13px;
    padding-bottom: 10px;
-   border-bottom: 1px solid #eee;
+   border-bottom: 1px solid var(--border-light);
 }
 
 .filter-title-text {
@@ -613,18 +613,18 @@ export default {
    gap: 7px;
    font-weight: 600;
    font-size: 0.95rem;
-   color: #2c3e50;
+   color: var(--text);
 }
 
 .filter-icon {
-   color: #2ecc71;
+   color: var(--accent);
    flex-shrink: 0;
 }
 
 .filter-close {
    border: none;
    background: transparent;
-   color: #9aa5b1;
+   color: var(--text-muted);
    font-size: 15px;
    line-height: 1;
    cursor: pointer;
@@ -636,8 +636,8 @@ export default {
 }
 
 .filter-close:hover {
-   background: #f0f0f0;
-   color: #2c3e50;
+   background: var(--surface-muted);
+   color: var(--text);
 }
 
 .control-group {
@@ -652,7 +652,7 @@ export default {
    font-weight: 700;
    letter-spacing: 0.04em;
    text-transform: uppercase;
-   color: #8a96a3;
+   color: var(--text-muted);
 }
 
 .control-group:last-child {
@@ -678,12 +678,13 @@ export default {
 .control-group .simple-typeahead-input {
    width: 100% !important;
    padding: 8px !important;
-   border: 1px solid #ddd !important;
+   border: 1px solid var(--border) !important;
    border-radius: 4px !important;
    box-sizing: border-box !important;
    font-family: inherit !important;
    font-size: inherit !important;
-   color: inherit !important;
+   color: var(--text) !important;
+   background: var(--input-bg) !important;
 }
 
 .control-group .simple-typeahead-list {
@@ -691,14 +692,14 @@ export default {
    top: 100% !important;
    left: 0 !important;
    width: 100% !important;
-   background: white !important;
-   border: 1px solid #ddd !important;
+   background: var(--surface) !important;
+   border: 1px solid var(--border) !important;
    border-radius: 4px !important;
    margin-top: 4px !important;
    z-index: 2000 !important;
    max-height: 200px !important;
    overflow-y: auto !important;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+   box-shadow: 0 2px 8px var(--shadow-strong) !important;
 }
 
 .simple-typeahead-list-item {
@@ -707,7 +708,7 @@ export default {
 }
 
 .simple-typeahead-list-item:hover {
-   background-color: #f8f9fa !important;
+   background-color: var(--surface-muted) !important;
 }
 
 .commandbar.collapsed {
@@ -719,14 +720,14 @@ export default {
    position: fixed;
    top: 80px; /* Adjusted to match new spacing */
    left: 20px;
-   background: white;
-   border: 1px solid #ddd;
+   background: var(--surface);
+   border: 1px solid var(--border);
    padding: 8px 12px;
    border-radius: 8px;
-   box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+   box-shadow: 2px 2px 6px var(--shadow-strong);
    cursor: pointer;
    font-size: 20px;
-   color: #666;
+   color: var(--text-muted);
    z-index: 2000;
    width: 42px;
    height: 42px;
@@ -737,8 +738,8 @@ export default {
 }
 
 .toggle-btn:hover {
-   color: #333;
-   background: #f8f8f8;
+   color: var(--text);
+   background: var(--surface-muted);
 }
 
 @media (max-width: 768px) {
@@ -778,9 +779,11 @@ export default {
 
 .form-control {
    padding: 8px;
-   border: 1px solid #ddd;
+   border: 1px solid var(--border);
    border-radius: 4px;
    box-sizing: border-box;
+   color: var(--text);
+   background: var(--input-bg);
 }
 
 input[type="date"].form-control,
@@ -795,7 +798,7 @@ select.form-control {
 .control-group .form-control:focus,
 .control-group .simple-typeahead-input:focus {
    outline: none;
-   border-color: #2ecc71 !important;
+   border-color: var(--accent) !important;
    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15) !important;
 }
 
@@ -803,7 +806,7 @@ select.form-control {
    display: flex;
    align-items: center;
    width: 100%;
-   border: 1px solid #ddd;
+   border: 1px solid var(--border);
    border-radius: 6px;
    overflow: hidden;
    transition:
@@ -812,7 +815,7 @@ select.form-control {
 }
 
 .number-input:focus-within {
-   border-color: #2ecc71;
+   border-color: var(--accent);
    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
 }
 
@@ -827,6 +830,7 @@ select.form-control {
    border-radius: 0 !important;
    box-shadow: none !important;
    background: transparent;
+   color: var(--text);
    font-weight: 600;
 }
 
@@ -837,28 +841,28 @@ select.form-control {
 }
 
 .number-btn {
-   background-color: #f4f6f8;
+   background-color: var(--surface-muted);
    border: none;
    padding: 8px 14px;
    cursor: pointer;
    font-size: 16px;
    min-width: 38px;
-   color: #2c3e50;
+   color: var(--text);
    transition:
       background-color 0.2s ease,
       color 0.2s ease;
 }
 
 .number-btn:first-child {
-   border-right: 1px solid #ddd;
+   border-right: 1px solid var(--border);
 }
 
 .number-btn:last-child {
-   border-left: 1px solid #ddd;
+   border-left: 1px solid var(--border);
 }
 
 .number-btn:hover:not(:disabled) {
-   background-color: #2ecc71;
+   background-color: var(--accent);
    color: #fff;
 }
 
@@ -938,7 +942,7 @@ select.form-control {
 
 .hut-popup-body {
    padding: 15px;
-   background-color: white;
+   background-color: var(--surface);
 }
 
 .popup-status-row {
@@ -995,7 +999,7 @@ select.form-control {
 .availability-bar {
    height: 4px;
    width: 100%;
-   background-color: #f0f0f0;
+   background-color: var(--surface-muted);
    border-radius: 2px;
    overflow: hidden;
 }
@@ -1059,19 +1063,19 @@ select.form-control {
 }
 
 .popup-btn.btn-secondary {
-   background-color: #f8f9fa;
-   color: #2c3e50;
-   border: 1px solid #ddd;
+   background-color: var(--surface-muted);
+   color: var(--text);
+   border: 1px solid var(--border);
 }
 
 .popup-btn.btn-secondary:hover {
-   background-color: #e9ecef;
+   background-color: var(--surface-alt);
 }
 
 .popup-btn.btn-inactive {
-   background-color: #f0f0f0;
-   color: #95a5a6;
-   border: 1px solid #ddd;
+   background-color: var(--surface-muted);
+   color: var(--text-muted);
+   border: 1px solid var(--border);
    cursor: default;
 }
 
@@ -1083,7 +1087,7 @@ select.form-control {
    display: inline-flex;
    align-items: center;
    gap: 8px;
-   color: #7f8c8d;
+   color: var(--text-muted);
    font-style: italic;
    padding: 8px 12px;
 }
@@ -1096,7 +1100,7 @@ select.form-control {
    font-size: 1rem;
    font-weight: 600;
    margin: 0 0 8px 0;
-   color: #444;
+   color: var(--text-strong);
 }
 
 .room-availability-table table {
@@ -1105,7 +1109,7 @@ select.form-control {
 }
 
 .room-availability-table tr {
-   border-bottom: 1px solid #f0f0f0;
+   border-bottom: 1px solid var(--border-light);
 }
 
 .room-availability-table tr:last-child {
@@ -1140,7 +1144,7 @@ select.form-control {
 .mini-availability-bar {
    height: 3px;
    width: 50px;
-   background-color: #f0f0f0;
+   background-color: var(--surface-muted);
    border-radius: 2px;
    overflow: hidden;
    display: inline-block;
@@ -1149,7 +1153,7 @@ select.form-control {
 }
 
 .notification-form {
-   background-color: #f8f9fa;
+   background-color: var(--surface-muted);
    border-radius: 6px;
    padding: 12px;
    margin: 15px 0;
@@ -1176,12 +1180,12 @@ select.form-control {
 .popup-footer {
    margin-top: 15px;
    padding-top: 10px;
-   border-top: 1px solid #f0f0f0;
+   border-top: 1px solid var(--border-light);
    display: flex;
    justify-content: space-between;
    align-items: center;
    font-size: 0.85rem;
-   color: #7f8c8d;
+   color: var(--text-muted);
 }
 
 .last-updated {
@@ -1193,7 +1197,7 @@ select.form-control {
    display: inline-flex;
    align-items: center;
    gap: 4px;
-   color: #3498db;
+   color: var(--accent-blue);
    text-decoration: none;
 }
 

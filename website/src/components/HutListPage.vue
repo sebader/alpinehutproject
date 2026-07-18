@@ -203,7 +203,7 @@
 
 .search-label {
    font-weight: 500;
-   color: #555;
+   color: var(--text-muted);
 }
 
 .search-input-wrapper {
@@ -214,14 +214,16 @@
    width: 100%;
    padding: 12px 16px;
    border-radius: 8px;
-   border: 1px solid #e0e0e0;
+   border: 1px solid var(--border);
+   background: var(--input-bg);
+   color: var(--text);
    font-size: 1rem;
    transition: all 0.2s;
    padding-right: 40px;
 }
 
 .search-input:focus {
-   border-color: #3498db;
+   border-color: var(--accent-blue);
    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
    outline: none;
 }
@@ -231,15 +233,27 @@
    right: 12px;
    top: 50%;
    transform: translateY(-50%);
-   color: #888;
+   color: var(--text-muted);
 }
 
 /* Table Styling */
 .data-table-container {
-   background-color: white;
+   background-color: var(--surface);
    border-radius: 12px;
    overflow: hidden;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+   box-shadow: 0 2px 8px var(--shadow);
+   --easy-table-border: 1px solid var(--border);
+   --easy-table-row-border: 1px solid var(--border-light);
+   --easy-table-header-background-color: var(--surface-muted);
+   --easy-table-header-font-color: var(--text-muted);
+   --easy-table-body-row-background-color: var(--surface);
+   --easy-table-body-row-font-color: var(--text);
+   --easy-table-body-even-row-background-color: var(--surface-muted);
+   --easy-table-body-even-row-font-color: var(--text);
+   --easy-table-body-row-hover-background-color: var(--surface-tint-hover);
+   --easy-table-body-row-hover-font-color: var(--text);
+   --easy-table-footer-background-color: var(--surface-muted);
+   --easy-table-footer-font-color: var(--text-muted);
 }
 
 :deep(.vue3-easy-data-table) {
@@ -254,32 +268,32 @@
 }
 
 :deep(.vue3-easy-data-table__header) {
-   background-color: #f8f9fa !important;
+   background-color: var(--surface-muted) !important;
 }
 
 :deep(.vue3-easy-data-table__header th) {
    font-weight: 600 !important;
-   color: #555 !important;
+   color: var(--text-muted) !important;
 }
 
-:deep(.vue3-easy-data-table__body tr:nth-child(even)) {
-   background-color: #f8f9fa !important;
+:deep(.vue3-easy-data-table__body tr:nth-child(even) td) {
+   background-color: var(--surface-muted) !important;
 }
 
-:deep(.vue3-easy-data-table__body tr:hover) {
-   background-color: #e9f7fe !important;
+:deep(.vue3-easy-data-table__body tr:hover td) {
+   background-color: var(--surface-tint-hover) !important;
    transition: background-color 0.2s;
 }
 
 .hut-name-link {
-   color: #3498db;
+   color: var(--accent-blue);
    text-decoration: none;
    font-weight: 500;
    transition: color 0.2s;
 }
 
 .hut-name-link:hover {
-   color: #2980b9;
+   color: var(--accent-blue-hover);
    text-decoration: underline;
 }
 
@@ -302,7 +316,7 @@
 
 .coordinates-link,
 .booking-link {
-   color: #3498db;
+   color: var(--accent-blue);
    text-decoration: none;
    display: inline-flex;
    align-items: center;
@@ -312,7 +326,7 @@
 
 .coordinates-link:hover,
 .booking-link:hover {
-   color: #2980b9;
+   color: var(--accent-blue-hover);
    text-decoration: underline;
 }
 
@@ -322,7 +336,7 @@
 }
 
 .booking-inactive {
-   color: #95a5a6;
+   color: var(--text-muted);
    font-style: italic;
 }
 
@@ -350,7 +364,7 @@
 }
 
 .edited-mark {
-   color: #3498db;
+   color: var(--accent-blue);
    font-weight: bold;
    font-size: 1.1rem;
 }

@@ -322,23 +322,23 @@
    display: flex;
    margin-bottom: 1rem;
    padding-bottom: 0.5rem;
-   border-bottom: 1px solid #f5f5f5;
+   border-bottom: 1px solid var(--border-light);
 }
 
 .info-label {
    flex: 0 0 40%;
    font-weight: 500;
-   color: #666;
+   color: var(--text-muted);
 }
 
 .info-value {
    flex: 0 0 60%;
-   color: #333;
+   color: var(--text);
 }
 
 .website-link,
 .coordinates-link {
-   color: #3498db;
+   color: var(--accent-blue);
    text-decoration: none;
    display: inline-flex;
    align-items: center;
@@ -348,7 +348,7 @@
 
 .website-link:hover,
 .coordinates-link:hover {
-   color: #2980b9;
+   color: var(--accent-blue-hover);
    text-decoration: underline;
 }
 
@@ -364,7 +364,7 @@
    font-size: 0.8rem;
    font-weight: 500;
    background-color: rgba(52, 152, 219, 0.15);
-   color: #3498db;
+   color: var(--accent-blue);
    border: 1px solid rgba(52, 152, 219, 0.3);
 }
 
@@ -388,11 +388,11 @@
 .section-title {
    font-size: 1.5rem;
    margin-bottom: 1.5rem;
-   color: #333;
+   color: var(--text);
 }
 
 .filter-card {
-   background-color: #f8f9fa;
+   background-color: var(--surface-muted);
    border-radius: 8px;
    padding: 1.5rem;
    margin-bottom: 1.5rem;
@@ -402,7 +402,7 @@
 .filter-title {
    margin-bottom: 1rem;
    font-size: 1.1rem;
-   color: #333;
+   color: var(--text);
 }
 
 .custom-checkbox-group {
@@ -423,7 +423,7 @@
 
 /* No results message */
 .no-results-message {
-   background-color: #f8f9fa;
+   background-color: var(--surface-muted);
    border-radius: 8px;
    padding: 2rem;
    text-align: center;
@@ -437,13 +437,13 @@
 }
 
 .no-results-message p {
-   color: #666;
+   color: var(--text-muted);
    font-size: 1.1rem;
    margin-bottom: 1rem;
 }
 
 .btn-clear-filter {
-   background-color: #3498db;
+   background-color: var(--accent-blue);
    color: white;
    border: none;
    padding: 8px 16px;
@@ -454,7 +454,7 @@
 }
 
 .btn-clear-filter:hover {
-   background-color: #2980b9;
+   background-color: var(--accent-blue-hover);
 }
 
 /* New Card-based Availability Layout */
@@ -468,14 +468,14 @@
    border-radius: 8px;
    overflow: hidden;
    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-   background-color: white;
+   background-color: var(--surface);
 }
 
 .month-header {
-   background-color: #f5f7fa;
+   background-color: var(--surface-muted);
    padding: 14px 20px;
    font-weight: 600;
-   color: #333;
+   color: var(--text);
    cursor: pointer;
    position: relative;
    display: flex;
@@ -485,7 +485,7 @@
 }
 
 .month-header:hover {
-   background-color: #edf0f5;
+   background-color: var(--surface-tint-hover);
 }
 
 .month-title {
@@ -495,7 +495,7 @@
 
 .collapse-icon {
    font-size: 0.8rem;
-   color: #7f8c8d;
+   color: var(--text-muted);
 }
 
 .month-content {
@@ -506,17 +506,17 @@
 }
 
 .date-card {
-   border: 1px solid #eaeaea;
+   border: 1px solid var(--border);
    border-radius: 8px;
    overflow: hidden;
-   background-color: white;
+   background-color: var(--surface);
    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .date-header {
-   background-color: #f8f9fa;
+   background-color: var(--surface-muted);
    padding: 12px 15px;
-   border-bottom: 1px solid #eaeaea;
+   border-bottom: 1px solid var(--border);
 }
 
 .date-info {
@@ -528,12 +528,12 @@
 .date-day {
    font-size: 1.3rem;
    font-weight: 600;
-   color: #333;
+   color: var(--text);
 }
 
 .date-weekday {
    font-size: 0.9rem;
-   color: #666;
+   color: var(--text-muted);
    font-weight: 500;
 }
 
@@ -547,7 +547,7 @@
 .room-availability-card {
    padding: 12px;
    border-radius: 6px;
-   background-color: #f5f7fa;
+   background-color: var(--surface-muted);
    display: flex;
    flex-direction: column;
    gap: 8px;
@@ -570,7 +570,7 @@
 
 .room-type {
    font-weight: 600;
-   color: #333;
+   color: var(--text);
 }
 
 .availability-details {
@@ -591,22 +591,22 @@
 }
 
 .bed-separator {
-   color: #999;
+   color: var(--text-muted);
 }
 
 .bed-total {
-   color: #666;
+   color: var(--text-muted);
 }
 
 .beds-label {
-   color: #777;
+   color: var(--text-muted);
    font-size: 0.9rem;
 }
 
 .availability-indicator {
    height: 4px;
    width: 100%;
-   background-color: #f0f0f0;
+   background-color: var(--surface-muted);
    border-radius: 2px;
    overflow: hidden;
 }
@@ -625,7 +625,7 @@
 
 .no-availability-info {
    padding: 15px;
-   color: #7f8c8d;
+   color: var(--text-muted);
    text-align: center;
    font-style: italic;
 }

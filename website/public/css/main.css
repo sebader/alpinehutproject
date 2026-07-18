@@ -1,91 +1,187 @@
+/* ===== Theme tokens ===== */
+:root {
+   color-scheme: light;
+
+   /* dark palette constants (referenced by the dark remap below) */
+   --d-bg: #16191d;
+   --d-surface: #21262d;
+   --d-surface-muted: #2a3038;
+   --d-surface-alt: #262c33;
+   --d-surface-tint: #263041;
+   --d-surface-tint-hover: #2d3a4d;
+   --d-text: #e6e9ec;
+   --d-text-strong: #f2f4f6;
+   --d-text-muted: #a0aab4;
+   --d-border: #3a424c;
+   --d-border-light: #333b44;
+   --d-link: #6ea8ff;
+   --d-shadow: rgba(0, 0, 0, 0.45);
+   --d-shadow-strong: rgba(0, 0, 0, 0.6);
+   --d-input-bg: #2a3038;
+
+   /* semantic tokens (light defaults) */
+   --bg: #ffffff;
+   --surface: #ffffff;
+   --surface-muted: #f8f9fa;
+   --surface-alt: #f4f4f4;
+   --surface-tint: #f0f4f8;
+   --surface-tint-hover: #e4ebf5;
+   --text: #2c3e50;
+   --text-strong: #1f2a36;
+   --text-muted: #5c6b7a;
+   --border: #dddddd;
+   --border-light: #eeeeee;
+   --link: #2471ff;
+   --shadow: rgba(0, 0, 0, 0.1);
+   --shadow-strong: rgba(0, 0, 0, 0.18);
+   --input-bg: #ffffff;
+
+   /* brand accents (shared across themes) */
+   --accent: #2ecc71;
+   --accent-hover: #27ae60;
+   --accent-blue: #3498db;
+   --accent-blue-hover: #2980b9;
+}
+
+/* Dark remap: semantic -> dark palette. Manual override via [data-theme="dark"]. */
+:root[data-theme="dark"] {
+   color-scheme: dark;
+   --bg: var(--d-bg);
+   --surface: var(--d-surface);
+   --surface-muted: var(--d-surface-muted);
+   --surface-alt: var(--d-surface-alt);
+   --surface-tint: var(--d-surface-tint);
+   --surface-tint-hover: var(--d-surface-tint-hover);
+   --text: var(--d-text);
+   --text-strong: var(--d-text-strong);
+   --text-muted: var(--d-text-muted);
+   --border: var(--d-border);
+   --border-light: var(--d-border-light);
+   --link: var(--d-link);
+   --shadow: var(--d-shadow);
+   --shadow-strong: var(--d-shadow-strong);
+   --input-bg: var(--d-input-bg);
+   --accent-blue: #4aa3e0;
+   --accent-blue-hover: #6cb6e8;
+}
+
+/* Auto dark via system preference, unless the user forced light. */
+@media (prefers-color-scheme: dark) {
+   :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: var(--d-bg);
+      --surface: var(--d-surface);
+      --surface-muted: var(--d-surface-muted);
+      --surface-alt: var(--d-surface-alt);
+      --surface-tint: var(--d-surface-tint);
+      --surface-tint-hover: var(--d-surface-tint-hover);
+      --text: var(--d-text);
+      --text-strong: var(--d-text-strong);
+      --text-muted: var(--d-text-muted);
+      --border: var(--d-border);
+      --border-light: var(--d-border-light);
+      --link: var(--d-link);
+      --shadow: var(--d-shadow);
+      --shadow-strong: var(--d-shadow-strong);
+      --input-bg: var(--d-input-bg);
+      --accent-blue: #4aa3e0;
+      --accent-blue-hover: #6cb6e8;
+   }
+}
+
+html {
+   background: var(--bg);
+}
+
 #app {
-font-family: Tenorite, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-/*margin: 5px;*/
--webkit-font-smoothing: antialiased;
--moz-osx-font-smoothing: grayscale;
-color: #2c3e50;
-margin-top: 0px;
-padding-top: 5px;
-overflow-x: hidden;
+   font-family: Tenorite, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+   color: var(--text);
+   background: var(--bg);
+   min-height: 100vh;
+   margin-top: 0px;
+   padding-top: 5px;
+   overflow-x: hidden;
 }
 
 .header {
-	margin: 5px;
+   margin: 5px;
 }
 
 .commandbar {
-	margin: 5px;
-	margin-left: 5px;
+   margin: 5px;
+   margin-left: 5px;
 }
 
 h1 {
-margin: 8px 0;
-font-size: 1.8em;
+   margin: 8px 0;
+   font-size: 1.8em;
 }
 
 h2 {
-margin: 8px 0;
-font-weight: normal;
-font-size: 1.5em;
+   margin: 8px 0;
+   font-weight: normal;
+   font-size: 1.5em;
 }
 
 h3 {
-margin: 8px 0;
-font-size: 1.3em;
+   margin: 8px 0;
+   font-size: 1.3em;
 }
 
 hr {
-	border: 1px solid #DDDDDD;
+   border: 1px solid var(--border);
 }
 
 .form-style-7 {
-	max-width: 400px;
-	margin: 50px auto;
-	background: #fff;
-	border-radius: 2px;
-	padding: 20px;
+   max-width: 400px;
+   margin: 50px auto;
+   background: var(--surface);
+   border-radius: 2px;
+   padding: 20px;
 }
 
 .form-style-7 h1 {
-	display: block;
-	text-align: center;
-	padding: 0;
-	margin: 0px 0px 20px 0px;
-	color: #5C5C5C;
-	font-size: x-large;
+   display: block;
+   text-align: center;
+   padding: 0;
+   margin: 0px 0px 20px 0px;
+   color: var(--text-muted);
+   font-size: x-large;
 }
 
 .form-style-7 ul {
-	list-style: none;
-	padding: 0;
-	margin: 0;
+   list-style: none;
+   padding: 0;
+   margin: 0;
 }
 
 .form-style-7 li {
-	display: block;
-	padding: 9px;
-	border: 1px solid #DDDDDD;
-	margin-bottom: 30px;
-	border-radius: 3px;
+   display: block;
+   padding: 9px;
+   border: 1px solid var(--border);
+   margin-bottom: 30px;
+   border-radius: 3px;
 }
 
 .form-style-7 li:last-child {
-	border: none;
-	margin-bottom: 0px;
-	text-align: center;
+   border: none;
+   margin-bottom: 0px;
+   text-align: center;
 }
 
-.form-style-7 li>label {
-	display: block;
-	float: left;
-	margin-top: -19px;
-	background: #FFFFFF;
-	height: 14px;
-	padding: 2px 5px 2px 5px;
-	color: #5c5c5c;
-	font-size: 14px;
-	overflow: hidden;
-	font-family: Arial, Helvetica, sans-serif;
+.form-style-7 li > label {
+   display: block;
+   float: left;
+   margin-top: -19px;
+   background: var(--surface);
+   height: 14px;
+   padding: 2px 5px 2px 5px;
+   color: var(--text-muted);
+   font-size: 14px;
+   overflow: hidden;
+   font-family: Arial, Helvetica, sans-serif;
 }
 
 .form-style-7 input[type="text"],
@@ -99,154 +195,161 @@ hr {
 .form-style-7 input[type="password"],
 .form-style-7 textarea,
 .form-style-7 select {
-	box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	width: 100%;
-	display: block;
-	outline: none;
-	border: none;
-	height: 25px;
-	line-height: 25px;
-	font-size: 16px;
-	padding: 0;
+   box-sizing: border-box;
+   -webkit-box-sizing: border-box;
+   -moz-box-sizing: border-box;
+   width: 100%;
+   display: block;
+   outline: none;
+   border: none;
+   height: 25px;
+   line-height: 25px;
+   font-size: 16px;
+   padding: 0;
+   color: var(--text);
+   background: transparent;
 }
 
 .form-style-7 textarea {
-	height: auto;
+   height: auto;
 }
 
-/* .form-style-7 input[type="text"]:focus,
-.form-style-7 input[type="date"]:focus,
-.form-style-7 input[type="datetime"]:focus,
-.form-style-7 input[type="email"]:focus,
-.form-style-7 input[type="number"]:focus,
-.form-style-7 input[type="search"]:focus,
-.form-style-7 input[type="time"]:focus,
-.form-style-7 input[type="url"]:focus,
-.form-style-7 input[type="password"]:focus,
-.form-style-7 textarea:focus,
-.form-style-7 select:focus 
-{
-} */
-.form-style-7 li>span {
-	background: #F3F3F3;
-	display: block;
-	padding: 3px;
-	margin: 0 -9px -9px -9px;
-	text-align: center;
-	color: #C0C0C0;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 11px;
+.form-style-7 li > span {
+   background: var(--surface-muted);
+   display: block;
+   padding: 3px;
+   margin: 0 -9px -9px -9px;
+   text-align: center;
+   color: var(--text-muted);
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 11px;
 }
 
 .form-style-7 input[type="submit"],
 .form-style-7 input[type="button"] {
-	background: #2471FF;
-	border: none;
-	padding: 10px 20px 10px 20px;
-	border-bottom: 3px solid #5994FF;
-	border-radius: 3px;
-	color: #D2E2FF;
+   background: #2471ff;
+   border: none;
+   padding: 10px 20px 10px 20px;
+   border-bottom: 3px solid #5994ff;
+   border-radius: 3px;
+   color: #d2e2ff;
 }
 
 .form-style-7 input[type="submit"]:hover,
 .form-style-7 input[type="button"]:hover {
-	background: #6B9FFF;
-	color: #fff;
+   background: #6b9fff;
+   color: #fff;
 }
 
 .success {
-	color: green;
+   color: #2ecc71;
 }
 
 .error {
-	color: red;
+   color: #e74c3c;
 }
 
 th,
 td {
-	border: 1px solid #DDDDDD;
-	padding: 10px;
+   border: 1px solid var(--border);
+   padding: 10px;
 }
 
 table tr:nth-child(odd) {
-	background: #ffffff;
+   background: var(--surface);
 }
 
 table tr:nth-child(even) {
-	background: #f4f4f4;
+   background: var(--surface-alt);
 }
 
 table.innertable {
-	width: 100%;
-	border: none;
+   width: 100%;
+   border: none;
 }
 
 table.innertable td {
-	border: none;
+   border: none;
 }
 
 table.innertable tr {
-	background: transparent;
+   background: transparent;
 }
 
 button.action-button {
-	color: white;
-	background-color: green;
-	padding: 6px;
-	border: 2px solid green;
-	border-radius: 5px;
-	font-weight: bold;
-	margin-top: 12px;
-	cursor: pointer;
+   color: white;
+   background-color: var(--accent);
+   padding: 6px;
+   border: 2px solid var(--accent);
+   border-radius: 5px;
+   font-weight: bold;
+   margin-top: 12px;
+   cursor: pointer;
 }
 
 button.action-button:hover {
-	background-color: rgb(0, 180, 0);
-	color: white;
+   background-color: var(--accent-hover);
+   color: white;
 }
 
 @media (hover: none) {
-.leaflet-tooltip-pane { display: none; }
+   .leaflet-tooltip-pane {
+      display: none;
+   }
 }
 
 /* Ensure consistent popup width throughout the app */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-content {
-  width: 320px !important;
-  min-width: 320px !important;
-  max-width: 320px !important;
+   width: 320px !important;
+   min-width: 320px !important;
+   max-width: 320px !important;
 }
 
 .leaflet-popup-content {
-  margin: 0 !important;
-  padding: 0 !important;
+   margin: 0 !important;
+   padding: 0 !important;
 }
 
 @media screen and (max-width: 576px) {
-  table {
-    width: 100%;
-    table-layout: fixed;
-  }
+   table {
+      width: 100%;
+      table-layout: fixed;
+   }
 
-  table td, table th {
-    padding: 8px 5px;
-    font-size: 14px;
-    word-break: break-word;
-  }
-  
-  /* Ensure numeric cells (like bed counts) don't break and have proper width */
-  td:nth-child(2) {
-    white-space: nowrap;
-    width: 80px;
-  }
+   table td,
+   table th {
+      padding: 8px 5px;
+      font-size: 14px;
+      word-break: break-word;
+   }
 
-  /* Make sure input fields take full width */
-  input[type="number"],
-  input[type="text"],
-  input[type="url"] {
-    width: 100%;
-    box-sizing: border-box;
-  }
+   /* Ensure numeric cells (like bed counts) don't break and have proper width */
+   td:nth-child(2) {
+      white-space: nowrap;
+      width: 80px;
+   }
+
+   /* Make sure input fields take full width */
+   input[type="number"],
+   input[type="text"],
+   input[type="url"] {
+      width: 100%;
+      box-sizing: border-box;
+   }
+}
+
+/* Dark-mode theming for Leaflet popups (map tiles/zoom controls stay light over the map) */
+:root[data-theme="dark"] .leaflet-popup-content-wrapper,
+:root[data-theme="dark"] .leaflet-popup-tip {
+   background: var(--surface);
+   color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+   :root:not([data-theme="light"]) .leaflet-popup-content-wrapper,
+   :root:not([data-theme="light"]) .leaflet-popup-tip {
+      background: var(--surface);
+      color: var(--text);
+   }
 }

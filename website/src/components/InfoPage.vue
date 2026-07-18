@@ -83,7 +83,7 @@ export default {
 }
 
 .info-header h1 {
-   color: #2c3e50;
+   color: var(--text);
    font-size: 2.5rem;
    margin-bottom: 15px;
    font-weight: 600;
@@ -119,11 +119,11 @@ export default {
 }
 
 .info-card {
-   background: #ffffff;
+   background: var(--surface);
    border-radius: 12px;
    padding: 30px;
-   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-   border: 1px solid #e8e8e8;
+   box-shadow: 0 4px 20px var(--shadow);
+   border: 1px solid var(--border);
    transition:
       transform 0.3s ease,
       box-shadow 0.3s ease;
@@ -131,20 +131,20 @@ export default {
 
 .info-card:hover {
    transform: translateY(-5px);
-   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+   box-shadow: 0 8px 30px var(--shadow-strong);
 }
 
 .info-card h2 {
-   color: #34495e;
+   color: var(--text);
    font-size: 1.6rem;
    margin-bottom: 20px;
    font-weight: 600;
-   border-bottom: 2px solid #ecf0f1;
+   border-bottom: 2px solid var(--border-light);
    padding-bottom: 10px;
 }
 
 .info-text {
-   color: #555;
+   color: var(--text-muted);
    line-height: 1.8;
    font-size: 1.1rem;
    margin: 0;
@@ -182,7 +182,7 @@ export default {
 .info-footer {
    margin-top: 50px;
    padding-top: 30px;
-   border-top: 2px solid #ecf0f1;
+   border-top: 2px solid var(--border-light);
    text-align: center;
 }
 

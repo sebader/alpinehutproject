@@ -3,7 +3,7 @@ namespace FetchDataFunctions.Models.HuettenHoliday;
 public class GetMonthAvailabilityPayload
 {
     public int cabinId { get; set; }
-    public SelectedMonth selectedMonth { get; set; }
+    public SelectedMonth selectedMonth { get; set; } = null!;
     public bool multipleCalendar { get; set; } = false;
 }
 

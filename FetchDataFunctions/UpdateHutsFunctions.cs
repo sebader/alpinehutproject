@@ -115,7 +115,7 @@ namespace FetchDataFunctions
             // Fan-out. Every day we check 1/7 of all hut IDs in the range
             for (int i = startHutId; i <= MaxHutId; i += 7)
             {
-                tasks.Add(context.CallActivityAsync(nameof(GetHutFromProviderActivity), i));
+                tasks.Add(context.CallActivityAsync<Hut?>(nameof(GetHutFromProviderActivity), i));
             }
 
             // Fan in. Wait for all to be finished

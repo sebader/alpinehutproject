@@ -6,21 +6,21 @@ public record HutInfoV2
 {
     public string? hutWebsite { get; set; }
     public int hutId { get; set; }
-    public string tenantCode { get; set; }
+    public string tenantCode { get; set; } = string.Empty;
     public bool hutUnlocked { get; set; }
     public int maxNumberOfNights { get; set; }
-    public string hutName { get; set; }
+    public string hutName { get; set; } = string.Empty;
     public string? hutWarden { get; set; }
     public string? phone { get; set; }
     public string? coordinates { get; set; }
     public string? altitude { get; set; }
     public string? totalBedsInfo { get; set; }
-    public string tenantCountry { get; set; }
+    public string tenantCountry { get; set; } = string.Empty;
     public Picture? picture { get; set; }
-    public string[] hutLanguages { get; set; }
-    public HutBedCategory[] hutBedCategories { get; set; }
-    public string providerName { get; set; }
-    public HutGeneralDescription[] hutGeneralDescriptions { get; set; }
+    public string[] hutLanguages { get; set; } = [];
+    public HutBedCategory[] hutBedCategories { get; set; } = [];
+    public string providerName { get; set; } = string.Empty;
+    public HutGeneralDescription[] hutGeneralDescriptions { get; set; } = [];
     public string? supportLink { get; set; }
     public bool? waitingListEnabled { get; set; }
 
@@ -94,35 +94,35 @@ public record HutInfoV2
 
 public record Picture
 {
-    public string fileType { get; set; }
-    public string blobPath { get; set; }
-    public string fileName { get; set; }
-    public object fileData { get; set; }
+    public string fileType { get; set; } = string.Empty;
+    public string blobPath { get; set; } = string.Empty;
+    public string fileName { get; set; } = string.Empty;
+    public object fileData { get; set; } = null!;
 }
 
 public record HutBedCategory
 {
     public int index { get; set; }
     public int categoryID { get; set; }
-    public object[] rooms { get; set; }
+    public object[] rooms { get; set; } = [];
     public bool isVisible { get; set; }
     public int totalSleepingPlaces { get; set; }
-    public string reservationMode { get; set; }
-    public HutBedCategoryLanguageData[] hutBedCategoryLanguageData { get; set; }
+    public string reservationMode { get; set; } = string.Empty;
+    public HutBedCategoryLanguageData[] hutBedCategoryLanguageData { get; set; } = [];
     public bool isLinkedToReservation { get; set; }
     public int tenantBedCategoryId { get; set; }
 }
 
 public record HutBedCategoryLanguageData
 {
-    public string language { get; set; }
-    public string label { get; set; }
-    public string shortLabel { get; set; }
-    public string description { get; set; }
+    public string language { get; set; } = string.Empty;
+    public string label { get; set; } = string.Empty;
+    public string shortLabel { get; set; } = string.Empty;
+    public string description { get; set; } = string.Empty;
 }
 
 public record HutGeneralDescription
 {
-    public string description { get; set; }
-    public string language { get; set; }
+    public string description { get; set; } = string.Empty;
+    public string language { get; set; } = string.Empty;
 }

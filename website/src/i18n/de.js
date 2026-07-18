@@ -35,6 +35,7 @@ export default {
       edit: "Bearbeiten",
       save: "Speichern",
       cancel: "Abbrechen",
+      close: "Schließen",
       confirmDelete: "Löschen bestätigen",
       confirmDeleteText: "Sind Sie sicher, dass Sie die Hütte löschen möchten",
       yes: "Ja",
@@ -96,6 +97,7 @@ export default {
       noAvailabilityInfo: "Keine Belegungsinfo verfügbar. Bitte direkt auf der Buchungsseite nachsehen.",
       anyBeds: "egal",
       zoomIn: "Zoom",
+      filterTitle: "Filter",
    },
    hutListPage: {
       allHuts: "Alle Hütten",

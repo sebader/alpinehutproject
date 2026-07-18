@@ -1,10 +1,35 @@
 <template>
    <div>
-      <button class="toggle-btn" :class="{ collapsed: isCollapsed }" @click="isCollapsed = !isCollapsed">
-         {{ isCollapsed ? "☰" : "✕" }}
+      <button
+         v-show="isCollapsed"
+         class="toggle-btn"
+         @click="isCollapsed = false"
+         :aria-label="$t('mapPage.filterTitle')"
+      >
+         ☰
       </button>
       <div class="commandbar" :class="{ collapsed: isCollapsed }">
          <div class="controls-content">
+            <div class="filter-header">
+               <span class="filter-title-text">
+                  <svg
+                     class="filter-icon"
+                     width="16"
+                     height="16"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true"
+                  >
+                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                  </svg>
+                  {{ $t("mapPage.filterTitle") }}
+               </span>
+               <button class="filter-close" @click="isCollapsed = true" :aria-label="$t('message.close')">✕</button>
+            </div>
             <div class="control-group">
                <label>{{ $t("mapPage.availabilityAtDate") }}</label>
                <div class="input-group">
@@ -555,12 +580,13 @@ export default {
    top: 80px; /* Adjusted to match new map spacing */
    left: 72px;
    background: rgba(255, 255, 255, 0.98);
-   border-radius: 8px;
-   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+   border-radius: 10px;
+   border-top: 3px solid #2ecc71;
+   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
    z-index: 1500;
    transition: transform 0.3s ease;
    overflow: visible !important;
-   max-width: 350px;
+   max-width: 320px;
    width: calc(100% - 92px);
    height: auto;
    max-height: calc(100vh - 80px);
@@ -568,13 +594,65 @@ export default {
 
 .controls-content {
    position: relative;
-   padding: 15px;
+   padding: 13px 14px;
    height: auto;
+}
+
+.filter-header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   margin-bottom: 13px;
+   padding-bottom: 10px;
+   border-bottom: 1px solid #eee;
+}
+
+.filter-title-text {
+   display: inline-flex;
+   align-items: center;
+   gap: 7px;
+   font-weight: 600;
+   font-size: 0.95rem;
+   color: #2c3e50;
+}
+
+.filter-icon {
+   color: #2ecc71;
+   flex-shrink: 0;
+}
+
+.filter-close {
+   border: none;
+   background: transparent;
+   color: #9aa5b1;
+   font-size: 15px;
+   line-height: 1;
+   cursor: pointer;
+   padding: 4px 7px;
+   border-radius: 6px;
+   transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+}
+
+.filter-close:hover {
+   background: #f0f0f0;
+   color: #2c3e50;
 }
 
 .control-group {
    position: relative !important;
-   margin-bottom: 15px !important;
+   margin-bottom: 12px !important;
+}
+
+.control-group label {
+   display: block;
+   margin-bottom: 5px;
+   font-size: 0.72rem;
+   font-weight: 700;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: #8a96a3;
 }
 
 .control-group:last-child {
@@ -592,19 +670,23 @@ export default {
    position: static !important;
 }
 
-.control-group .vue3-simple-typeahead {
+.control-group .simple-typeahead {
    position: static !important;
    width: 100% !important;
 }
 
-.control-group .vue3-simple-typeahead input {
+.control-group .simple-typeahead-input {
    width: 100% !important;
    padding: 8px !important;
    border: 1px solid #ddd !important;
    border-radius: 4px !important;
+   box-sizing: border-box !important;
+   font-family: inherit !important;
+   font-size: inherit !important;
+   color: inherit !important;
 }
 
-.control-group .vue3-simple-typeahead-list {
+.control-group .simple-typeahead-list {
    position: absolute !important;
    top: 100% !important;
    left: 0 !important;
@@ -619,12 +701,12 @@ export default {
    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-.vue3-simple-typeahead-list-item {
+.simple-typeahead-list-item {
    padding: 4px 8px !important;
    cursor: pointer !important;
 }
 
-.vue3-simple-typeahead-list-item:hover {
+.simple-typeahead-list-item:hover {
    background-color: #f8f9fa !important;
 }
 
@@ -659,10 +741,6 @@ export default {
    background: #f8f8f8;
 }
 
-.toggle-btn.collapsed {
-   left: 20px;
-}
-
 @media (max-width: 768px) {
    .commandbar {
       top: 80px; /* Keep consistent with map spacing */
@@ -691,9 +769,9 @@ export default {
       width: 100%;
    }
 
-   .vue3-simple-typeahead,
-   .vue3-simple-typeahead input,
-   .vue3-simple-typeahead-list {
+   .simple-typeahead,
+   .simple-typeahead-input,
+   .simple-typeahead-list {
       width: 100%;
    }
 }
@@ -702,6 +780,7 @@ export default {
    padding: 8px;
    border: 1px solid #ddd;
    border-radius: 4px;
+   box-sizing: border-box;
 }
 
 input[type="date"].form-control,
@@ -713,19 +792,42 @@ select.form-control {
    width: 100%;
 }
 
+.control-group .form-control:focus,
+.control-group .simple-typeahead-input:focus {
+   outline: none;
+   border-color: #2ecc71 !important;
+   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15) !important;
+}
+
 .number-input {
    display: flex;
    align-items: center;
    width: 100%;
+   border: 1px solid #ddd;
+   border-radius: 6px;
+   overflow: hidden;
+   transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+}
+
+.number-input:focus-within {
+   border-color: #2ecc71;
+   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
 }
 
 .number-input input[type="number"] {
    text-align: center;
    -moz-appearance: textfield;
-   width: 60px !important;
+   flex: 1;
+   width: auto !important;
    padding: 8px 0;
    margin: 0;
-   border-radius: 0;
+   border: none !important;
+   border-radius: 0 !important;
+   box-shadow: none !important;
+   background: transparent;
+   font-weight: 600;
 }
 
 .number-input input[type="number"]::-webkit-outer-spin-button,
@@ -735,29 +837,34 @@ select.form-control {
 }
 
 .number-btn {
-   background-color: #f8f9fa;
-   border: 1px solid #ddd;
-   padding: 8px 12px;
+   background-color: #f4f6f8;
+   border: none;
+   padding: 8px 14px;
    cursor: pointer;
    font-size: 16px;
-   min-width: 36px;
+   min-width: 38px;
+   color: #2c3e50;
+   transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
 }
 
 .number-btn:first-child {
-   border-radius: 4px 0 0 4px;
+   border-right: 1px solid #ddd;
 }
 
 .number-btn:last-child {
-   border-radius: 0 4px 4px 0;
+   border-left: 1px solid #ddd;
 }
 
 .number-btn:hover:not(:disabled) {
-   background-color: #e9ecef;
+   background-color: #2ecc71;
+   color: #fff;
 }
 
 .number-btn:disabled {
    cursor: not-allowed;
-   opacity: 0.6;
+   opacity: 0.5;
 }
 
 /* Styling for custom popup */

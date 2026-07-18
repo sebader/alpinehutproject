@@ -35,6 +35,7 @@ export default {
       edit: "Edit",
       save: "Save",
       cancel: "Cancel",
+      close: "Close",
       confirmDelete: "Confirm Delete",
       confirmDeleteText: "Are you sure you want to delete the hut",
       yes: "Yes",
@@ -96,6 +97,7 @@ export default {
       noAvailabilityInfo: "No availability information available. Please check the booking page directly.",
       anyBeds: "any",
       zoomIn: "Zoom",
+      filterTitle: "Filters",
    },
    hutListPage: {
       allHuts: "All huts",

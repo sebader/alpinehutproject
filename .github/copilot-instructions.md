@@ -3,12 +3,11 @@
 Aggregates alpine hut booking availability into a website (https://alpinehuts.silenced.eu/).
 Data is scraped from two sources into an Azure SQL database, then served to a Vue SPA.
 
-## Repository layout (three deployables + shared config + E2E suite)
+## Repository layout (three deployables + E2E suite)
 
 - **`FetchDataFunctions/`** — .NET **10** isolated Azure Functions app (deployed as Function App `alpinehutscrawler`). Timer-triggered crawlers + Durable Functions orchestrations that scrape huts/availability and write to Azure SQL via EF Core.
 - **`WebsiteBackendFunctions/`** — .NET **8** isolated Azure Functions app. The Static Web App's managed API (`/api/*`); read/admin endpoints backed directly by the SQL bindings (no EF Core).
 - **`website/`** — Vue 3 SPA (**Vite**, dev/build on `:8080`), deployed to Azure Static Web Apps.
-- **`swa-db-connections/`** — Data API Builder (DAB) config exposing `Hut` and `BedCategory` entities as REST straight from SQL (SWA Database Connections).
 - **`e2e/`** — standalone Playwright end-to-end smoke suite (its own `package.json`; **not deployed** and intentionally kept out of the frontend build). See Testing.
 
 The two Functions apps are the projects in `AlpineHutProject.sln`.
@@ -33,7 +32,7 @@ npm run lint                            # ESLint (flat config, eslint-plugin-vue
 npm run format                          # Prettier (writes src/)
 ```
 
-Local end-to-end run (see `website/README.md`): start DAB (`dab start -c ./staticwebapp.database.config.json` from `swa-db-connections/`), the backend (`func start` from `WebsiteBackendFunctions/`), and the SWA emulator (`swa start --api-devserver-url http://localhost:7071` from `website/`, opens http://localhost:4280). Requires the `swa`, `dab`, and Azure Functions Core Tools (`func`) CLIs.
+Local end-to-end run (see `website/README.md`): start the backend (`func start` from `WebsiteBackendFunctions/`) and the SWA emulator (`swa start --api-devserver-url http://localhost:7071` from `website/`, opens http://localhost:4280). Requires the `swa` and Azure Functions Core Tools (`func`) CLIs.
 
 ## Testing
 
@@ -51,7 +50,7 @@ No unit tests. Validation is **build + lint + an end-to-end Playwright smoke sui
 ## Azure Functions conventions
 
 - Isolated worker model everywhere. Name functions with `[Function(nameof(MethodName))]` and reference orchestration/activity functions by `nameof(...)` when scheduling.
-- **Data access differs by app:** `FetchDataFunctions` uses EF Core via `Helpers.GetDbContext()` (reads the `DatabaseConnectionString` env var, one short-lived `AlpinehutsDbContext` per activity). `WebsiteBackendFunctions` uses the `[SqlInput(...)]` / SQL output bindings directly against `DatabaseConnectionString` — do not add EF Core there. DAB reads the connection string from `DATABASE_CONNECTION_STRING` instead.
+- **Data access differs by app:** `FetchDataFunctions` uses EF Core via `Helpers.GetDbContext()` (reads the `DatabaseConnectionString` env var, one short-lived `AlpinehutsDbContext` per activity). `WebsiteBackendFunctions` uses the `[SqlInput(...)]` / SQL output bindings directly against `DatabaseConnectionString` — do not add EF Core there.
 - Timer-triggered crawlers early-return when `AZURE_FUNCTIONS_ENVIRONMENT == "Development"` so they never run locally.
 - Durable orchestrations (Netherite storage provider) fan out in **batches of 10 with a 1-minute delay** between batches to avoid provider rate limiting; use `context.CreateReplaySafeLogger` inside orchestrators.
 - Outbound scraping goes through the named `"HttpClient"` (configured in `FetchDataFunctions/Program.cs`) which carries a Polly retry policy that also retries HTTP 429 and 403 (treated as rate limiting).

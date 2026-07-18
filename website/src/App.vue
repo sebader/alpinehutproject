@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import SystemMessage from "./components/SystemMessage";
+import SystemMessage from "./components/SystemMessage.vue";
 
 export default {
   data: function () {

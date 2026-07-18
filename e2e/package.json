@@ -1,0 +1,13 @@
+{
+  "name": "alpinehuts-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end smoke tests for the Alpine Huts public site",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}

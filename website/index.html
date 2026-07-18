@@ -13,9 +13,12 @@
     <strong>We're sorry but this page doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
   </noscript>
   <div id="app"></div>
-  <!-- built files will be auto injected -->
 
-  <!-- End with environmental specific config. -->
+  <!-- Environment-specific runtime config. Classic (synchronous) script: runs during parse,
+       before the deferred module below, so window.* globals are set first. -->
   <script src="/config.js" type="text/javascript"></script>
+
+  <!-- Vite entry -->
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

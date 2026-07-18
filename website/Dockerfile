@@ -1,12 +1,9 @@
 # Create build environment
-FROM node:18.4.0 as build-env
-
-# enable node 17 support for vue-cli
-ENV NODE_OPTIONS=--openssl-legacy-provider
+FROM node:22 as build-env
 
 WORKDIR /app
 COPY . ./
-RUN npm install && \
+RUN npm install --registry https://registry.npmjs.org && \
     npm run build
 
 # Create application container

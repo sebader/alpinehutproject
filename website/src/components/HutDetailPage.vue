@@ -271,9 +271,10 @@
    left: 0;
    right: 0;
    bottom: 0;
-   background: url("https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?ixlib=rb-4.0.3&auto=format&fit=crop&w=1050&q=80")
-      center/cover;
-   opacity: 0.3;
+   background:
+      linear-gradient(100deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.28) 42%, rgba(15, 23, 42, 0) 72%),
+      url("/img/hero-mountains.svg") center bottom / cover no-repeat;
+   opacity: 1;
    z-index: 0;
 }
 
@@ -295,6 +296,7 @@
    gap: 8px;
    font-size: 1.1rem;
    margin-bottom: 1.5rem;
+   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .location-icon {

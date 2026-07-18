@@ -171,9 +171,10 @@
    left: 0;
    right: 0;
    bottom: 0;
-   background: url("https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80")
-      center/cover;
-   opacity: 0.2;
+   background:
+      linear-gradient(100deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.28) 42%, rgba(15, 23, 42, 0) 72%),
+      url("/img/hero-mountains.svg") center bottom / cover no-repeat;
+   opacity: 1;
    z-index: 0;
 }
 
@@ -191,7 +192,8 @@
 
 .page-subtitle {
    font-size: 1.1rem;
-   opacity: 0.9;
+   opacity: 0.95;
+   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 /* Search and Filters */

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice" width="1200" height="240">
+  <!-- Sun -->
+  <circle cx="1012" cy="60" r="38" fill="#ffe08a" opacity="0.55" />
+  <circle cx="1012" cy="60" r="22" fill="#fff1c0" opacity="0.65" />
+
+  <!-- Far haze range -->
+  <path d="M0 150 L200 118 L400 146 L620 108 L840 140 L1060 112 L1200 138 L1200 240 L0 240 Z" fill="#2c3e50" opacity="0.10" />
+
+  <!-- Mid range -->
+  <path d="M0 182 L240 138 L440 176 L680 132 L900 172 L1120 138 L1200 158 L1200 240 L0 240 Z" fill="#2c3e50" opacity="0.16" />
+
+  <!-- Front slate range -->
+  <path d="M0 222 L150 168 L300 210 L470 150 L640 208 L820 158 L1000 210 L1140 172 L1200 190 L1200 240 L0 240 Z" fill="#2c3e50" opacity="0.9" />
+
+  <!-- Snow caps -->
+  <path d="M470 150 L451 176 L461 171 L468 181 L478 168 L488 179 L495 173 L470 150 Z" fill="#ffffff" opacity="0.92" />
+  <path d="M820 158 L803 181 L812 177 L818 186 L827 174 L836 184 L843 179 L820 158 Z" fill="#ffffff" opacity="0.92" />
+  <path d="M150 168 L134 189 L142 185 L148 193 L156 183 L164 191 L170 187 L150 168 Z" fill="#ffffff" opacity="0.85" />
+
+  <!-- Green foothills -->
+  <path d="M-40 240 L150 196 L340 240 Z" fill="#2ecc71" opacity="0.8" />
+  <path d="M900 240 L1050 200 L1240 240 Z" fill="#27ae60" opacity="0.75" />
+</svg>

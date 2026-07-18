@@ -600,7 +600,7 @@
 <script>
 import { shortWebsiteUrl } from "../utils"
 import { Constants } from '../utils';
-import { EventBus } from "../main"
+import { EventBus } from "../event-bus"
 import { tileProviders } from "../services/mapview-service";
 
 import L from 'leaflet';

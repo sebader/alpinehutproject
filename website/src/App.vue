@@ -1,6 +1,6 @@
 <template>
-  <div :class="{ 'map-layout': $route.name === 'mapPage' }">
-    <div class="header" :class="{ 'map-header': $route.name === 'mapPage' }">
+  <div :class="{ 'map-layout': isMapPage }">
+    <div class="header" :class="{ 'map-header': isMapPage }">
       <h4>{{ pageTitle }}</h4>
       <router-link :to="{ name: 'mapPage' }">{{ $t("message.map") }}</router-link> |
       <router-link :to="{ name: 'hutListPage' }">{{ $t("message.list") }}</router-link> |
@@ -11,20 +11,20 @@
           <router-link
             :to="{ name: $route.name, params: $route.params, query: $route.query, hash: $route.hash, replace: true }"
             :class="{ 'disabled-link': $i18n.locale === locale }" v-if="$i18n.locale !== locale"
-            @click.native="$i18n.locale = locale">{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</router-link>
+            @click="$i18n.locale = locale">{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</router-link>
           <span v-else>{{ locale === 'de' ? '🇩🇪' : '🇬🇧' }}</span>
           <span v-if="locale !== $i18n.availableLocales[$i18n.availableLocales.length - 1]"> | </span>
         </span>
       </span>
-      <hr v-if="$route.name !== 'mapPage'" />
+      <hr v-if="!isMapPage" />
 
-      <SystemMessage v-if="$route.name !== 'mapPage'" />
+      <SystemMessage v-if="!isMapPage" />
     </div>
     <router-view :key="$route.fullPath" :isAuthenticated="isAdmin"></router-view>
 
-    <hr v-if="$route.name !== 'mapPage'" />
+    <hr v-if="!isMapPage" />
 
-    <footer v-if="$route.name !== 'mapPage'">{{ $t("message.footerText") }}. Commit version: {{ versionLabel }}
+    <footer v-if="!isMapPage">{{ $t("message.footerText") }}. Commit version: {{ versionLabel }}
     </footer>
   </div>
 </template>
@@ -54,6 +54,9 @@ export default {
   },
   methods: {},
   computed: {
+    isMapPage() {
+      return this.$route.name === 'mapPage';
+    },
     pageTitle() {
       const baseTitle = this.$t("message.siteTitle");
       if (this.$route.name === 'infoPage') return `${baseTitle} - ${this.$t('message.info')}`;

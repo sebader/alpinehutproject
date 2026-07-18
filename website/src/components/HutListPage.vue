@@ -372,7 +372,7 @@
 
 <script>
 import { Constants } from "../utils"
-import { EventBus } from "../main"
+import { EventBus } from "../event-bus"
 import { Modal } from 'bootstrap';
 import AdminHutForm from './AdminHutForm.vue';
 

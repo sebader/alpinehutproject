@@ -166,7 +166,7 @@
 
 <script>
 import { Constants } from '../utils';
-import { EventBus } from "../main"
+import { EventBus } from "../event-bus"
 import { shortWebsiteUrl } from "../utils"
 import { tileProviders } from "../services/mapview-service";
 
@@ -368,16 +368,7 @@ export default {
     },
     async submitNotificationForm(hutId) {
       try {
-        await fetch(`/api/freebednotifications/${hutId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            emailAddress: this.email,
-            date: this.dateFilter
-          })
-        });
+        await this.$NotificationService.subscribeFreeBedNotificationAsync(hutId, this.email, this.dateFilter);
         this.formSubmitted = true;
       } catch (error) {
         console.error("Error submitting form:", error);

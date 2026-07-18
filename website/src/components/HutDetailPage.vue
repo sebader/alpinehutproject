@@ -2,7 +2,7 @@
    <section class="container-fluid">
       <div v-show="loading" class="loading-container">
          <div class="spinner"></div>
-         <p>{{ $t('message.loading') }}...</p>
+         <p>{{ $t("message.loading") }}...</p>
       </div>
 
       <div v-if="!loading && hut != null" class="hut-detail">
@@ -17,12 +17,12 @@
                </div>
                <div class="booking-buttons" v-if="hut.enabled">
                   <a :href="`${hut.link}`" target="_blank" class="action-btn btn-primary">
-                     <i class="booking-icon">🔖</i> {{ $t('message.onlineBooking') }}
+                     <i class="booking-icon">🔖</i> {{ $t("message.onlineBooking") }}
                   </a>
                </div>
                <div v-else class="booking-inactive">
                   <a :href="`${hut.link}`" target="_blank" class="action-btn btn-secondary">
-                     <i class="booking-icon">🔖</i> {{ $t('message.onlineBookingInactive') }}
+                     <i class="booking-icon">🔖</i> {{ $t("message.onlineBookingInactive") }}
                   </a>
                </div>
             </div>
@@ -33,19 +33,26 @@
                <!-- Info card -->
                <div class="col-md-5">
                   <div class="info-card">
-                     <h3 class="card-title">{{ $t('message.hut') }} {{ $t('message.info') }}</h3>
-                     
+                     <h3 class="card-title">{{ $t("message.hut") }} {{ $t("message.info") }}</h3>
+
                      <div class="info-item">
-                        <div class="info-label">{{ $t('message.source') }}</div>
+                        <div class="info-label">{{ $t("message.source") }}</div>
                         <div class="info-value">
-                           <span class="source-badge" :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }">
-                              {{ hut.source === 'HuettenHoliday' ? $t('message.sourceHuettenHoliday') : $t('message.sourceAlpenvereine') }}
+                           <span
+                              class="source-badge"
+                              :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }"
+                           >
+                              {{
+                                 hut.source === "HuettenHoliday"
+                                    ? $t("message.sourceHuettenHoliday")
+                                    : $t("message.sourceAlpenvereine")
+                              }}
                            </span>
                         </div>
                      </div>
 
                      <div class="info-item" v-if="hut.hutWebsite != null">
-                        <div class="info-label">{{ $t('message.website') }}</div>
+                        <div class="info-label">{{ $t("message.website") }}</div>
                         <div class="info-value">
                            <a :href="`${hut.hutWebsite}`" target="_blank" class="website-link">
                               {{ shortWebsiteUrl(hut.hutWebsite) }}
@@ -55,10 +62,14 @@
                      </div>
 
                      <div class="info-item">
-                        <div class="info-label">{{ $t('message.coordinates') }}</div>
+                        <div class="info-label">{{ $t("message.coordinates") }}</div>
                         <div class="info-value">
-                           <router-link v-if="hut.latitude != null && hut.longitude != null"
-                              :to="{ name: 'mapPage', query: { hutId: hut.id } }" :title="$t('message.showOnMap')" class="coordinates-link">
+                           <router-link
+                              v-if="hut.latitude != null && hut.longitude != null"
+                              :to="{ name: 'mapPage', query: { hutId: hut.id } }"
+                              :title="$t('message.showOnMap')"
+                              class="coordinates-link"
+                           >
                               {{ hut.latitude }}/{{ hut.longitude }}
                               <i class="map-icon">🗺️</i>
                            </router-link>
@@ -66,12 +77,12 @@
                      </div>
 
                      <div class="info-item">
-                        <div class="info-label">{{ $t('message.lastUpdated') }}</div>
+                        <div class="info-label">{{ $t("message.lastUpdated") }}</div>
                         <div class="info-value">{{ new Date(hut.lastUpdated).toLocaleString() }}</div>
                      </div>
 
                      <div class="info-item">
-                        <div class="info-label">{{ $t('message.hutAdded') }}</div>
+                        <div class="info-label">{{ $t("message.hutAdded") }}</div>
                         <div class="info-value">{{ new Date(hut.added).toLocaleDateString() }}</div>
                      </div>
                   </div>
@@ -81,13 +92,30 @@
                <div class="col-md-7">
                   <div class="map-card">
                      <div class="map-container">
-                        <l-map v-if="hut.latitude != null && hut.longitude != null" ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17">
+                        <l-map
+                           v-if="hut.latitude != null && hut.longitude != null"
+                           ref="map"
+                           v-model:zoom="zoom"
+                           :center="mapCenter"
+                           :minZoom="6"
+                           :maxZoom="17"
+                        >
                            <l-control-layers position="topright"></l-control-layers>
-                           <l-tile-layer v-for="tileProvider in tileProviders" :key="tileProvider.name"
-                              :name="tileProvider.name" :visible="tileProvider.visible" :url="tileProvider.url"
-                              :attribution="tileProvider.attribution" layer-type="base" />
-                           <l-marker ref="markerItems" :name="hut.name" :lat-lng="[hut.latitude, hut.longitude]"
-                              :icon="markerIcon">
+                           <l-tile-layer
+                              v-for="tileProvider in tileProviders"
+                              :key="tileProvider.name"
+                              :name="tileProvider.name"
+                              :visible="tileProvider.visible"
+                              :url="tileProvider.url"
+                              :attribution="tileProvider.attribution"
+                              layer-type="base"
+                           />
+                           <l-marker
+                              ref="markerItems"
+                              :name="hut.name"
+                              :lat-lng="[hut.latitude, hut.longitude]"
+                              :icon="markerIcon"
+                           >
                               <l-tooltip>
                                  <b>{{ hut.name }}</b>
                               </l-tooltip>
@@ -100,46 +128,64 @@
 
             <!-- Availability section -->
             <div class="availability-section" v-if="hut.enabled">
-               <h3 class="section-title">{{ $t('message.beds') }}</h3>
-               
+               <h3 class="section-title">{{ $t("message.beds") }}</h3>
+
                <!-- Weekday filter -->
                <div class="filter-card">
-                  <h4 class="filter-title">{{ $t('message.filterByWeekdays') }}</h4>
+                  <h4 class="filter-title">{{ $t("message.filterByWeekdays") }}</h4>
                   <div class="custom-checkbox-group">
                      <div v-for="weekday in weekdays" :key="weekday.key" class="custom-checkbox-option">
-                        <input type="checkbox" :id="weekday.key" :value="weekday.key" v-model="selectedWeekdays" class="custom-checkbox">
+                        <input
+                           type="checkbox"
+                           :id="weekday.key"
+                           :value="weekday.key"
+                           v-model="selectedWeekdays"
+                           class="custom-checkbox"
+                        />
                         <label :for="weekday.key" class="custom-checkbox-label">{{ $t(weekday.label) }}</label>
                      </div>
                   </div>
                </div>
-               
+
                <!-- Availability card-based layout -->
                <div class="availability-container">
                   <!-- No results message when filtering returns empty -->
-                  <div v-if="selectedWeekdays.length > 0 && availabilityByMonth.length === 0" class="no-results-message">
-                     <p>{{ $t('message.noResultsFound') }}</p>
-                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') }}</button>
+                  <div
+                     v-if="selectedWeekdays.length > 0 && availabilityByMonth.length === 0"
+                     class="no-results-message"
+                  >
+                     <p>{{ $t("message.noResultsFound") }}</p>
+                     <button @click="selectedWeekdays = []" class="btn-clear-filter">
+                        {{ $t("message.clearFilter") }}
+                     </button>
                   </div>
-                  
+
                   <!-- Empty filter result message -->
-                  <div v-else-if="availabilityByMonth.length === 1 && availabilityByMonth[0].isEmptyFilterResult" class="no-results-message">
-                     <p>{{ $t('message.noResultsFound') }}</p>
-                     <button @click="selectedWeekdays = []" class="btn-clear-filter">{{ $t('message.clearFilter') }}</button>
+                  <div
+                     v-else-if="availabilityByMonth.length === 1 && availabilityByMonth[0].isEmptyFilterResult"
+                     class="no-results-message"
+                  >
+                     <p>{{ $t("message.noResultsFound") }}</p>
+                     <button @click="selectedWeekdays = []" class="btn-clear-filter">
+                        {{ $t("message.clearFilter") }}
+                     </button>
                   </div>
-                  
+
                   <!-- Display available months -->
-                  <div v-else v-for="month in this.availabilityByMonth" 
-                       :key="month.month" 
-                       class="availability-month">
+                  <div v-else v-for="month in this.availabilityByMonth" :key="month.month" class="availability-month">
                      <div class="month-header" @click="toggleCollapse(month)">
                         <h4 class="month-title">{{ month.month }}</h4>
                         <span v-if="month.collapsed" class="collapse-icon">▼</span>
                         <span v-else class="collapse-icon">▲</span>
                      </div>
-                     
+
                      <div v-if="!month.collapsed" class="month-content">
                         <!-- Date card - only render if hut is not closed -->
-                        <div v-for="av in month.availabilities.filter(a => !a.hutClosed)" :key="av.date" class="date-card">
+                        <div
+                           v-for="av in month.availabilities.filter((a) => !a.hutClosed)"
+                           :key="av.date"
+                           class="date-card"
+                        >
                            <!-- Date header -->
                            <div class="date-header">
                               <div class="date-info">
@@ -147,30 +193,41 @@
                                  <span class="date-weekday">{{ getWeekdayShort(av.date) }}</span>
                               </div>
                            </div>
-                           
+
                            <!-- Room availability cards -->
-                           <div v-if="av.roomAvailabilities && av.roomAvailabilities.length > 0" class="room-availability-container">
-                              <div v-for="(roomAv, index) in av.roomAvailabilities" 
-                                   :key="`${av.date}-${roomAv.bedCategory}-${index}`" 
-                                   :class="['room-availability-card', getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds)]">
+                           <div
+                              v-if="av.roomAvailabilities && av.roomAvailabilities.length > 0"
+                              class="room-availability-container"
+                           >
+                              <div
+                                 v-for="(roomAv, index) in av.roomAvailabilities"
+                                 :key="`${av.date}-${roomAv.bedCategory}-${index}`"
+                                 :class="[
+                                    'room-availability-card',
+                                    getAvailabilityClass(roomAv.freeBeds, roomAv.totalBeds),
+                                 ]"
+                              >
                                  <div class="room-type">{{ roomAv.bedCategory }}</div>
                                  <div class="availability-details">
                                     <div class="bed-info">
                                        <span class="bed-count">{{ roomAv.freeBeds }}</span>
                                        <span class="bed-separator">/</span>
                                        <span class="bed-total">{{ roomAv.totalBeds }}</span>
-                                       <span class="beds-label"> {{ $t('message.beds') }}</span>
+                                       <span class="beds-label"> {{ $t("message.beds") }}</span>
                                     </div>
                                     <div class="availability-indicator">
-                                       <div class="indicator-bar" :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"></div>
+                                       <div
+                                          class="indicator-bar"
+                                          :style="getAvailabilityBarStyle(roomAv.freeBeds, roomAv.totalBeds)"
+                                       ></div>
                                     </div>
                                  </div>
                               </div>
                            </div>
-                           
+
                            <!-- No availability info -->
                            <div v-else class="no-availability-info">
-                              {{ $t('message.noAvailabilityInfo') }}
+                              {{ $t("message.noAvailabilityInfo") }}
                            </div>
                         </div>
                      </div>
@@ -214,7 +271,8 @@
    left: 0;
    right: 0;
    bottom: 0;
-   background: url('https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?ixlib=rb-4.0.3&auto=format&fit=crop&w=1050&q=80') center/cover;
+   background: url("https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?ixlib=rb-4.0.3&auto=format&fit=crop&w=1050&q=80")
+      center/cover;
    opacity: 0.3;
    z-index: 0;
 }
@@ -278,7 +336,8 @@
    color: #333;
 }
 
-.website-link, .coordinates-link {
+.website-link,
+.coordinates-link {
    color: #3498db;
    text-decoration: none;
    display: inline-flex;
@@ -287,12 +346,14 @@
    transition: color 0.2s;
 }
 
-.website-link:hover, .coordinates-link:hover {
+.website-link:hover,
+.coordinates-link:hover {
    color: #2980b9;
    text-decoration: underline;
 }
 
-.external-link-icon, .map-icon {
+.external-link-icon,
+.map-icon {
    font-size: 0.9rem;
 }
 
@@ -574,23 +635,24 @@
    .hero-section {
       padding: 2rem 1.5rem;
    }
-   
+
    .hut-name {
       font-size: 2rem;
    }
-   
+
    .info-item {
       flex-direction: column;
    }
-   
-   .info-label, .info-value {
+
+   .info-label,
+   .info-value {
       flex: 0 0 100%;
    }
-   
+
    .info-label {
       margin-bottom: 5px;
    }
-   
+
    .month-content {
       grid-template-columns: 1fr;
    }
@@ -598,26 +660,18 @@
 </style>
 
 <script>
-import { shortWebsiteUrl } from "../utils"
-import { Constants } from '../utils';
-import { EventBus } from "../event-bus"
+import { shortWebsiteUrl } from "../utils";
+import { Constants } from "../utils";
+import { EventBus } from "../event-bus";
 import { tileProviders } from "../services/mapview-service";
 
-import L from 'leaflet';
-import {
-   LMap,
-   LIcon,
-   LTileLayer,
-   LMarker,
-   LControlLayers,
-   LTooltip,
-} from "@vue-leaflet/vue-leaflet";
+import L from "leaflet";
+import { LMap, LTileLayer, LMarker, LControlLayers, LTooltip } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 
 export default {
    components: {
       LMap,
-      LIcon,
       LTileLayer,
       LMarker,
       LControlLayers,
@@ -632,23 +686,23 @@ export default {
          zoom: 10,
          tileProviders,
          markerIcon: L.icon({
-            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            iconUrl: "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
             iconSize: [25, 41],
             iconAnchor: [12, 41],
-            popupAnchor: [1, -34]
+            popupAnchor: [1, -34],
          }),
          weekdays: [
-            { key: 'sunday', label: 'message.sunday' },
-            { key: 'monday', label: 'message.monday' },
-            { key: 'tuesday', label: 'message.tuesday' },
-            { key: 'wednesday', label: 'message.wednesday' },
-            { key: 'thursday', label: 'message.thursday' },
-            { key: 'friday', label: 'message.friday' },
-            { key: 'saturday', label: 'message.saturday' }
+            { key: "sunday", label: "message.sunday" },
+            { key: "monday", label: "message.monday" },
+            { key: "tuesday", label: "message.tuesday" },
+            { key: "wednesday", label: "message.wednesday" },
+            { key: "thursday", label: "message.thursday" },
+            { key: "friday", label: "message.friday" },
+            { key: "saturday", label: "message.saturday" },
          ],
          selectedWeekdays: [],
          originalAvailability: [],
-      }
+      };
    },
    watch: {
       selectedWeekdays: {
@@ -657,8 +711,8 @@ export default {
                this.availabilityByMonth = this.groupByMonth(this.originalAvailability);
             }
          },
-         deep: true
-      }
+         deep: true,
+      },
    },
    methods: {
       shortWebsiteUrl(url) {
@@ -669,23 +723,23 @@ export default {
       },
       filterByWeekdays(availabilities) {
          if (this.selectedWeekdays.length === 0) return availabilities;
-         
+
          // Create a mapping of our weekday keys to the day of the week (0-6)
          const weekdayMap = {
-            'sunday': 0,
-            'monday': 1, 
-            'tuesday': 2, 
-            'wednesday': 3, 
-            'thursday': 4, 
-            'friday': 5, 
-            'saturday': 6
+            sunday: 0,
+            monday: 1,
+            tuesday: 2,
+            wednesday: 3,
+            thursday: 4,
+            friday: 5,
+            saturday: 6,
          };
-         
+
          // Convert our selected weekday keys into day numbers
-         const selectedDayNumbers = this.selectedWeekdays.map(day => weekdayMap[day]);
-         
+         const selectedDayNumbers = this.selectedWeekdays.map((day) => weekdayMap[day]);
+
          // Filter availabilities where the day of the week matches one of our selected days
-         return availabilities.filter(av => {
+         return availabilities.filter((av) => {
             const date = new Date(av.date);
             const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
             return selectedDayNumbers.includes(dayOfWeek);
@@ -694,118 +748,139 @@ export default {
       groupByMonth(availabilities) {
          // First filter out weekdays if selected
          const weekdayFilteredAvailabilities = this.filterByWeekdays(availabilities);
-         
-         // Then filter out closed hut dates 
-         const filteredAvailabilities = weekdayFilteredAvailabilities.filter(av => !av.hutClosed);
-         
+
+         // Then filter out closed hut dates
+         const filteredAvailabilities = weekdayFilteredAvailabilities.filter((av) => !av.hutClosed);
+
          const months = {};
-         
+
          // Store current collapse states
          const currentCollapseStates = {};
          if (this.availabilityByMonth.length > 0) {
-            this.availabilityByMonth.forEach(month => {
+            this.availabilityByMonth.forEach((month) => {
                currentCollapseStates[month.month] = month.collapsed;
             });
          }
-         
-         filteredAvailabilities.forEach(av => {
+
+         filteredAvailabilities.forEach((av) => {
             const month = this.getMonthYearDisplay(av.date);
             if (!months[month]) {
                // Use previous collapse state if available, otherwise use default
-               const wasCollapsed = currentCollapseStates[month] !== undefined ? 
-                                 currentCollapseStates[month] : 
-                                 !(new Date(av.date).getMonth() === new Date().getMonth() && 
-                                   new Date(av.date).getFullYear() === new Date().getFullYear());
-               
-               months[month] = { 
-                  month, 
-                  availabilities: [], 
-                  collapsed: wasCollapsed
+               const wasCollapsed =
+                  currentCollapseStates[month] !== undefined
+                     ? currentCollapseStates[month]
+                     : !(
+                          new Date(av.date).getMonth() === new Date().getMonth() &&
+                          new Date(av.date).getFullYear() === new Date().getFullYear()
+                       );
+
+               months[month] = {
+                  month,
+                  availabilities: [],
+                  collapsed: wasCollapsed,
                };
             }
             months[month].availabilities.push(av);
          });
-         
+
          // If no months after filtering, preserve the empty state but with filtered message
          if (Object.keys(months).length === 0 && this.selectedWeekdays.length > 0) {
-            return [{
-               month: this.$t('message.noResultsFound'), 
-               availabilities: [],
-               collapsed: false,
-               isEmptyFilterResult: true
-            }];
+            return [
+               {
+                  month: this.$t("message.noResultsFound"),
+                  availabilities: [],
+                  collapsed: false,
+                  isEmptyFilterResult: true,
+               },
+            ];
          }
-         
+
          // If no months after filtering due to all dates being closed
          if (Object.keys(months).length === 0 && this.selectedWeekdays.length === 0) {
-            return [{
-               month: this.$t('message.allDatesClosedTitle'), 
-               availabilities: [],
-               collapsed: false,
-               isEmptyFilterResult: true
-            }];
+            return [
+               {
+                  month: this.$t("message.allDatesClosedTitle"),
+                  availabilities: [],
+                  collapsed: false,
+                  isEmptyFilterResult: true,
+               },
+            ];
          }
-         
+
          return Object.values(months);
       },
       getAvailabilityClass(freeBeds, totalBeds) {
          // No beds available
          if (freeBeds === 0) {
-            return 'availability-low';
+            return "availability-low";
          }
-         
+
          // At least 4 beds or 10% of total beds are available
-         if (freeBeds >= 4 || (freeBeds / totalBeds) >= 0.1) {
-            return 'availability-high';
+         if (freeBeds >= 4 || freeBeds / totalBeds >= 0.1) {
+            return "availability-high";
          }
-         
+
          // Otherwise (between 1-3 beds and less than 10%)
-         return 'availability-medium';
+         return "availability-medium";
       },
       getAvailabilityBarStyle(freeBeds, totalBeds) {
-         if (totalBeds === 0) return { width: '0%', backgroundColor: '#e74c3c' };
-         
+         if (totalBeds === 0) return { width: "0%", backgroundColor: "#e74c3c" };
+
          const percentage = Math.min(100, Math.round((freeBeds / totalBeds) * 100));
-         
-         let color = '#e74c3c'; // Default red
+
+         let color;
          if (freeBeds === 0) {
-            color = '#e74c3c'; // Red
-         } else if (freeBeds >= 4 || (freeBeds / totalBeds) >= 0.1) {
-            color = '#2ecc71'; // Green
+            color = "#e74c3c"; // Red
+         } else if (freeBeds >= 4 || freeBeds / totalBeds >= 0.1) {
+            color = "#2ecc71"; // Green
          } else {
-            color = '#f39c12'; // Orange
+            color = "#f39c12"; // Orange
          }
-         
+
          return {
             width: `${percentage}%`,
-            backgroundColor: color
+            backgroundColor: color,
          };
       },
       getMonthYearDisplay(date) {
          const d = new Date(date);
          const month = d.getMonth(); // 0-11
          const year = d.getFullYear();
-         
+
          // Get the translated month name
          const monthKey = [
-            'message.january', 'message.february', 'message.march', 'message.april',
-            'message.may', 'message.june', 'message.july', 'message.august',
-            'message.september', 'message.october', 'message.november', 'message.december'
+            "message.january",
+            "message.february",
+            "message.march",
+            "message.april",
+            "message.may",
+            "message.june",
+            "message.july",
+            "message.august",
+            "message.september",
+            "message.october",
+            "message.november",
+            "message.december",
          ][month];
-         
+
          return `${this.$t(monthKey)} ${year}`;
       },
-      
+
       getWeekdayShort(date) {
          const d = new Date(date);
          const day = d.getDay(); // 0-6, 0 is Sunday
-         
+
          // Get the translated short weekday name
          const dayKey = [
-            'message.sun', 'message.mon', 'message.tue', 'message.wed',
-            'message.thu', 'message.fri', 'message.sat'
+            "message.sun",
+            "message.mon",
+            "message.tue",
+            "message.wed",
+            "message.thu",
+            "message.fri",
+            "message.sat",
          ][day];
-         
+
          return this.$t(dayKey);
       },
    },
@@ -815,20 +890,18 @@ export default {
          const hutId = this.$route.params.hutId;
          if (hutId == null) {
             EventBus.$emit(Constants.EVENT_ERROR, "Hut ID is required.");
-         }
-         else {
+         } else {
             this.hut = await this.$HutService.getHutByIdAsync(hutId);
             this.hut.availability = await this.$AvailabilityService.getAvailabilityForHut(this.hut.id);
             this.originalAvailability = [...this.hut.availability]; // Store original data
             this.availabilityByMonth = this.groupByMonth(this.hut.availability);
             this.mapCenter = [this.hut.latitude, this.hut.longitude];
          }
-      }
-      catch (e) {
+      } catch (e) {
          EventBus.$emit(Constants.EVENT_ERROR, "There was a problem fetching the hut. " + e.message);
       }
 
       this.loading = false;
-   }
-}
+   },
+};
 </script>

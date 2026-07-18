@@ -1,10 +1,9 @@
 export const Constants = {
    EVENT_ERROR: "error",
    EVENT_SUCCESS: "success",
-}
+};
 
 export async function processErrorResponseAsync(httpResponse) {
-
    if (httpResponse == null) {
       return "Error when sending request. API not available.";
    }
@@ -17,13 +16,11 @@ export async function processErrorResponseAsync(httpResponse) {
    // ASP.NET Core generated rich error response.
    var contentType = httpResponse.headers.get("Content-Type");
    if (contentType && contentType.indexOf("application/problem+json") > -1) {
-
       var out = "";
       var resJson = await httpResponse.json();
       if (resJson.errors) {
          out += JSON.stringify(resJson.errors);
-      }
-      else {
+      } else {
          out += httpResponse.statusText;
       }
 
@@ -36,7 +33,7 @@ export async function processErrorResponseAsync(httpResponse) {
 }
 
 export function shortWebsiteUrl(url) {
-   const regex = new RegExp("^http[s]{0,1}://(www\.){0,1}(.*?)$");
+   const regex = new RegExp("^http[s]{0,1}://(www\\.){0,1}(.*?)$");
    const matches = regex.exec(url);
    return matches && matches[2];
 }

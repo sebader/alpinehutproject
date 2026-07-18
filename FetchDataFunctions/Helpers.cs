@@ -1,8 +1,4 @@
-﻿using FetchDataFunctions.Models;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -14,6 +10,10 @@ using Azure;
 using Azure.Core.GeoJson;
 using Azure.Identity;
 using Azure.Maps.Search;
+using FetchDataFunctions.Models;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FetchDataFunctions
 {

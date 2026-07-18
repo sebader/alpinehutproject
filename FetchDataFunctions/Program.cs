@@ -1,11 +1,10 @@
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Microsoft.Azure.Functions.Worker;
+using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Azure.Functions.Worker.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -20,8 +19,15 @@ public class Program
             .ConfigureFunctionsWebApplication()
             .ConfigureServices(services =>
             {
-                services.AddApplicationInsightsTelemetryWorkerService();
-                services.ConfigureFunctionsApplicationInsights();
+                var openTelemetry = services.AddOpenTelemetry()
+                    .UseFunctionsWorkerDefaults();
+
+                // Only export to Azure Monitor when a connection string is configured (e.g. in Azure).
+                // Locally the exporter throws when APPLICATIONINSIGHTS_CONNECTION_STRING is not set.
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
+                {
+                    openTelemetry.UseAzureMonitorExporter();
+                }
 
                 services
                     .AddHttpClient<HttpClient>("HttpClient", client =>
@@ -42,19 +48,6 @@ public class Program
                         };
                     })
                     .AddPolicyHandler(GetRetryWithTimeoutPolicy());
-            }).ConfigureLogging(logging =>
-            {
-                logging.Services.Configure<LoggerFilterOptions>(options =>
-                {
-                    // Remove the default rule added by the worker service
-                    // https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide?tabs=hostbuilder%2Cwindows#managing-log-levels
-                    var defaultRule = options.Rules.FirstOrDefault(rule => rule.ProviderName
-                                                                           == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
-                    if (defaultRule is not null)
-                    {
-                        options.Rules.Remove(defaultRule);
-                    }
-                });
             })
             .Build();
 

@@ -5,7 +5,7 @@ namespace FetchDataFunctions.Models.HuettenHoliday;
 public class AvailabilityResult
 {
     public DateTime date { get; set; }
-    public AvailabilityRooms[] rooms { get; set; }
+    public AvailabilityRooms[] rooms { get; set; } = [];
     public int totalPlaces { get; set; }
 }
 

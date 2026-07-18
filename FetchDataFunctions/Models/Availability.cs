@@ -12,9 +12,9 @@ namespace FetchDataFunctions.Models
         public int? TenantBedCategoryId { get; set; }
         public int? FreeRoom { get; set; }
         public int? TotalRoom { get; set; }
-        public virtual BedCategory BedCategory { get; set; }
+        public virtual BedCategory BedCategory { get; set; } = null!;
         public DateTime? LastUpdated { get; set; }
 
-        public virtual Hut Hut { get; set; }
+        public virtual Hut Hut { get; set; } = null!;
     }
 }

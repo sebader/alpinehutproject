@@ -5,38 +5,38 @@
 </template>
 
 <script>
-import { Constants } from "../utils"
-import { EventBus } from "../main"
+import { Constants } from "../utils";
+import { EventBus } from "../event-bus";
 
 export default {
    data: () => ({
       type: "error",
-      message: ""
+      message: "",
    }),
    created() {
-      EventBus.$on(Constants.EVENT_ERROR, data => {
+      EventBus.$on(Constants.EVENT_ERROR, (data) => {
          this.type = Constants.EVENT_ERROR;
          this.message = data;
       });
 
-      EventBus.$on(Constants.EVENT_SUCCESS, data => {
+      EventBus.$on(Constants.EVENT_SUCCESS, (data) => {
          this.type = Constants.EVENT_SUCCESS;
          this.message = data;
-         
+
          // Auto clear success message after 3 seconds
          setTimeout(() => {
             if (this.type === Constants.EVENT_SUCCESS) {
-               this.message = '';
+               this.message = "";
             }
          }, 3000);
       });
    },
    watch: {
-      $route (to, from) {
+      $route() {
          this.message = "";
-      }
-   }
-}
+      },
+   },
+};
 </script>
 
 <style scoped>

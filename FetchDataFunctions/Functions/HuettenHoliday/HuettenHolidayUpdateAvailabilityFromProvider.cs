@@ -95,7 +95,7 @@ public class HuettenHolidayUpdateAvailabilityFromProvider
         foreach (var hutId in hutIds)
         {
             orchestratorLogger.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
-            tasks.Add(context.CallActivityAsync(nameof(HuettenHolidayUpdateAvailabilityActivityTrigger), hutId));
+            tasks.Add(context.CallActivityAsync<IEnumerable<Availability>?>(nameof(HuettenHolidayUpdateAvailabilityActivityTrigger), hutId));
 
             // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
             if (tasks.Count >= 10)

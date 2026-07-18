@@ -1,48 +1,60 @@
 <template>
    <form @submit.prevent="handleSubmit">
       <div class="mb-3">
-         <label for="name" class="form-label">{{ $t('message.name') }} *</label>
-         <input type="text" class="form-control" id="name" v-model="form.name" required>
+         <label for="name" class="form-label">{{ $t("message.name") }} *</label>
+         <input type="text" class="form-control" id="name" v-model="form.name" required />
       </div>
 
       <div class="mb-3">
-         <label for="country" class="form-label">{{ $t('message.country') }} *</label>
-         <input type="text" class="form-control" id="country" v-model="form.country" required>
+         <label for="country" class="form-label">{{ $t("message.country") }} *</label>
+         <input type="text" class="form-control" id="country" v-model="form.country" required />
       </div>
 
       <div class="mb-3">
-         <label for="region" class="form-label">{{ $t('message.region') }}</label>
-         <input type="text" class="form-control" id="region" v-model="form.region">
+         <label for="region" class="form-label">{{ $t("message.region") }}</label>
+         <input type="text" class="form-control" id="region" v-model="form.region" />
       </div>
 
       <div class="mb-3">
-         <label for="hutWebsite" class="form-label">{{ $t('message.website') }}</label>
-         <input type="url" class="form-control" id="hutWebsite" v-model="form.hutWebsite">
+         <label for="hutWebsite" class="form-label">{{ $t("message.website") }}</label>
+         <input type="url" class="form-control" id="hutWebsite" v-model="form.hutWebsite" />
       </div>
 
       <div class="mb-3">
-         <label for="link" class="form-label">{{ $t('message.onlineBookingLink') }}</label>
-         <input type="url" class="form-control" id="link" v-model="form.link">
+         <label for="link" class="form-label">{{ $t("message.onlineBookingLink") }}</label>
+         <input type="url" class="form-control" id="link" v-model="form.link" />
       </div>
 
       <template v-if="form.latitude && form.longitude">
          <div class="row">
             <div class="col">
                <div class="mb-3">
-                  <label for="latitude" class="form-label">{{ $t('message.latitude') }}</label>
-                  <input type="number" step="0.00000000000001" class="form-control" id="latitude" v-model="form.latitude">
+                  <label for="latitude" class="form-label">{{ $t("message.latitude") }}</label>
+                  <input
+                     type="number"
+                     step="0.00000000000001"
+                     class="form-control"
+                     id="latitude"
+                     v-model="form.latitude"
+                  />
                </div>
             </div>
             <div class="col">
                <div class="mb-3">
-                  <label for="longitude" class="form-label">{{ $t('message.longitude') }}</label>
-                  <input type="number" step="0.00000000000001" class="form-control" id="longitude" v-model="form.longitude">
+                  <label for="longitude" class="form-label">{{ $t("message.longitude") }}</label>
+                  <input
+                     type="number"
+                     step="0.00000000000001"
+                     class="form-control"
+                     id="longitude"
+                     v-model="form.longitude"
+                  />
                </div>
             </div>
             <div class="col">
                <div class="mb-3">
-                  <label for="altitude" class="form-label">{{ $t('message.altitude') }}</label>
-                  <input type="number" class="form-control" id="altitude" v-model="form.altitude">
+                  <label for="altitude" class="form-label">{{ $t("message.altitude") }}</label>
+                  <input type="number" class="form-control" id="altitude" v-model="form.altitude" />
                </div>
             </div>
          </div>
@@ -50,20 +62,39 @@
       <template v-else>
          <div class="mb-3">
             <button type="button" class="btn btn-secondary" @click="addLocation">
-               {{ $t('message.addLocation') }}
+               {{ $t("message.addLocation") }}
             </button>
          </div>
       </template>
 
       <div class="mb-3">
          <div class="map-container">
-            <l-map ref="map" v-model:zoom="zoom" :center="mapCenter" :minZoom="6" :maxZoom="17" style="height: 400px; width: 100%;" @ready="onMapReady">
+            <l-map
+               ref="map"
+               v-model:zoom="zoom"
+               :center="mapCenter"
+               :minZoom="6"
+               :maxZoom="17"
+               style="height: 400px; width: 100%"
+               @ready="onMapReady"
+            >
                <l-control-layers position="topright"></l-control-layers>
-               <l-tile-layer v-for="tileProvider in tileProviders" :key="tileProvider.name" :name="tileProvider.name"
-                  :visible="tileProvider.visible" :url="tileProvider.url" :attribution="tileProvider.attribution"
-                  layer-type="base" />
-               <l-marker v-if="form.latitude && form.longitude" :lat-lng="[form.latitude, form.longitude]" draggable
-                  @moveend="updateMarkerPosition" :icon="markerIcon">
+               <l-tile-layer
+                  v-for="tileProvider in tileProviders"
+                  :key="tileProvider.name"
+                  :name="tileProvider.name"
+                  :visible="tileProvider.visible"
+                  :url="tileProvider.url"
+                  :attribution="tileProvider.attribution"
+                  layer-type="base"
+               />
+               <l-marker
+                  v-if="form.latitude && form.longitude"
+                  :lat-lng="[form.latitude, form.longitude]"
+                  draggable
+                  @moveend="updateMarkerPosition"
+                  :icon="markerIcon"
+               >
                </l-marker>
             </l-map>
          </div>
@@ -71,24 +102,24 @@
 
       <div class="mb-3">
          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="enabled" v-model="form.enabled">
-            <label class="form-check-label" for="enabled">{{ $t('message.enabled') }}</label>
+            <input type="checkbox" class="form-check-input" id="enabled" v-model="form.enabled" />
+            <label class="form-check-label" for="enabled">{{ $t("message.enabled") }}</label>
          </div>
       </div>
 
       <div class="mb-3">
          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="isDeleted" v-model="form.isDeleted">
-            <label class="form-check-label" for="isDeleted">{{ $t('message.isDeleted') }}</label>
+            <input type="checkbox" class="form-check-input" id="isDeleted" v-model="form.isDeleted" />
+            <label class="form-check-label" for="isDeleted">{{ $t("message.isDeleted") }}</label>
          </div>
       </div>
 
       <div class="modal-footer">
          <button type="button" class="btn btn-secondary" @click="$emit('cancel')">
-            {{ $t('message.cancel') }}
+            {{ $t("message.cancel") }}
          </button>
          <button type="submit" class="btn btn-primary">
-            {{ $t('message.save') }}
+            {{ $t("message.save") }}
          </button>
       </div>
    </form>
@@ -96,20 +127,15 @@
 
 <script>
 import { tileProviders } from "../services/mapview-service";
-import {
-   LMap,
-   LTileLayer,
-   LMarker,
-   LControlLayers,
-} from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LControlLayers } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
-import L from 'leaflet';
+import L from "leaflet";
 
 const markerIcon = L.icon({
-   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
    iconSize: [25, 41],
    iconAnchor: [12, 41],
-   popupAnchor: [1, -34]
+   popupAnchor: [1, -34],
 });
 
 export default {
@@ -122,8 +148,8 @@ export default {
    props: {
       hut: {
          type: Object,
-         required: true
-      }
+         required: true,
+      },
    },
    data() {
       const form = this.initForm();
@@ -132,8 +158,8 @@ export default {
          zoom: 10,
          mapCenter: form.latitude && form.longitude ? [form.latitude, form.longitude] : [47.5, 13.5],
          tileProviders,
-         markerIcon
-      }
+         markerIcon,
+      };
    },
    methods: {
       addLocation() {
@@ -161,11 +187,11 @@ export default {
             activated: this.hut.activated,
             manuallyEdited: this.hut.manuallyEdited,
             source: this.hut.source,
-            isDeleted: this.hut.isDeleted
-         }
+            isDeleted: this.hut.isDeleted,
+         };
       },
       handleSubmit() {
-         this.$emit('save', { ...this.form });
+         this.$emit("save", { ...this.form });
       },
       updateMarkerPosition(event) {
          const latLng = event.target.getLatLng();
@@ -180,7 +206,7 @@ export default {
                mapObject.setView([this.form.latitude, this.form.longitude], this.zoom);
             }
          }, 500);
-      }
+      },
    },
    watch: {
       hut: {
@@ -197,26 +223,26 @@ export default {
                });
             }
          },
-         deep: true
+         deep: true,
       },
-      'form.latitude': function(val) {
+      "form.latitude": function (val) {
          if (val && this.form.longitude) {
             this.mapCenter = [val, this.form.longitude];
          }
       },
-      'form.longitude': function(val) {
+      "form.longitude": function (val) {
          if (val && this.form.latitude) {
             this.mapCenter = [this.form.latitude, val];
          }
-      }
+      },
    },
    mounted() {
       if (this.form.latitude && this.form.longitude) {
          this.mapCenter = [this.form.latitude, this.form.longitude];
          this.zoom = 12;
       }
-   }
-}
+   },
+};
 </script>
 
 <style scoped>

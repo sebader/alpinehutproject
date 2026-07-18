@@ -3,39 +3,47 @@
       <!-- Loading state -->
       <div v-show="loading" class="loading-container">
          <div class="spinner"></div>
-         <p>{{ $t('message.loading') }}...</p>
+         <p>{{ $t("message.loading") }}...</p>
       </div>
 
       <div v-show="!loading" class="hut-list-container">
          <!-- Hero section -->
          <div class="hero-section">
             <div class="hero-content">
-               <h1 class="page-title">{{ $t('hutListPage.allHuts') }}</h1>
-               <p class="page-subtitle">{{ $t('message.siteTitle') }} - {{ $t('hutListPage.hutCount', { count: huts.length }) }}</p>
+               <h1 class="page-title">{{ $t("hutListPage.allHuts") }}</h1>
+               <p class="page-subtitle">
+                  {{ $t("message.siteTitle") }} - {{ $t("hutListPage.hutCount", { count: huts.length }) }}
+               </p>
             </div>
          </div>
-         
+
          <!-- Search and filters -->
          <div class="filter-card">
             <div class="search-container">
-               <label for="search-input" class="search-label">{{ $t('message.search') }}</label>
+               <label for="search-input" class="search-label">{{ $t("message.search") }}</label>
                <div class="search-input-wrapper">
-                  <input type="text" id="search-input" v-model="searchValue" class="search-input" :placeholder="$t('message.searchHuts')">
+                  <input
+                     type="text"
+                     id="search-input"
+                     v-model="searchValue"
+                     class="search-input"
+                     :placeholder="$t('message.searchHuts')"
+                  />
                   <span class="search-icon">🔍</span>
                </div>
             </div>
          </div>
-         
+
          <!-- Hut table -->
          <div class="data-table-container">
-            <EasyDataTable 
-               :headers="tableHeaders" 
-               :items="extendedHuts" 
-               alternating 
+            <EasyDataTable
+               :headers="tableHeaders"
+               :items="extendedHuts"
+               alternating
                :rows-per-page="rowsPerPage"
-               :search-value="searchValue" 
-               :sort-by="sortBy" 
-               :sort-type="sortType" 
+               :search-value="searchValue"
+               :sort-by="sortBy"
+               :sort-type="sortType"
                @update-sort="updateSort"
                class="enhanced-table"
             >
@@ -46,34 +54,40 @@
                </template>
                <template #item-source="hut">
                   <span class="source-badge" :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }">
-                     {{ hut.source === 'HuettenHoliday' ? $t('message.sourceHuettenHoliday') : $t('message.sourceAlpenvereine') }}
+                     {{
+                        hut.source === "HuettenHoliday"
+                           ? $t("message.sourceHuettenHoliday")
+                           : $t("message.sourceAlpenvereine")
+                     }}
                   </span>
                </template>
                <template #item-latitude="hut">
-                  <router-link v-if="hut.latitude != null && hut.longitude != null"
-                     :to="{ name: 'mapPage', query: { hutId: hut.id } }" 
+                  <router-link
+                     v-if="hut.latitude != null && hut.longitude != null"
+                     :to="{ name: 'mapPage', query: { hutId: hut.id } }"
                      :title="$t('message.showOnMap')"
-                     class="coordinates-link">
+                     class="coordinates-link"
+                  >
                      <span>{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</span>
                      <i class="map-icon">🗺️</i>
                   </router-link>
                </template>
                <template #item-link="hut">
                   <a v-if="hut.enabled" :href="`${hut.link}`" target="_blank" class="booking-link">
-                     <span>{{ $t('message.onlineBooking') }}</span>
+                     <span>{{ $t("message.onlineBooking") }}</span>
                      <i class="external-link-icon">↗️</i>
                   </a>
                   <span v-else class="booking-inactive">
-                     <i>{{ $t('message.onlineBookingInactive') }}</i>
+                     <i>{{ $t("message.onlineBookingInactive") }}</i>
                   </span>
                </template>
                <template v-if="isAuthenticated" #item-enabled="hut">
-                  <span v-if="hut.enabled" class="status-badge status-active">{{ $t('message.yes') }}</span>
-                  <span v-else class="status-badge status-inactive">{{ $t('message.no') }}</span>
+                  <span v-if="hut.enabled" class="status-badge status-active">{{ $t("message.yes") }}</span>
+                  <span v-else class="status-badge status-inactive">{{ $t("message.no") }}</span>
                </template>
                <template v-if="isAuthenticated" #item-isDeleted="hut">
-                  <span v-if="hut.isDeleted" class="status-badge status-deleted">{{ $t('message.yes') }}</span>
-                  <span v-else class="status-badge status-active">{{ $t('message.no') }}</span>
+                  <span v-if="hut.isDeleted" class="status-badge status-deleted">{{ $t("message.yes") }}</span>
+                  <span v-else class="status-badge status-active">{{ $t("message.no") }}</span>
                </template>
                <template v-if="isAuthenticated" #item-manuallyEdited="hut">
                   <span v-if="hut.manuallyEdited" class="edited-mark">✓</span>
@@ -81,10 +95,10 @@
                <template v-if="isAuthenticated" #item-actions="hut">
                   <div class="action-buttons">
                      <button class="action-btn btn-secondary btn-sm" @click="editHut(hut)">
-                        {{ $t('message.edit') }}
+                        {{ $t("message.edit") }}
                      </button>
                      <button class="action-btn btn-danger btn-sm" @click="confirmDelete(hut)">
-                        {{ $t('message.delete') }}
+                        {{ $t("message.delete") }}
                      </button>
                   </div>
                </template>
@@ -97,14 +111,11 @@
          <div class="modal-dialog modal-lg">
             <div class="modal-content">
                <div class="modal-header">
-                  <h5 class="modal-title">{{ $t('message.editHut') }}</h5>
+                  <h5 class="modal-title">{{ $t("message.editHut") }}</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                </div>
                <div class="modal-body">
-                  <admin-hut-form v-if="selectedHut" 
-                     :hut="selectedHut" 
-                     @save="saveHut" 
-                     @cancel="closeEditModal" />
+                  <admin-hut-form v-if="selectedHut" :hut="selectedHut" @save="saveHut" @cancel="closeEditModal" />
                </div>
             </div>
          </div>
@@ -115,18 +126,18 @@
          <div class="modal-dialog">
             <div class="modal-content">
                <div class="modal-header">
-                  <h5 class="modal-title">{{ $t('message.confirmDelete') }}</h5>
+                  <h5 class="modal-title">{{ $t("message.confirmDelete") }}</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                </div>
                <div class="modal-body">
-                  <p>{{ $t('message.confirmDeleteText') }} "{{ selectedHut?.name }}"?</p>
+                  <p>{{ $t("message.confirmDeleteText") }} "{{ selectedHut?.name }}"?</p>
                </div>
                <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                     {{ $t('message.cancel') }}
+                     {{ $t("message.cancel") }}
                   </button>
                   <button type="button" class="btn btn-danger" @click="deleteHut">
-                     {{ $t('message.delete') }}
+                     {{ $t("message.delete") }}
                   </button>
                </div>
             </div>
@@ -160,7 +171,8 @@
    left: 0;
    right: 0;
    bottom: 0;
-   background: url('https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') center/cover;
+   background: url("https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80")
+      center/cover;
    opacity: 0.2;
    z-index: 0;
 }
@@ -271,7 +283,6 @@
    text-decoration: underline;
 }
 
-
 .source-badge {
    display: inline-block;
    padding: 4px 10px;
@@ -289,7 +300,8 @@
    border-color: rgba(255, 140, 0, 0.3);
 }
 
-.coordinates-link, .booking-link {
+.coordinates-link,
+.booking-link {
    color: #3498db;
    text-decoration: none;
    display: inline-flex;
@@ -298,12 +310,14 @@
    transition: color 0.2s;
 }
 
-.coordinates-link:hover, .booking-link:hover {
+.coordinates-link:hover,
+.booking-link:hover {
    color: #2980b9;
    text-decoration: underline;
 }
 
-.map-icon, .external-link-icon {
+.map-icon,
+.external-link-icon {
    font-size: 0.9rem;
 }
 
@@ -363,7 +377,7 @@
    .hero-section {
       padding: 1.5rem;
    }
-   
+
    .page-title {
       font-size: 1.8rem;
    }
@@ -371,20 +385,20 @@
 </style>
 
 <script>
-import { Constants } from "../utils"
-import { EventBus } from "../main"
-import { Modal } from 'bootstrap';
-import AdminHutForm from './AdminHutForm.vue';
+import { Constants } from "../utils";
+import { EventBus } from "../event-bus";
+import { Modal } from "bootstrap";
+import AdminHutForm from "./AdminHutForm.vue";
 
 export default {
    components: {
-      AdminHutForm
+      AdminHutForm,
    },
    props: {
       isAuthenticated: {
          type: Boolean,
-         default: false
-      }
+         default: false,
+      },
    },
    data: function () {
       return {
@@ -395,15 +409,15 @@ export default {
          editModal: null,
          deleteModal: null,
          searchValue: "",
-         sortBy: localStorage.getItem('sortBy') || "id",
-         sortType: localStorage.getItem('sortType') || "asc"
-      }
+         sortBy: localStorage.getItem("sortBy") || "id",
+         sortType: localStorage.getItem("sortType") || "asc",
+      };
    },
    computed: {
       // Extended huts list with additional properties
       extendedHuts() {
          return this.huts.map((h) => {
-            h.countryRegion = this.$t('countries.' + h.country);
+            h.countryRegion = this.$t("countries." + h.country);
             if (h.region != null) {
                h.countryRegion += " - " + h.region;
             }
@@ -414,24 +428,28 @@ export default {
       tableHeaders() {
          const baseHeaders = [
             { text: "ID", value: "id", sortable: true },
-            { text: this.$t('message.hut'), value: "name", sortable: true },
-            { text: this.$t('message.country') + " / " + this.$t('message.region'), value: "countryRegion", sortable: true },
-            { text: this.$t('message.source'), value: "source", sortable: true },
-            { text: this.$t('message.coordinates'), value: "latitude", sortable: false },
-            { text: "Link", value: "link", sortable: false }
+            { text: this.$t("message.hut"), value: "name", sortable: true },
+            {
+               text: this.$t("message.country") + " / " + this.$t("message.region"),
+               value: "countryRegion",
+               sortable: true,
+            },
+            { text: this.$t("message.source"), value: "source", sortable: true },
+            { text: this.$t("message.coordinates"), value: "latitude", sortable: false },
+            { text: "Link", value: "link", sortable: false },
          ];
 
          if (this.isAuthenticated) {
             baseHeaders.push(
-               { text: this.$t('message.enabled'), value: "enabled", sortable: true },
-               { text: this.$t('message.isDeleted'), value: "isDeleted", sortable: true },
-               { text: this.$t('message.manuallyEdited'), value: "manuallyEdited", sortable: true },
-               { text: this.$t('message.actions'), value: "actions", sortable: false }
+               { text: this.$t("message.enabled"), value: "enabled", sortable: true },
+               { text: this.$t("message.isDeleted"), value: "isDeleted", sortable: true },
+               { text: this.$t("message.manuallyEdited"), value: "manuallyEdited", sortable: true },
+               { text: this.$t("message.actions"), value: "actions", sortable: false },
             );
          }
 
          return baseHeaders;
-      }
+      },
    },
    async mounted() {
       this.editModal = new Modal(this.$refs.editModal);
@@ -440,13 +458,13 @@ export default {
    },
    methods: {
       hutSelected(selectedHut) {
-         this.$router.push({ name: 'hutDetailsPage', params: { hutId: selectedHut.id } });
+         this.$router.push({ name: "hutDetailsPage", params: { hutId: selectedHut.id } });
       },
-      updateSort(sortOptions){
+      updateSort(sortOptions) {
          this.sortBy = sortOptions.sortBy;
          this.sortType = sortOptions.sortType;
-         localStorage.setItem('sortBy', this.sortBy);
-         localStorage.setItem('sortType', this.sortType);
+         localStorage.setItem("sortBy", this.sortBy);
+         localStorage.setItem("sortType", this.sortType);
       },
       editHut(hut) {
          this.selectedHut = { ...hut };
@@ -483,18 +501,18 @@ export default {
          this.loading = true;
          try {
             let huts = await this.$HutService.listHutsAsync(forceRefresh);
-            
+
             // Filter out deleted huts unless user is admin
             if (!this.isAuthenticated) {
-               huts = huts.filter(hut => !hut.isDeleted);
+               huts = huts.filter((hut) => !hut.isDeleted);
             }
-            
+
             this.huts = huts;
          } catch (e) {
             EventBus.$emit(Constants.EVENT_ERROR, "Error loading huts: " + e.message);
          }
          this.loading = false;
-      }
-   }
-}
+      },
+   },
+};
 </script>

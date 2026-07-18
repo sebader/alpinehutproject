@@ -106,7 +106,7 @@ namespace FetchDataFunctions
             foreach (var hutId in hutIds)
             {
                 orchestratorLogger.LogInformation("Starting UpdateHutAvailability Activity Function for hutId={hutId}", hutId);
-                tasks.Add(context.CallActivityAsync(nameof(UpdateHutAvailability), hutId));
+                tasks.Add(context.CallActivityAsync<UpdateAvailabilityResult>(nameof(UpdateHutAvailability), hutId));
 
                 // In order not to run into rate limiting, we process in batches of 10 and then wait for 1 minute
                 if (tasks.Count >= 10)
@@ -352,6 +352,6 @@ namespace FetchDataFunctions
     public class UpdateAvailabilityResult
     {
         public int NumberOfRowsWritten { get; set; }
-        [SendGridOutput] public SendGridMessage[] Messages { get; set; }
+        [SendGridOutput] public SendGridMessage[] Messages { get; set; } = [];
     }
 }

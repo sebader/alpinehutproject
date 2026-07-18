@@ -12,7 +12,7 @@ namespace FetchDataFunctions.Models
         }
 
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public string? Link { get; set; }
         public string? HutWebsite { get; set; }
         public string? Country { get; set; }

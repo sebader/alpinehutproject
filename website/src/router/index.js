@@ -29,5 +29,10 @@ export default createRouter({
          name: "infoPage",
          component: () => import("../components/InfoPage.vue"),
       },
+      {
+         // Any unknown path falls back to the root (map) instead of a blank page.
+         path: "/:pathMatch(.*)*",
+         redirect: "/",
+      },
    ],
 });

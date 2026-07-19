@@ -278,6 +278,17 @@
    color: var(--text-muted) !important;
 }
 
+/* The library renders each column header in a generic `.header` div, which
+   collides with the app-wide `.header` style in App.vue (white background,
+   padding, green underline). Neutralize the leak so header cells keep the
+   table's own `--surface-muted` background. */
+:deep(.vue3-easy-data-table__header th .header) {
+   background: transparent;
+   padding: 0;
+   margin: 0;
+   border-bottom: none;
+}
+
 :deep(.vue3-easy-data-table__body tr:nth-child(even) td) {
    background-color: var(--surface-muted) !important;
 }

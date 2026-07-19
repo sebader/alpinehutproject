@@ -131,4 +131,33 @@ public class AvailabilityReconcilerTests
         Assert.That(changes.ToAdd, Has.Count.EqualTo(1));
         Assert.That(changes.ToAdd[0].BedCategoryId, Is.EqualTo(5));
     }
+
+    [Test]
+    public void OpenDay_EmptyCategories_PreservesExistingRows()
+    {
+        // A day reported open but with no categories (transient/malformed provider response) must not
+        // wipe stored availability - the original code only deleted orphans once a category matched.
+        var existing = new Availability { Hutid = HutId, Date = Day, BedCategoryId = 5, FreeRoom = 2, TotalRoom = 10 };
+
+        var changes = AvailabilityReconciler.Reconcile(
+            HutId, [existing], [OpenDay([])], HutInfo(), UpdateTime);
+
+        Assert.That(changes.ToAdd, Is.Empty);
+        Assert.That(changes.ToUpdate, Is.Empty);
+        Assert.That(changes.ToDelete, Is.Empty);
+    }
+
+    [Test]
+    public void OpenDay_NoMatchingCategories_PreservesExistingRows()
+    {
+        // Every reported category is unknown to the hut -> nothing matches -> no orphan deletion (as before).
+        var existing = new Availability { Hutid = HutId, Date = Day, BedCategoryId = 5, FreeRoom = 2, TotalRoom = 10 };
+
+        var changes = AvailabilityReconciler.Reconcile(
+            HutId, [existing], [OpenDay(new() { ["77"] = 1 })], HutInfo(), UpdateTime);
+
+        Assert.That(changes.ToAdd, Is.Empty);
+        Assert.That(changes.ToUpdate, Is.Empty);
+        Assert.That(changes.ToDelete, Is.Empty);
+    }
 }

@@ -70,6 +70,11 @@ public static class AvailabilityReconciler
                 .Select(k => int.Parse(k, CultureInfo.InvariantCulture))
                 .ToHashSet();
 
+            // In the original code the orphan-deletion pass lived inside the per-category loop, so it only
+            // ran once a category actually matched. Preserve that: an open day that reports no categories (or
+            // only unmatched ones) - e.g. a transient/malformed provider response - must not delete stored rows.
+            var anyCategoryMatched = false;
+
             foreach (var (bedCategoryKey, freeBeds) in day.freeBedsPerCategory)
             {
                 var bedCategoryId = int.Parse(bedCategoryKey, CultureInfo.InvariantCulture);
@@ -80,6 +85,8 @@ public static class AvailabilityReconciler
                     logger?.LogDebug("Could not find matching bed category for hutid={HutId} and bedCategory={BedCategory}", hutId, bedCategoryId);
                     continue;
                 }
+
+                anyCategoryMatched = true;
 
                 var existingAva = existingForDay.FirstOrDefault(a => a.BedCategoryId == bedCategoryId);
                 if (existingAva != null)
@@ -103,6 +110,11 @@ public static class AvailabilityReconciler
                         LastUpdated = updateTime
                     });
                 }
+            }
+
+            if (!anyCategoryMatched)
+            {
+                continue;
             }
 
             // Delete rows for categories the provider no longer reports for this day (including a stale

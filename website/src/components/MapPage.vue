@@ -112,6 +112,7 @@
                   :name="hut.name"
                   :lat-lng="[hut.latitude, hut.longitude]"
                   :icon="getHutMarkerIcon(hut)"
+                  @click="collapsePanelOnMobile"
                >
                   <l-tooltip>
                      <b>{{ hut.name }}</b>
@@ -444,12 +445,20 @@ export default {
          });
       },
       async hutSelected(hut) {
+         this.collapsePanelOnMobile();
          this.zoom = 15;
          await this.sleep(50);
          this.mapCenter = [hut.latitude, hut.longitude];
          var marker = this.$refs.markerItems.find((m) => m.name == hut.name);
          if (marker != null) {
             marker.leafletObject.openPopup();
+         }
+      },
+      collapsePanelOnMobile() {
+         // On small screens the open filter panel covers most of the map, hiding
+         // the popup of a tapped marker. Collapse it so the popup is visible.
+         if (window.matchMedia("(max-width: 768px)").matches) {
+            this.isCollapsed = true;
          }
       },
       sleep(ms) {
@@ -579,7 +588,8 @@ export default {
 .commandbar {
    position: fixed;
    top: calc(var(--map-header-bottom, 90px) + 16px);
-   left: 72px;
+   left: 20px;
+   margin: 0;
    background: var(--surface);
    border-radius: 10px;
    border-top: 3px solid var(--accent);
@@ -588,7 +598,7 @@ export default {
    transition: transform 0.3s ease;
    overflow: visible !important;
    max-width: 320px;
-   width: calc(100% - 92px);
+   width: calc(100% - 40px);
    height: auto;
    max-height: calc(100vh - var(--map-header-bottom, 90px) - 24px);
 }
@@ -745,8 +755,8 @@ export default {
 
 @media (max-width: 768px) {
    .commandbar {
-      left: 62px;
-      width: calc(100% - 82px);
+      left: 10px;
+      width: calc(100% - 20px);
       max-width: 300px;
    }
 

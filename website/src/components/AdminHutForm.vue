@@ -252,11 +252,11 @@ export default {
 
 .modal-footer {
    padding: 1rem 0 0 0;
-   border-top: 1px solid #dee2e6;
+   border-top: 1px solid var(--border);
 }
 
 .map-container {
-   border: 1px solid #dee2e6;
+   border: 1px solid var(--border);
    border-radius: 0.25rem;
 }
 </style>

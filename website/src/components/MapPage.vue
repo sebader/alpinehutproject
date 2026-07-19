@@ -1,10 +1,35 @@
 <template>
    <div>
-      <button class="toggle-btn" :class="{ collapsed: isCollapsed }" @click="isCollapsed = !isCollapsed">
-         {{ isCollapsed ? "☰" : "✕" }}
+      <button
+         v-show="isCollapsed"
+         class="toggle-btn"
+         @click="isCollapsed = false"
+         :aria-label="$t('mapPage.filterTitle')"
+      >
+         ☰
       </button>
       <div class="commandbar" :class="{ collapsed: isCollapsed }">
          <div class="controls-content">
+            <div class="filter-header">
+               <span class="filter-title-text">
+                  <svg
+                     class="filter-icon"
+                     width="16"
+                     height="16"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true"
+                  >
+                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                  </svg>
+                  {{ $t("mapPage.filterTitle") }}
+               </span>
+               <button class="filter-close" @click="isCollapsed = true" :aria-label="$t('message.close')">✕</button>
+            </div>
             <div class="control-group">
                <label>{{ $t("mapPage.availabilityAtDate") }}</label>
                <div class="input-group">
@@ -87,6 +112,7 @@
                   :name="hut.name"
                   :lat-lng="[hut.latitude, hut.longitude]"
                   :icon="getHutMarkerIcon(hut)"
+                  @click="collapsePanelOnMobile"
                >
                   <l-tooltip>
                      <b>{{ hut.name }}</b>
@@ -419,12 +445,20 @@ export default {
          });
       },
       async hutSelected(hut) {
+         this.collapsePanelOnMobile();
          this.zoom = 15;
          await this.sleep(50);
          this.mapCenter = [hut.latitude, hut.longitude];
          var marker = this.$refs.markerItems.find((m) => m.name == hut.name);
          if (marker != null) {
             marker.leafletObject.openPopup();
+         }
+      },
+      collapsePanelOnMobile() {
+         // On small screens the open filter panel covers most of the map, hiding
+         // the popup of a tapped marker. Collapse it so the popup is visible.
+         if (window.matchMedia("(max-width: 768px)").matches) {
+            this.isCollapsed = true;
          }
       },
       sleep(ms) {
@@ -541,7 +575,8 @@ export default {
 <style>
 #mainmap {
    position: fixed;
-   top: 70px; /* Added more space between header and map */
+   /* Sit just below the header (its height is measured into --map-header-bottom). */
+   top: calc(var(--map-header-bottom, 90px) + 6px);
    left: 0;
    right: 0;
    bottom: 0;
@@ -552,29 +587,83 @@ export default {
 
 .commandbar {
    position: fixed;
-   top: 80px; /* Adjusted to match new map spacing */
-   left: 72px;
-   background: rgba(255, 255, 255, 0.98);
-   border-radius: 8px;
-   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+   top: calc(var(--map-header-bottom, 90px) + 16px);
+   left: 20px;
+   margin: 0;
+   background: var(--surface);
+   border-radius: 10px;
+   border-top: 3px solid var(--accent);
+   box-shadow: 0 4px 16px var(--shadow-strong);
    z-index: 1500;
    transition: transform 0.3s ease;
    overflow: visible !important;
-   max-width: 350px;
-   width: calc(100% - 92px);
+   max-width: 320px;
+   width: calc(100% - 40px);
    height: auto;
-   max-height: calc(100vh - 80px);
+   max-height: calc(100vh - var(--map-header-bottom, 90px) - 24px);
 }
 
 .controls-content {
    position: relative;
-   padding: 15px;
+   padding: 13px 14px;
    height: auto;
+}
+
+.filter-header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   margin-bottom: 13px;
+   padding-bottom: 10px;
+   border-bottom: 1px solid var(--border-light);
+}
+
+.filter-title-text {
+   display: inline-flex;
+   align-items: center;
+   gap: 7px;
+   font-weight: 600;
+   font-size: 0.95rem;
+   color: var(--text);
+}
+
+.filter-icon {
+   color: var(--accent);
+   flex-shrink: 0;
+}
+
+.filter-close {
+   border: none;
+   background: transparent;
+   color: var(--text-muted);
+   font-size: 15px;
+   line-height: 1;
+   cursor: pointer;
+   padding: 4px 7px;
+   border-radius: 6px;
+   transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+}
+
+.filter-close:hover {
+   background: var(--surface-muted);
+   color: var(--text);
 }
 
 .control-group {
    position: relative !important;
-   margin-bottom: 15px !important;
+   margin-bottom: 12px !important;
+}
+
+.control-group label {
+   display: block;
+   margin-bottom: 5px;
+   font-size: 0.72rem;
+   font-weight: 700;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+   color: var(--text-muted);
 }
 
 .control-group:last-child {
@@ -592,40 +681,45 @@ export default {
    position: static !important;
 }
 
-.control-group .vue3-simple-typeahead {
+.control-group .simple-typeahead {
    position: static !important;
    width: 100% !important;
 }
 
-.control-group .vue3-simple-typeahead input {
+.control-group .simple-typeahead-input {
    width: 100% !important;
    padding: 8px !important;
-   border: 1px solid #ddd !important;
+   border: 1px solid var(--border) !important;
    border-radius: 4px !important;
+   box-sizing: border-box !important;
+   font-family: inherit !important;
+   font-size: inherit !important;
+   color: var(--text) !important;
+   background: var(--input-bg) !important;
 }
 
-.control-group .vue3-simple-typeahead-list {
+.control-group .simple-typeahead-list {
    position: absolute !important;
    top: 100% !important;
    left: 0 !important;
    width: 100% !important;
-   background: white !important;
-   border: 1px solid #ddd !important;
+   background: var(--surface) !important;
+   border: 1px solid var(--border) !important;
    border-radius: 4px !important;
    margin-top: 4px !important;
    z-index: 2000 !important;
    max-height: 200px !important;
    overflow-y: auto !important;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+   box-shadow: 0 2px 8px var(--shadow-strong) !important;
 }
 
-.vue3-simple-typeahead-list-item {
+.simple-typeahead-list-item {
    padding: 4px 8px !important;
    cursor: pointer !important;
 }
 
-.vue3-simple-typeahead-list-item:hover {
-   background-color: #f8f9fa !important;
+.simple-typeahead-list-item:hover {
+   background-color: var(--surface-muted) !important;
 }
 
 .commandbar.collapsed {
@@ -635,16 +729,16 @@ export default {
 
 .toggle-btn {
    position: fixed;
-   top: 80px; /* Adjusted to match new spacing */
+   top: calc(var(--map-header-bottom, 90px) + 16px);
    left: 20px;
-   background: white;
-   border: 1px solid #ddd;
+   background: var(--surface);
+   border: 1px solid var(--border);
    padding: 8px 12px;
    border-radius: 8px;
-   box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+   box-shadow: 2px 2px 6px var(--shadow-strong);
    cursor: pointer;
    font-size: 20px;
-   color: #666;
+   color: var(--text-muted);
    z-index: 2000;
    width: 42px;
    height: 42px;
@@ -655,25 +749,18 @@ export default {
 }
 
 .toggle-btn:hover {
-   color: #333;
-   background: #f8f8f8;
-}
-
-.toggle-btn.collapsed {
-   left: 20px;
+   color: var(--text);
+   background: var(--surface-muted);
 }
 
 @media (max-width: 768px) {
    .commandbar {
-      top: 80px; /* Keep consistent with map spacing */
-      left: 62px;
-      width: calc(100% - 82px);
+      left: 10px;
+      width: calc(100% - 20px);
       max-width: 300px;
-      max-height: calc(100vh - 65px);
    }
 
    .toggle-btn {
-      top: 80px; /* Keep consistent with map spacing */
       left: 10px;
    }
 
@@ -691,17 +778,20 @@ export default {
       width: 100%;
    }
 
-   .vue3-simple-typeahead,
-   .vue3-simple-typeahead input,
-   .vue3-simple-typeahead-list {
+   .simple-typeahead,
+   .simple-typeahead-input,
+   .simple-typeahead-list {
       width: 100%;
    }
 }
 
 .form-control {
    padding: 8px;
-   border: 1px solid #ddd;
+   border: 1px solid var(--border);
    border-radius: 4px;
+   box-sizing: border-box;
+   color: var(--text);
+   background: var(--input-bg);
 }
 
 input[type="date"].form-control,
@@ -713,19 +803,43 @@ select.form-control {
    width: 100%;
 }
 
+.control-group .form-control:focus,
+.control-group .simple-typeahead-input:focus {
+   outline: none;
+   border-color: var(--accent) !important;
+   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15) !important;
+}
+
 .number-input {
    display: flex;
    align-items: center;
    width: 100%;
+   border: 1px solid var(--border);
+   border-radius: 6px;
+   overflow: hidden;
+   transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+}
+
+.number-input:focus-within {
+   border-color: var(--accent);
+   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
 }
 
 .number-input input[type="number"] {
    text-align: center;
    -moz-appearance: textfield;
-   width: 60px !important;
+   flex: 1;
+   width: auto !important;
    padding: 8px 0;
    margin: 0;
-   border-radius: 0;
+   border: none !important;
+   border-radius: 0 !important;
+   box-shadow: none !important;
+   background: transparent;
+   color: var(--text);
+   font-weight: 600;
 }
 
 .number-input input[type="number"]::-webkit-outer-spin-button,
@@ -735,29 +849,34 @@ select.form-control {
 }
 
 .number-btn {
-   background-color: #f8f9fa;
-   border: 1px solid #ddd;
-   padding: 8px 12px;
+   background-color: var(--surface-muted);
+   border: none;
+   padding: 8px 14px;
    cursor: pointer;
    font-size: 16px;
-   min-width: 36px;
+   min-width: 38px;
+   color: var(--text);
+   transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
 }
 
 .number-btn:first-child {
-   border-radius: 4px 0 0 4px;
+   border-right: 1px solid var(--border);
 }
 
 .number-btn:last-child {
-   border-radius: 0 4px 4px 0;
+   border-left: 1px solid var(--border);
 }
 
 .number-btn:hover:not(:disabled) {
-   background-color: #e9ecef;
+   background-color: var(--accent);
+   color: #fff;
 }
 
 .number-btn:disabled {
    cursor: not-allowed;
-   opacity: 0.6;
+   opacity: 0.5;
 }
 
 /* Styling for custom popup */
@@ -831,7 +950,7 @@ select.form-control {
 
 .hut-popup-body {
    padding: 15px;
-   background-color: white;
+   background-color: var(--surface);
 }
 
 .popup-status-row {
@@ -888,7 +1007,7 @@ select.form-control {
 .availability-bar {
    height: 4px;
    width: 100%;
-   background-color: #f0f0f0;
+   background-color: var(--surface-muted);
    border-radius: 2px;
    overflow: hidden;
 }
@@ -952,19 +1071,19 @@ select.form-control {
 }
 
 .popup-btn.btn-secondary {
-   background-color: #f8f9fa;
-   color: #2c3e50;
-   border: 1px solid #ddd;
+   background-color: var(--surface-muted);
+   color: var(--text);
+   border: 1px solid var(--border);
 }
 
 .popup-btn.btn-secondary:hover {
-   background-color: #e9ecef;
+   background-color: var(--surface-alt);
 }
 
 .popup-btn.btn-inactive {
-   background-color: #f0f0f0;
-   color: #95a5a6;
-   border: 1px solid #ddd;
+   background-color: var(--surface-muted);
+   color: var(--text-muted);
+   border: 1px solid var(--border);
    cursor: default;
 }
 
@@ -976,7 +1095,7 @@ select.form-control {
    display: inline-flex;
    align-items: center;
    gap: 8px;
-   color: #7f8c8d;
+   color: var(--text-muted);
    font-style: italic;
    padding: 8px 12px;
 }
@@ -989,7 +1108,7 @@ select.form-control {
    font-size: 1rem;
    font-weight: 600;
    margin: 0 0 8px 0;
-   color: #444;
+   color: var(--text-strong);
 }
 
 .room-availability-table table {
@@ -998,7 +1117,7 @@ select.form-control {
 }
 
 .room-availability-table tr {
-   border-bottom: 1px solid #f0f0f0;
+   border-bottom: 1px solid var(--border-light);
 }
 
 .room-availability-table tr:last-child {
@@ -1033,7 +1152,7 @@ select.form-control {
 .mini-availability-bar {
    height: 3px;
    width: 50px;
-   background-color: #f0f0f0;
+   background-color: var(--surface-muted);
    border-radius: 2px;
    overflow: hidden;
    display: inline-block;
@@ -1042,7 +1161,7 @@ select.form-control {
 }
 
 .notification-form {
-   background-color: #f8f9fa;
+   background-color: var(--surface-muted);
    border-radius: 6px;
    padding: 12px;
    margin: 15px 0;
@@ -1069,12 +1188,12 @@ select.form-control {
 .popup-footer {
    margin-top: 15px;
    padding-top: 10px;
-   border-top: 1px solid #f0f0f0;
+   border-top: 1px solid var(--border-light);
    display: flex;
    justify-content: space-between;
    align-items: center;
    font-size: 0.85rem;
-   color: #7f8c8d;
+   color: var(--text-muted);
 }
 
 .last-updated {
@@ -1086,7 +1205,7 @@ select.form-control {
    display: inline-flex;
    align-items: center;
    gap: 4px;
-   color: #3498db;
+   color: var(--accent-blue);
    text-decoration: none;
 }
 

@@ -46,12 +46,14 @@ p {
 }
 
 p.error {
-   border: 1px solid rgb(255, 0, 0);
+   border: 1px solid rgb(214, 51, 51);
    background-color: rgb(255, 208, 208);
+   color: #7a1a1a;
 }
 
 p.success {
    border: 1px solid rgb(0, 110, 0);
    background-color: rgb(181, 252, 181);
+   color: #14521a;
 }
 </style>

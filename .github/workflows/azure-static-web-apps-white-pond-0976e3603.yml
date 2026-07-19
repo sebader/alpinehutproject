@@ -12,6 +12,10 @@ on:
       - 'WebsiteBackendFunctions/**'
       - '.github/workflows/azure-static-web-apps-white-pond-0976e3603.yml'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   staticwebbapp_build_and_deploy:
     runs-on: ubuntu-latest
@@ -45,3 +49,67 @@ jobs:
           output_location: "dist" # Built app content directory - optional
           production_branch: "main"
           ###### End of Repository/Build Configurations ######
+
+  e2e_smoke:
+    name: E2E smoke test (post-deploy)
+    needs: staticwebbapp_build_and_deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Resolve deployment URL
+        id: target
+        shell: bash
+        run: |
+          # main -> production (custom domain); every other branch (e.g. dev) -> its SWA staging slot
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "url=https://alpinehuts.silenced.eu" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://white-pond-0976e3603-dev.westeurope.1.azurestaticapps.net" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for the deployed build to go live
+        shell: bash
+        run: |
+          # The deploy step rewrites window.VERSION_LABEL in config.js with the short SHA,
+          # so poll config.js until it serves THIS commit — avoids testing a stale build.
+          sha_short=$(echo "${{ github.sha }}" | cut -c1-7)
+          url="${{ steps.target.outputs.url }}"
+          echo "Waiting for $url to serve commit $sha_short ..."
+          for i in $(seq 1 30); do
+            body=$(curl -sf "$url/config.js" || true)
+            if echo "$body" | grep -q "$sha_short"; then
+              echo "Deployed version $sha_short is live."
+              exit 0
+            fi
+            echo "attempt $i: not live yet; sleeping 10s"
+            sleep 10
+          done
+          echo "Timed out waiting for commit $sha_short at $url"
+          exit 1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E smoke tests
+        run: npm test
+        env:
+          E2E_BASE_URL: ${{ steps.target.outputs.url }}
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ github.ref_name }}
+          path: e2e/playwright-report/
+          retention-days: 7

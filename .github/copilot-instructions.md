@@ -34,6 +34,8 @@ npm run format                          # Prettier (writes src/)
 
 Local end-to-end run (see `website/README.md`): start the backend (`func start` from `WebsiteBackendFunctions/`) and the SWA emulator (`swa start --api-devserver-url http://localhost:7071` from `website/`, opens http://localhost:4280). Requires the `swa` and Azure Functions Core Tools (`func`) CLIs.
 
+Run the `FetchDataFunctions` crawler app locally with `dotnet run` from `FetchDataFunctions/` (the recommended path for .NET isolated — `func start` warns and may fail to load worker extensions). It needs **Azurite** running for `AzureWebJobsStorage` (blob secret repo + timer/durable listeners); without it the host cancels startup. Netherite runs in-memory via `EventHubsConnection=SingleHost`, so no real Event Hubs is required. Timer crawlers early-return in Development, but you can drive a single hut on demand: `GET http://localhost:7071/api/UpdateAvailabilityHttpTriggered?hutid=<id>` (also `UpdateHutHttpTriggered`), which invoke the same activity code (incl. the EF-Core SQL writes) directly. Both Functions apps' `local.settings.json` point `DatabaseConnectionString` at the **real prod Azure SQL** DB, so it's queryable directly for diagnosis.
+
 ## Testing
 
 No unit tests. Validation is **build + lint + an end-to-end Playwright smoke suite** run against a **live deployed environment** (the API needs the real Azure SQL DB, so E2E can't run fully offline).
@@ -59,6 +61,8 @@ No unit tests. Validation is **build + lint + an end-to-end Playwright smoke sui
 
 - A hut's `Source` column selects the crawler: `"AV"` = Alpine clubs' central booking system (`hut-reservation.org`, `FetchDataFunctions/Helpers.cs` URLs); `"HuettenHoliday"` = huetten-holiday.com (`FetchDataFunctions/Functions/HuettenHoliday/`).
 - Provider URLs, the test-hut exclusion list, and geocoding helpers (OSM Nominatim + Azure Maps) live in `FetchDataFunctions/Helpers.cs`.
+- **Availability ↔ bed categories (subtle, spans both apps):** `Availability` carries two AV category ids — `BedCategoryId` (the per-hut `categoryID`, large/hut-specific) and `TenantBedCategoryId` (the tenant-level `tenantBedCategoryId`, small/shared). The **website joins `Availability.TenantBedCategoryId → dbo.BedCategories.id`** for the display name; `BedCategories` is a lookup keyed by `tenantBedCategoryId`, and `SharesNameWithBedCateogryId` groups synonyms onto a canonical name. A missing lookup row *hides a hut's availability entirely*, so the crawler self-maintains it via `EnsureBedCategoriesExist` (`UpdateAvailabilityFunctions.cs`) and the two website availability endpoints LEFT JOIN it defensively. "Hut closed" days are encoded as `BedCategoryId = -1`, `TenantBedCategoryId = NULL`.
+- The DB enforces **no** FK from `Availability` to `BedCategories` (only `FK_Huts_Availability` and the `BedCategories` self-ref `FK_BedCategory_SameAs`). `Hut.Id` and `BedCategory.Id` are non-identity keys set explicitly — configure new such entities with EF `ValueGeneratedNever()` (see `AlpinehutsDbContext.cs`).
 
 ## Frontend conventions
 

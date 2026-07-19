@@ -1,0 +1,15 @@
+root = true
+
+[*.cs]
+# Language conventions
+csharp_style_namespace_declarations = file_scoped:warning
+
+# External-provider JSON DTOs intentionally use the provider's member names (snake_case / camelCase).
+dotnet_diagnostic.CA1707.severity = none
+
+# Provider DTO type names mirror the payload and may collide with language keywords (e.g. Option).
+dotnet_diagnostic.CA1716.severity = none
+
+# Low-value micro-optimizations for a low-throughput daily crawler; keep the signal focused.
+dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CA1863.severity = suggestion

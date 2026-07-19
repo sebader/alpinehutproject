@@ -566,7 +566,8 @@ export default {
 <style>
 #mainmap {
    position: fixed;
-   top: 70px; /* Added more space between header and map */
+   /* Sit just below the header (its height is measured into --map-header-bottom). */
+   top: calc(var(--map-header-bottom, 90px) + 6px);
    left: 0;
    right: 0;
    bottom: 0;
@@ -577,7 +578,7 @@ export default {
 
 .commandbar {
    position: fixed;
-   top: 80px; /* Adjusted to match new map spacing */
+   top: calc(var(--map-header-bottom, 90px) + 16px);
    left: 72px;
    background: var(--surface);
    border-radius: 10px;
@@ -589,7 +590,7 @@ export default {
    max-width: 320px;
    width: calc(100% - 92px);
    height: auto;
-   max-height: calc(100vh - 80px);
+   max-height: calc(100vh - var(--map-header-bottom, 90px) - 24px);
 }
 
 .controls-content {
@@ -718,7 +719,7 @@ export default {
 
 .toggle-btn {
    position: fixed;
-   top: 80px; /* Adjusted to match new spacing */
+   top: calc(var(--map-header-bottom, 90px) + 16px);
    left: 20px;
    background: var(--surface);
    border: 1px solid var(--border);
@@ -744,15 +745,12 @@ export default {
 
 @media (max-width: 768px) {
    .commandbar {
-      top: 80px; /* Keep consistent with map spacing */
       left: 62px;
       width: calc(100% - 82px);
       max-width: 300px;
-      max-height: calc(100vh - 65px);
    }
 
    .toggle-btn {
-      top: 80px; /* Keep consistent with map spacing */
       left: 10px;
    }
 

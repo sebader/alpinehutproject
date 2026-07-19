@@ -1,6 +1,6 @@
 <template>
    <div :class="{ 'map-layout': isMapPage }">
-      <div class="header" :class="{ 'map-header': isMapPage }">
+      <div class="header" :class="{ 'map-header': isMapPage }" ref="appHeader">
          <div class="header-top">
             <h4 class="site-title">
                <img class="site-logo" src="/favicon.svg" alt="" aria-hidden="true" /> {{ $t("message.siteTitle") }}
@@ -136,11 +136,27 @@ export default {
       };
       this._mql.addEventListener("change", this._mqlHandler);
       this.applyTheme();
+
+      // Expose the header's bottom edge as a CSS variable so the fixed map and
+      // its controls can sit just below the header regardless of its height
+      // (which varies with the nav wrapping, locale, or viewport width).
+      this.measureHeader();
+      this._headerObserver = new ResizeObserver(() => this.measureHeader());
+      if (this.$refs.appHeader) this._headerObserver.observe(this.$refs.appHeader);
+      window.addEventListener("resize", (this._onResize = () => this.measureHeader()));
    },
    beforeUnmount() {
       if (this._mql) this._mql.removeEventListener("change", this._mqlHandler);
+      if (this._headerObserver) this._headerObserver.disconnect();
+      if (this._onResize) window.removeEventListener("resize", this._onResize);
    },
    methods: {
+      measureHeader() {
+         const el = this.$refs.appHeader;
+         if (!el) return;
+         const bottom = Math.round(el.getBoundingClientRect().bottom);
+         document.documentElement.style.setProperty("--map-header-bottom", `${bottom}px`);
+      },
       applyTheme() {
          const root = document.documentElement;
          if (this.theme === "auto") {
@@ -174,6 +190,11 @@ export default {
          handler(title) {
             document.title = title;
          },
+      },
+      // The header height differs between the map page and the others, so
+      // recompute the header-bottom variable after each navigation.
+      $route() {
+         this.$nextTick(() => this.measureHeader());
       },
    },
    computed: {

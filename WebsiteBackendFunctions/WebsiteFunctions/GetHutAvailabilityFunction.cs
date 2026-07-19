@@ -26,12 +26,14 @@ namespace WebsiteBackendFunctions
                 Route = "huts/{hutid:int}/availability")]
             HttpRequest req,
             [SqlInput("SELECT a.hutId as HutId, a.AvailabilityId as AvailabilityId, " +
-                      "CASE WHEN bc.name IS NOT NULL THEN bc.name ELSE b.name END as BedCategory, " +
+                      "COALESCE(bc.name, b.name, N'Unbekannt') as BedCategory, " +
                       "a.Date as Date, a.FreeRoom as FreeRoom, a.TotalRoom as TotalRoom, a.LastUpdated as LastUpdated " +
                       "FROM dbo.Availability a " +
-                      "JOIN dbo.BedCategories b ON a.TenantBedCategoryId = b.id " +
+                      // LEFT JOIN so availability is still returned when the tenant bed category is missing
+                      // from the BedCategories lookup table (otherwise the whole hut shows no availability).
+                      "LEFT OUTER JOIN dbo.BedCategories b ON a.TenantBedCategoryId = b.id " +
                       "LEFT OUTER JOIN dbo.BedCategories bc ON b.SharesNameWithBedCateogryId = bc.id " +
-                      "WHERE a.hutid = @HutId AND a.Date >= CONVERT (date, GETDATE()) " +
+                      "WHERE a.hutid = @HutId AND a.Date >= CONVERT (date, GETDATE()) AND a.TenantBedCategoryId IS NOT NULL " +
                       "ORDER BY a.date ASC, BedCategory ASC",
                 "DatabaseConnectionString",
                 CommandType.Text,

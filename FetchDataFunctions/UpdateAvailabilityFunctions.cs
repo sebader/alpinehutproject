@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Sql;
+using Microsoft.Data.SqlClient;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.EntityFrameworkCore;
@@ -205,6 +206,11 @@ namespace FetchDataFunctions
                     return result;
                 }
 
+                // Make sure the BedCategories lookup table contains a row for every tenant bed category of
+                // this hut. Availability rows join to it via TenantBedCategoryId; a missing entry makes the
+                // website hide the hut's availability entirely (see UpdateAvailabilityReporting / website JOINs).
+                await EnsureBedCategoriesExist(hutInfo);
+
                 foreach (var day in availability)
                 {
                     if (day.HutClosed)
@@ -346,6 +352,98 @@ namespace FetchDataFunctions
                                                                                    (b.reservationMode == "ROOM" && hutStatus == "SERVICED" || b.reservationMode == "UNSERVICED" && hutStatus == "UNSERVICED"));
 
             return matchingBedCategory;
+        }
+
+        // Preferred order of languages for the bed category display name. German first to stay consistent with
+        // the historically curated BedCategories names; then fall back through the other provider languages.
+        private static readonly string[] BedCategoryLanguagePreference =
+            ["DE_DE", "DE_AT", "DE_CH", "DE", "EN", "IT", "FR"];
+
+        private static string GetBedCategoryName(HutBedCategory cat)
+        {
+            foreach (var pref in BedCategoryLanguagePreference)
+            {
+                var match = cat.hutBedCategoryLanguageData.FirstOrDefault(l =>
+                    string.Equals(l.language, pref, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(l.label));
+                if (match != null)
+                {
+                    return match.label.Trim();
+                }
+            }
+
+            var any = cat.hutBedCategoryLanguageData.FirstOrDefault(l => !string.IsNullOrWhiteSpace(l.label));
+            return any?.label.Trim() ?? $"Kategorie {cat.tenantBedCategoryId}";
+        }
+
+        /// <summary>
+        /// Ensures the BedCategories lookup table contains a row (keyed by tenantBedCategoryId) for every bed
+        /// category of the given hut. New categories are named from the provider label (German preferred) and,
+        /// when the name exactly matches an existing category, linked to that category's canonical entry via
+        /// SharesNameWithBedCateogryId so no duplicate display name is introduced.
+        /// </summary>
+        private async Task EnsureBedCategoriesExist(HutInfoV2 hutInfo)
+        {
+            try
+            {
+                var neededIds = hutInfo.hutBedCategories.Select(b => b.tenantBedCategoryId).Distinct().ToList();
+                if (neededIds.Count == 0)
+                {
+                    return;
+                }
+
+                var dbContext = Helpers.GetDbContext();
+                var existing = await dbContext.BedCategories.AsNoTracking().ToListAsync();
+                var existingIds = existing.Select(b => b.Id).ToHashSet();
+
+                var missing = neededIds.Where(id => !existingIds.Contains(id)).ToList();
+                if (missing.Count == 0)
+                {
+                    return;
+                }
+
+                // Map existing (curated) category name -> its canonical id, used to link duplicates by name.
+                var nameToCanonical = existing
+                    .Where(b => !string.IsNullOrWhiteSpace(b.Name))
+                    .GroupBy(b => b.Name!.Trim().ToLowerInvariant())
+                    .ToDictionary(g => g.Key, g => g.First().SharesNameWithBedCateogryId ?? g.First().Id);
+
+                foreach (var tenantId in missing)
+                {
+                    var cat = hutInfo.hutBedCategories.First(b => b.tenantBedCategoryId == tenantId);
+                    var name = GetBedCategoryName(cat);
+                    int? sharesNameWith =
+                        nameToCanonical.TryGetValue(name.ToLowerInvariant(), out var canonicalId) ? canonicalId : null;
+
+                    dbContext.BedCategories.Add(new BedCategory
+                    {
+                        Id = tenantId,
+                        Name = name,
+                        SharesNameWithBedCateogryId = sharesNameWith
+                    });
+                    _logger.LogInformation(
+                        "Adding missing BedCategory id={id} name='{name}' sharesNameWith={shares}", tenantId, name, sharesNameWith);
+                }
+
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                // A duplicate-key error most likely means a parallel activity (the crawler fans out in batches
+                // of 10) inserted the same category first, which is safe to ignore. Any other database error is
+                // a real problem and must stay visible in the logs.
+                if (e.InnerException is SqlException { Number: 2627 or 2601 })
+                {
+                    _logger.LogWarning(e, "Bed category was already inserted by a concurrent activity; ignoring");
+                }
+                else
+                {
+                    _logger.LogError(default, e, "Database error while inserting missing bed categories");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(default, e, "Unexpected error ensuring bed categories exist");
+            }
         }
     }
 

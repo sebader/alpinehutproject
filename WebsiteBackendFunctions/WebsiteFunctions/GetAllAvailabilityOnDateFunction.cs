@@ -26,12 +26,14 @@ namespace WebsiteBackendFunctions
                 Route = "availability/{datefilter:regex(^\\d{{4}}-\\d{{2}}-\\d{{2}}$)}")]
             HttpRequest req,
             [SqlInput("SELECT a.hutid as HutId, a.AvailabilityId as AvailabilityId, " +
-                 "CASE WHEN bc.name IS NOT NULL THEN bc.name ELSE b.name END as BedCategory, " +
+                 "COALESCE(bc.name, b.name, N'Unbekannt') as BedCategory, " +
                  "a.Date as Date, a.FreeRoom as FreeRoom, a.TotalRoom as TotalRoom, a.LastUpdated as LastUpdated " +
                  "FROM dbo.Availability a " +
-                 "JOIN dbo.BedCategories b on a.TenantBedCategoryId = b.id " +
+                 // LEFT JOIN so availability is still returned when the tenant bed category is missing
+                 // from the BedCategories lookup table (otherwise the whole hut shows no availability).
+                 "LEFT OUTER JOIN dbo.BedCategories b on a.TenantBedCategoryId = b.id " +
                  "LEFT OUTER JOIN dbo.BedCategories bc on b.SharesNameWithBedCateogryId = bc.id " +
-                 "WHERE a.Date = @DateFilter ",
+                 "WHERE a.Date = @DateFilter AND a.TenantBedCategoryId IS NOT NULL ",
                 "DatabaseConnectionString",
                 CommandType.Text,
                 "@DateFilter={datefilter}")]

@@ -36,6 +36,8 @@ namespace FetchDataFunctions.Models
 
             modelBuilder.Entity<BedCategory>(entity =>
             {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
                 entity.HasOne(a => a.SharesNameWith)
                     .WithMany(b => b.SameNamesAsThis)
                     .HasForeignKey(c => c.SharesNameWithBedCateogryId)

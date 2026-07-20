@@ -197,6 +197,23 @@ public static partial class Helpers
     }
 
     /// <summary>
+    /// Great-circle distance in kilometres between two WGS84 coordinates (haversine formula).
+    /// </summary>
+    public static double DistanceInKm(double latitude1, double longitude1, double latitude2, double longitude2)
+    {
+        const double earthRadiusKm = 6371.0;
+
+        static double ToRadians(double degrees) => degrees * Math.PI / 180.0;
+
+        var dLat = ToRadians(latitude2 - latitude1);
+        var dLon = ToRadians(longitude2 - longitude1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+                + Math.Cos(ToRadians(latitude1)) * Math.Cos(ToRadians(latitude2))
+                * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        return 2 * earthRadiusKm * Math.Asin(Math.Min(1.0, Math.Sqrt(a)));
+    }
+
+    /// <summary>
     /// Some providers (e.g. certain Swiss huts on hut-reservation.org) return coordinates in the Swiss national
     /// grid (CH1903 / LV03 or CH1903+ / LV95) instead of WGS84. This tries to detect such a pair of values and
     /// convert it to WGS84 latitude/longitude. Returns false if the values are not recognizable Swiss grid coordinates.

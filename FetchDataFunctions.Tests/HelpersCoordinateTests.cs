@@ -74,4 +74,26 @@ public class HelpersCoordinateTests
         Assert.That(ok, Is.True);
         Assert.That(Helpers.CoordinatesSanityCheck(lon, lat), Is.True);
     }
+
+    [Test]
+    public void DistanceInKm_SamePoint_IsZero()
+    {
+        Assert.That(Helpers.DistanceInKm(46.96, 11.18, 46.96, 11.18), Is.EqualTo(0).Within(1e-9));
+    }
+
+    [Test]
+    public void DistanceInKm_MuellerhuetteRoundingOffset_IsAboutFourHundredMetres()
+    {
+        // Hut 570 stored "46.96/11.18" vs the OSM alpine_hut node at 46.9631512/11.1778146 (~0.39 km).
+        var distance = Helpers.DistanceInKm(46.96, 11.18, 46.9631512, 11.1778146);
+        Assert.That(distance, Is.EqualTo(0.39).Within(0.05));
+    }
+
+    [Test]
+    public void DistanceInKm_DifferentHutsFarApart_ExceedsRefinementGuard()
+    {
+        // A same-named hut in a different valley must fall well outside the 2 km refinement guard.
+        var distance = Helpers.DistanceInKm(46.4992, 8.9956, 46.473108, 9.0236542);
+        Assert.That(distance, Is.GreaterThan(2.0));
+    }
 }

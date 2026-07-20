@@ -44,6 +44,31 @@ public record HutInfoV2
         }
     }
 
+    /// <summary>
+    /// Number of decimal places of the least precise coordinate axis in the raw provider string,
+    /// or null if the coordinates cannot be parsed. The provider returns some huts with only
+    /// 2 decimals (e.g. "46.96/11.18"), which is accurate to roughly 1 km only; this lets the
+    /// crawler decide whether the coordinates are worth refining via an online lookup.
+    /// </summary>
+    public int? CoordinateDecimals
+    {
+        get
+        {
+            var parts = coordinates?.Split((char[]?)[',', '/'], StringSplitOptions.RemoveEmptyEntries) ?? [];
+            return parts.Length == 2 ? Math.Min(DecimalPlaces(parts[0]), DecimalPlaces(parts[1])) : null;
+        }
+    }
+
+    private static int DecimalPlaces(string token)
+    {
+        token = token.Trim();
+        var dot = token.IndexOf('.');
+        if (dot < 0) return 0;
+        var count = 0;
+        for (var i = dot + 1; i < token.Length && char.IsDigit(token[i]); i++) count++;
+        return count;
+    }
+
     public int? AltitudeInt
     {
         get

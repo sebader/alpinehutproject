@@ -25,6 +25,15 @@ public class UpdateHutsFunctions(
     private int MaxHutId =>
         int.TryParse(configuration["MAX_HUT_ID"], out var value) ? value : 750;
 
+    // The provider returns some huts with only 2-3 decimal coordinates (e.g. "46.96/11.18"), which is
+    // accurate to ~1 km / ~100 m only. Coordinates with fewer decimals than this are refined via an
+    // online name lookup.
+    private const int MinCoordinateDecimals = 4;
+
+    // A refined online match is only accepted if it lies within this distance of the provider position,
+    // so a same-named hut somewhere else can never replace a roughly-correct coordinate.
+    private const double MaxCoordinateRefinementKm = 2.0;
+
     [Function(nameof(UpdateHutsTimerTriggered))]
     public async Task UpdateHutsTimerTriggered(
         [TimerTrigger("%HutsUpdateSchedule%", RunOnStartup = false)]
@@ -221,6 +230,29 @@ public class UpdateHutsFunctions(
 
                         hut.Latitude = coordinates.latitude ?? existingHut?.Latitude;
                         hut.Longitude = coordinates.longitude ?? existingHut?.Longitude;
+                    }
+                }
+                else if (hutInfo.CoordinateDecimals < MinCoordinateDecimals)
+                {
+                    // The provider position is valid but coarse (e.g. "46.96/11.18", ~1 km off). Try to refine
+                    // it via an online lookup, but only accept a match that is close to the provider position so
+                    // a same-named hut elsewhere can never replace a roughly-correct coordinate.
+                    logger.LogInformation("Hut with ID={HutId} has low-precision coordinates ({Decimals} decimals). Trying to refine online", hutId, hutInfo.CoordinateDecimals);
+                    var (refinedLat, refinedLon) = await Helpers.SearchHutCoordinates(hutInfo.hutName, httpClient, logger, cancellationToken);
+
+                    if (refinedLat != null && refinedLon != null)
+                    {
+                        var distanceKm = Helpers.DistanceInKm(hut.Latitude.Value, hut.Longitude.Value, refinedLat.Value, refinedLon.Value);
+                        if (distanceKm <= MaxCoordinateRefinementKm)
+                        {
+                            logger.LogInformation("Refined coordinates for hut ID={HutId} from {OldLat}/{OldLon} to {NewLat}/{NewLon} ({Distance:F2} km away)", hutId, hut.Latitude, hut.Longitude, refinedLat, refinedLon, distanceKm);
+                            hut.Latitude = refinedLat;
+                            hut.Longitude = refinedLon;
+                        }
+                        else
+                        {
+                            logger.LogInformation("Ignoring online match for hut ID={HutId}: {Distance:F2} km from the provider position (likely a different hut)", hutId, distanceKm);
+                        }
                     }
                 }
 

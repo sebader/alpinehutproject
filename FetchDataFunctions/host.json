@@ -14,8 +14,10 @@
   },
   "extensions": {
     "durableTask": {
+      "hubName": "%TASKHUB_NAME%",
       "storageProvider": {
-        "type": "Netherite"
+        "type": "azureManaged",
+        "connectionStringName": "DURABLE_TASK_SCHEDULER_CONNECTION_STRING"
       }
     }
   }

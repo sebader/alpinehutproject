@@ -66,7 +66,7 @@ public record HutInfoV2
                 return null;
 
             var normalized = hutWebsite.Trim().ToLowerInvariant();
-            if (normalized.StartsWith("http://") || normalized.StartsWith("https://"))
+            if (normalized.StartsWith("http://", StringComparison.Ordinal) || normalized.StartsWith("https://", StringComparison.Ordinal))
                 return normalized;
 
             return "http://" + normalized;

@@ -1,48 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace FetchDataFunctions.Models
+namespace FetchDataFunctions.Models;
+
+public partial class Hut
 {
-    public class Hut
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Link { get; set; }
+    public string? HutWebsite { get; set; }
+    public string? Country { get; set; }
+    public string? Region { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public int? Altitude { get; set; }
+    public bool? Enabled { get; set; }
+    public DateTime? LastUpdated { get; set; }
+    public DateTime? Added { get; set; }
+    public DateTime? Activated { get; set; }
+
+    public string? Source { get; set; }
+
+    public bool? ManuallyEdited { get; set; }
+    public bool? IsDeleted { get; set; }
+
+    public virtual ICollection<Availability> Availability { get; set; } = new HashSet<Availability>();
+
+    [GeneratedRegex(@"http[s]{0,1}://(www){0,1}\.*")]
+    private static partial Regex WebsiteSchemeRegex();
+
+    public string? ShortHutWebsite()
     {
-        public Hut()
+        if (!string.IsNullOrEmpty(HutWebsite))
         {
-            Availability = new HashSet<Availability>();
+            return WebsiteSchemeRegex().Replace(HutWebsite.ToLowerInvariant(), "");
         }
 
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Link { get; set; }
-        public string? HutWebsite { get; set; }
-        public string? Country { get; set; }
-        public string? Region { get; set; }
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
-        public int? Altitude { get; set; }
-        public bool? Enabled { get; set; }
-        public DateTime? LastUpdated { get; set; }
-        public DateTime? Added { get; set; }
-        public DateTime? Activated { get; set; }
-        
-        public string? Source { get; set; }
-        
-        public bool? ManuallyEdited { get; set; }
-        public bool? IsDeleted { get; set; }
-
-        public virtual ICollection<Availability> Availability { get; set; }
-
-        public string? ShortHutWebsite()
-        {
-            if (!string.IsNullOrEmpty(HutWebsite))
-            {
-                var r = new Regex(@"http[s]{0,1}://(www){0,1}\.*");
-                return r.Replace(HutWebsite.ToLower(), "");
-            }
-            else
-            {
-                return null;
-            }
-        }
+        return null;
     }
 }

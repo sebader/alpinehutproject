@@ -1,8 +1,9 @@
-using System;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using FetchDataFunctions.Models;
 using Microsoft.Azure.Functions.Worker.OpenTelemetry;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Polly;
@@ -11,41 +12,48 @@ using Polly.Timeout;
 
 namespace FetchDataFunctions;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
         var host = new HostBuilder()
             .ConfigureFunctionsWebApplication()
-            .ConfigureServices(services =>
+            .ConfigureServices((context, services) =>
             {
                 var openTelemetry = services.AddOpenTelemetry()
                     .UseFunctionsWorkerDefaults();
 
                 // Only export to Azure Monitor when a connection string is configured (e.g. in Azure).
                 // Locally the exporter throws when APPLICATIONINSIGHTS_CONNECTION_STRING is not set.
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
+                if (!string.IsNullOrEmpty(context.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
                 {
                     openTelemetry.UseAzureMonitorExporter();
                 }
 
+                // Injectable clock so time-dependent logic (availability windows, month iteration) is testable.
+                services.AddSingleton(TimeProvider.System);
+
+                // One short-lived DbContext per activity. A pooled factory is the right fit for the Durable
+                // fan-out (many concurrent activities): a shared scoped/singleton context would not be thread-safe.
+                services.AddPooledDbContextFactory<AlpinehutsDbContext>(options =>
+                    options.UseSqlServer(
+                        context.Configuration["DatabaseConnectionString"],
+                        sql => sql.EnableRetryOnFailure()));
+
                 services
-                    .AddHttpClient<HttpClient>("HttpClient", client =>
+                    .AddHttpClient("HttpClient", client =>
                     {
                         var productValue = new ProductInfoHeaderValue("HutInfoScraperBot", "1.0");
                         client.DefaultRequestHeaders.UserAgent.Add(productValue);
 
-                        client.Timeout =
-                            TimeSpan.FromSeconds(
-                                120); // default overall request request timeout (includes all polly retries)
+                        // Overall request timeout (includes all Polly retries).
+                        client.Timeout = TimeSpan.FromSeconds(120);
                     })
-                    .ConfigurePrimaryHttpMessageHandler(() =>
+                    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
                     {
-                        return new HttpClientHandler()
-                        {
-                            UseCookies =
-                                false, // Prevent cookie sharing in multi thread env https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0#cookies
-                        };
+                        // Prevent cookie sharing in multi-threaded env
+                        // https://learn.microsoft.com/aspnet/core/fundamentals/http-requests#cookies
+                        UseCookies = false,
                     })
                     .AddPolicyHandler(GetRetryWithTimeoutPolicy());
             })
@@ -54,19 +62,16 @@ public class Program
         host.Run();
     }
 
-    static IAsyncPolicy<HttpResponseMessage> GetRetryWithTimeoutPolicy()
+    private static IAsyncPolicy<HttpResponseMessage> GetRetryWithTimeoutPolicy()
     {
         var retryPolicy = HttpPolicyExtensions
             .HandleTransientHttpError()
-            .OrResult(msg =>
-                msg.StatusCode ==
-                System.Net.HttpStatusCode.TooManyRequests) // Retry 429 as it seems to be rate limiting error
-            .OrResult(msg =>
-                msg.StatusCode ==
-                System.Net.HttpStatusCode.Forbidden) // Retry 403 as it seems to be some rate limiting error
+            // Retry 429 (rate limiting) and 403 (also observed as rate limiting on the providers).
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.Forbidden)
             .Or<TimeoutRejectedException>()
             .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
-            .WrapAsync(Policy.TimeoutAsync(30)); // per request timeout
+            .WrapAsync(Policy.TimeoutAsync(30)); // per-request timeout
 
         return retryPolicy;
     }

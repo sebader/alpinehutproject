@@ -1,20 +1,17 @@
-# Deploys FetchDataFunctions to the prod crawler Function App on pushes to `main`.
-# Prod app: alpinehutscrawler-prod (Flex Consumption, France Central, .NET 10 isolated, Durable Task Scheduler).
-# Auth: OIDC via the dedicated least-privilege app registration "alpinehuts-crawler-prod-deploy"
-# (Contributor scoped to the prod app only).
-#
-# NOTE: This replaced the old classic-Consumption app "alpinehutscrawler" (Switzerland North, Netherite).
-# After the first successful deploy here, stop/decommission the old app to avoid a double crawl.
+# Deploys FetchDataFunctions to the dev crawler Function App on pushes to the `dev` branch.
+# Dev app: alpinehutscrawler-dev (Flex Consumption, France Central, .NET 10 isolated, Durable Task Scheduler).
+# Auth: OIDC via the dedicated least-privilege app registration "alpinehuts-crawler-dev-deploy"
+# (Contributor scoped to the dev app only).
 
-name: Deploy alpinehutscrawler to Azure Function
+name: Deploy alpinehutscrawler-dev (dev)
 
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - 'FetchDataFunctions/**'
-      - '.github/workflows/main_alpinehutscrawler.yml'
+      - '.github/workflows/dev_alpinehutscrawler.yml'
   workflow_dispatch:
 
 env:
@@ -49,13 +46,13 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v3
         with:
-          client-id: ${{ secrets.AZURE_PROD_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_PROD_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_PROD_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_DEV_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_DEV_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_DEV_SUBSCRIPTION_ID }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'alpinehutscrawler-prod'
+          app-name: 'alpinehutscrawler-dev'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'

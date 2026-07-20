@@ -5,12 +5,13 @@ Data is scraped from two sources into an Azure SQL database, then served to a Vu
 
 ## Repository layout (three deployables + E2E suite)
 
-- **`FetchDataFunctions/`** — .NET **10** isolated Azure Functions app (deployed as Function App `alpinehutscrawler`). Timer-triggered crawlers + Durable Functions orchestrations that scrape huts/availability and write to Azure SQL via EF Core.
+- **`FetchDataFunctions/`** — .NET **10** isolated Azure Functions app on **Flex Consumption** in **France Central**, deployed to `alpinehutscrawler-dev` (dev) and `alpinehutscrawler-prod` (prod). Timer-triggered crawlers + **Durable Functions** (Durable Task Scheduler backend) that scrape huts/availability and write to Azure SQL via EF Core. See `FetchDataFunctions/README.md` for the infra overview.
+- **`FetchDataFunctions.Tests/`** — **NUnit** unit tests for the crawler's pure logic (availability reconciler, coordinate/altitude parsing, Swiss-grid conversion, provider-payload deserialization).
 - **`WebsiteBackendFunctions/`** — .NET **8** isolated Azure Functions app. The Static Web App's managed API (`/api/*`); read/admin endpoints backed directly by the SQL bindings (no EF Core).
 - **`website/`** — Vue 3 SPA (**Vite**, dev/build on `:8080`), deployed to Azure Static Web Apps.
 - **`e2e/`** — standalone Playwright end-to-end smoke suite (its own `package.json`; **not deployed** and intentionally kept out of the frontend build). See Testing.
 
-The two Functions apps are the projects in `AlpineHutProject.sln`.
+The two Functions apps plus the `FetchDataFunctions.Tests` project are in `AlpineHutProject.sln`.
 
 ## Framework version constraint (do not break)
 
@@ -18,12 +19,15 @@ The two Functions apps are the projects in `AlpineHutProject.sln`.
 
 ## Build & run
 
-The .NET apps have **no unit-test projects**; frontend/site validation is a Playwright E2E suite (see Testing).
+The `FetchDataFunctions` app has an **NUnit** unit-test project (`FetchDataFunctions.Tests`); `WebsiteBackendFunctions` has none. Frontend/site validation is a Playwright E2E suite (see Testing).
 
 ```bash
 # Build each Functions app independently (avoids the mixed-SDK solution build)
 dotnet build FetchDataFunctions/FetchDataFunctions.csproj -c Release
 dotnet build WebsiteBackendFunctions/WebsiteBackendFunctions.csproj -c Release
+
+# Crawler unit tests (NUnit, net10)
+dotnet test FetchDataFunctions.Tests/FetchDataFunctions.Tests.csproj
 
 # Website (Node 22; Vite)
 cd website && npm ci && npm run build   # production build -> website/dist
@@ -34,11 +38,11 @@ npm run format                          # Prettier (writes src/)
 
 Local end-to-end run (see `website/README.md`): start the backend (`func start` from `WebsiteBackendFunctions/`) and the SWA emulator (`swa start --api-devserver-url http://localhost:7071` from `website/`, opens http://localhost:4280). Requires the `swa` and Azure Functions Core Tools (`func`) CLIs.
 
-Run the `FetchDataFunctions` crawler app locally with `dotnet run` from `FetchDataFunctions/` (the recommended path for .NET isolated — `func start` warns and may fail to load worker extensions). It needs **Azurite** running for `AzureWebJobsStorage` (blob secret repo + timer/durable listeners); without it the host cancels startup. Netherite runs in-memory via `EventHubsConnection=SingleHost`, so no real Event Hubs is required. Timer crawlers early-return in Development, but you can drive a single hut on demand: `GET http://localhost:7071/api/UpdateAvailabilityHttpTriggered?hutid=<id>` (also `UpdateHutHttpTriggered`), which invoke the same activity code (incl. the EF-Core SQL writes) directly. Both Functions apps' `local.settings.json` point `DatabaseConnectionString` at the **real prod Azure SQL** DB, so it's queryable directly for diagnosis.
+Run the `FetchDataFunctions` crawler app locally with `dotnet run` from `FetchDataFunctions/` (the recommended path for .NET isolated — `func start` warns and may fail to load worker extensions). It needs **Azurite** running for `AzureWebJobsStorage` (blob secret repo + timer/durable listeners); without it the host cancels startup. Durable state uses the **Durable Task Scheduler**; locally point `DURABLE_TASK_SCHEDULER_CONNECTION_STRING` at the DTS emulator (Docker image `mcr.microsoft.com/dts/dts-emulator`) with `TASKHUB_NAME=default` (already in `local.settings.json`). Timer CRON schedules come from app settings (`HutsUpdateSchedule`, `AvailabilityUpdateSchedule`, `HuettenHolidayAvailabilityUpdateSchedule`, `CleanupSchedule`). Timer crawlers early-return in Development, but you can drive a single hut on demand: `GET http://localhost:7071/api/UpdateAvailabilityHttpTriggered?hutid=<id>` (also `UpdateHutHttpTriggered`), which invoke the same activity code (incl. the EF-Core SQL writes) directly. Both Functions apps' `local.settings.json` point `DatabaseConnectionString` at the **real prod Azure SQL** DB, so it's queryable directly for diagnosis.
 
 ## Testing
 
-No unit tests. Validation is **build + lint + an end-to-end Playwright smoke suite** run against a **live deployed environment** (the API needs the real Azure SQL DB, so E2E can't run fully offline).
+No unit tests for the website/backend. `FetchDataFunctions` has an **NUnit** suite (`FetchDataFunctions.Tests`, 40 tests: availability reconciler, coordinate/altitude parsing, Swiss-grid conversion, provider-payload deserialization) — run `dotnet test FetchDataFunctions.Tests/FetchDataFunctions.Tests.csproj`. Everything else is validated by **build + lint + an end-to-end Playwright smoke suite** run against a **live deployed environment** (the API needs the real Azure SQL DB, so E2E can't run fully offline).
 
 - **E2E suite** lives in `e2e/` (standalone `package.json`, deliberately kept out of the frontend build). Six read-only smoke tests (map markers, `/api/huts`, hut list, hut detail + availability, info page, `/api/availability/{today}`) with threshold assertions. Run locally:
   ```bash
@@ -52,9 +56,9 @@ No unit tests. Validation is **build + lint + an end-to-end Playwright smoke sui
 ## Azure Functions conventions
 
 - Isolated worker model everywhere. Name functions with `[Function(nameof(MethodName))]` and reference orchestration/activity functions by `nameof(...)` when scheduling.
-- **Data access differs by app:** `FetchDataFunctions` uses EF Core via `Helpers.GetDbContext()` (reads the `DatabaseConnectionString` env var, one short-lived `AlpinehutsDbContext` per activity). `WebsiteBackendFunctions` uses the `[SqlInput(...)]` / SQL output bindings directly against `DatabaseConnectionString` — do not add EF Core there.
-- Timer-triggered crawlers early-return when `AZURE_FUNCTIONS_ENVIRONMENT == "Development"` so they never run locally.
-- Durable orchestrations (Netherite storage provider) fan out in **batches of 10 with a 1-minute delay** between batches to avoid provider rate limiting; use `context.CreateReplaySafeLogger` inside orchestrators.
+- **Data access differs by app:** `FetchDataFunctions` uses EF Core via an injected **`IDbContextFactory<AlpinehutsDbContext>`** (pooled; one short-lived `await using` context per activity — the right fit for the Durable fan-out). The connection string is bound from configuration in `Program.cs`. `WebsiteBackendFunctions` uses the `[SqlInput(...)]` / SQL output bindings directly against `DatabaseConnectionString` — do not add EF Core there.
+- Timer-triggered crawlers early-return when `IHostEnvironment.IsDevelopment()` so they never run locally. Their CRON expressions come from app settings (`%HutsUpdateSchedule%` etc.), so dev runs weekly and prod runs daily from the same code.
+- Durable orchestrations use the **Durable Task Scheduler** (`azureManaged` provider in `host.json`; `hubName` + connection string resolved from `TASKHUB_NAME` / `DURABLE_TASK_SCHEDULER_CONNECTION_STRING`). They fan out in **batches of 10 with a 1-minute delay** via the shared `Functions/DurableFanOut.cs` helper; use `context.CreateReplaySafeLogger` inside orchestrators. The per-day availability upsert/diff logic is the pure, unit-tested `AvailabilityReconciler`.
 - Outbound scraping goes through the named `"HttpClient"` (configured in `FetchDataFunctions/Program.cs`) which carries a Polly retry policy that also retries HTTP 429 and 403 (treated as rate limiting).
 
 ## Domain model
@@ -73,7 +77,8 @@ No unit tests. Validation is **build + lint + an end-to-end Playwright smoke sui
 
 ## CI/CD
 
-- `.github/workflows/main_alpinehutscrawler.yml`: deploys `FetchDataFunctions` on push to **`main`** (paths `FetchDataFunctions/**`). It deletes any root `global.json` so `setup-dotnet` (10.0.x) drives the SDK.
+- `.github/workflows/main_alpinehutscrawler.yml`: deploys `FetchDataFunctions` to the prod Flex app **`alpinehutscrawler-prod`** (France Central) on push to **`main`** (paths `FetchDataFunctions/**`), via **OIDC** (least-privilege app registration `alpinehuts-crawler-prod-deploy`, secrets `AZURE_PROD_*`).
+- `.github/workflows/dev_alpinehutscrawler.yml`: deploys `FetchDataFunctions` to the dev Flex app **`alpinehutscrawler-dev`** on push to **`dev`**, via OIDC (`alpinehuts-crawler-dev-deploy`, secrets `AZURE_DEV_*`). Both workflows delete any root `global.json` so `setup-dotnet` (10.0.x) drives the SDK.
 - `.github/workflows/azure-static-web-apps-white-pond-0976e3603.yml`: builds/deploys `website` + `WebsiteBackendFunctions` on push to `main` and `dev`, then runs the `e2e_smoke` job (Playwright, see Testing) against the deployed environment as a final gate.
 - **`dev` is the integration branch** (default target for Dependabot PRs); `main` is production. Open PRs against `dev`.
 - Pushing to `dev` auto-deploys to a **SWA staging slot** and auto-runs the E2E smoke suite against it; the Action build log also prints the preview URL for manual checks.

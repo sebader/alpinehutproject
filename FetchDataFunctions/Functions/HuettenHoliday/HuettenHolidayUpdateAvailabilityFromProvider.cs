@@ -79,7 +79,7 @@ public class HuettenHolidayUpdateAvailabilityFromProvider(
         var hutIds = context.GetInput<List<int>>();
         orchestratorLogger.LogInformation("Starting HuettenHoliday orchestrator with {Count} hut IDs", hutIds!.Count);
 
-        await context.FanOutInBatchesAsync<IEnumerable<Availability>?>(
+        await context.ProcessSequentiallyAsync<IEnumerable<Availability>?>(
             hutIds, nameof(HuettenHolidayUpdateAvailabilityActivityTrigger), orchestratorLogger);
 
         orchestratorLogger.LogInformation("HuettenHoliday Update availability orchestrator finished");

@@ -31,6 +31,26 @@ public class HutInfoV2Tests
         Assert.That(info.Longitude, Is.Null);
     }
 
+    [TestCase("46.96/11.18", 2)]
+    [TestCase("46.960 / 11.1801", 3)]
+    [TestCase("46.9631512/11.1778146", 7)]
+    [TestCase("47.04, 11.68", 2)]
+    [TestCase("46/11", 0)]
+    public void CoordinateDecimals_ReturnsLeastPreciseAxis(string coordinates, int expected)
+    {
+        var info = new HutInfoV2 { coordinates = coordinates };
+        Assert.That(info.CoordinateDecimals, Is.EqualTo(expected));
+    }
+
+    [TestCase(null)]
+    [TestCase("46.96")]
+    [TestCase("")]
+    public void CoordinateDecimals_Unparseable_ReturnsNull(string? coordinates)
+    {
+        var info = new HutInfoV2 { coordinates = coordinates };
+        Assert.That(info.CoordinateDecimals, Is.Null);
+    }
+
     [TestCase("1726 m", 1726)]
     [TestCase("1.726 m", 1726)]
     [TestCase("2500 M", 2500)]

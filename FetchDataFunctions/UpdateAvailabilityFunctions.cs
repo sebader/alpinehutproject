@@ -95,7 +95,7 @@ public class UpdateAvailabilityFunctions(
         var hutIds = context.GetInput<List<int>>();
         orchestratorLogger.LogInformation("Starting orchestrator with {Count} hut IDs", hutIds!.Count);
 
-        await context.FanOutInBatchesAsync<UpdateAvailabilityResult>(
+        await context.ProcessSequentiallyAsync<UpdateAvailabilityResult>(
             hutIds, nameof(UpdateHutAvailability), orchestratorLogger);
 
         // Call stored proc to update reporting table

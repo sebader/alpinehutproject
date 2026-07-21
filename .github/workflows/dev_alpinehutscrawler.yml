@@ -1,5 +1,5 @@
 # Deploys FetchDataFunctions to the dev crawler Function App on pushes to the `dev` branch.
-# Dev app: alpinehutscrawler-dev (Flex Consumption, France Central, .NET 10 isolated, Durable Task Scheduler).
+# Dev app: alpinehutscrawler-dev (Flex Consumption, France Central, .NET 10 isolated, Azure Storage durable backend).
 # Auth: OIDC via the dedicated least-privilege app registration "alpinehuts-crawler-dev-deploy"
 # (Contributor scoped to the dev app only).
 

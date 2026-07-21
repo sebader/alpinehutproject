@@ -1,5 +1,5 @@
 # Deploys FetchDataFunctions to the prod crawler Function App on pushes to `main`.
-# Prod app: alpinehutscrawler-prod (Flex Consumption, France Central, .NET 10 isolated, Durable Task Scheduler).
+# Prod app: alpinehutscrawler-prod (Flex Consumption, France Central, .NET 10 isolated, Azure Storage durable backend).
 # Auth: OIDC via the dedicated least-privilege app registration "alpinehuts-crawler-prod-deploy"
 # (Contributor scoped to the prod app only).
 #

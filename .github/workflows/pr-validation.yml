@@ -1,0 +1,150 @@
+# Validates every pull request by building the three deployables the same way their
+# deploy workflows do — without deploying anything.
+#
+#   FetchDataFunctions      -> mirrors main_/dev_alpinehutscrawler.yml (net10.0) + NUnit suite
+#   WebsiteBackendFunctions -> net8.0 (pinned: SWA does not support .NET 10 yet)
+#   website                 -> npm ci + lint + format check + vite build (what Oryx does in the SWA deploy)
+#
+# No secrets, no Azure login, no OIDC — safe for fork PRs.
+
+name: PR validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changed components
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read # paths-filter lists a PR's changed files via the API
+    outputs:
+      # workflow_dispatch has no diff to inspect, so a manual run builds everything.
+      crawler: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.crawler == 'true' }}
+      backend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.backend == 'true' }}
+      website: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.website == 'true' }}
+    steps:
+      # A workflow-level `paths:` filter cannot scope individual jobs, so compute
+      # one boolean per deployable and gate the build jobs on it below.
+      # Pinned to a commit SHA (v4.0.3) rather than a mutable tag.
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          filters: |
+            crawler:
+              - 'FetchDataFunctions/**'
+              - 'FetchDataFunctions.Tests/**'
+              - '.github/workflows/pr-validation.yml'
+            backend:
+              - 'WebsiteBackendFunctions/**'
+              - '.github/workflows/pr-validation.yml'
+            website:
+              - 'website/**'
+              - '.github/workflows/pr-validation.yml'
+
+  crawler:
+    name: Build crawler (FetchDataFunctions)
+    needs: changes
+    if: needs.changes.outputs.crawler == 'true'
+    runs-on: ubuntu-latest
+    env:
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: 'FetchDataFunctions'
+      DOTNET_VERSION: '10.0.x'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build (same command as the deploy workflow)
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          # Remove any root global.json so setup-dotnet's SDK is used
+          rm -f ../global.json
+          dotnet build --configuration Release --output ./output
+          popd
+
+      - name: Run unit tests
+        run: >-
+          dotnet test FetchDataFunctions.Tests/FetchDataFunctions.Tests.csproj
+          --configuration Release
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: crawler-test-results
+          path: test-results/
+          retention-days: 7
+
+  backend-api:
+    name: Build website API (WebsiteBackendFunctions)
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    env:
+      # Pinned to 8.0.x on purpose: WebsiteBackendFunctions must stay on .NET 8
+      # until Azure Static Web Apps supports .NET 10. This job fails loudly if
+      # the TargetFramework is bumped early.
+      DOTNET_VERSION: '8.0.x'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build
+        shell: bash
+        run: |
+          # Remove any root global.json so setup-dotnet's SDK is used
+          rm -f global.json
+          dotnet build WebsiteBackendFunctions/WebsiteBackendFunctions.csproj --configuration Release
+
+  website:
+    name: Build website (Vue SPA)
+    needs: changes
+    if: needs.changes.outputs.website == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Lint and format run before the build so style failures report in seconds
+      # instead of after a full bundle.
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npx prettier --check "src/**/*.{js,vue,css}"
+
+      - name: Build
+        run: npm run build

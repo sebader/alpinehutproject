@@ -268,3 +268,6 @@ __azurite_
 
 # Vue build output
 website/dist/
+
+# Superpowers session artifacts (design specs, plans)
+docs/superpowers/

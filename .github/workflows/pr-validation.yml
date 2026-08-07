@@ -148,3 +148,34 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Single check to require in branch protection.
+  #
+  # The build jobs above are conditional, and GitHub reports a job skipped by an
+  # `if:` condition as *successful* for required status checks. Requiring those
+  # jobs directly would therefore leave a hole: if `changes` ever failed, every
+  # build job would be skipped and the PR would look green without building
+  # anything. This job runs unconditionally and fails unless every job it needs
+  # either succeeded or was legitimately skipped, so there is exactly one check
+  # to require — and adding a build job here never needs a settings change.
+  gate:
+    name: PR validation passed
+    needs: [changes, crawler, backend-api, website]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all validation jobs succeeded
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS_JSON"
+          bad=$(echo "$NEEDS_JSON" | jq -r '
+            to_entries
+            | map(select(.value.result != "success" and .value.result != "skipped"))
+            | map("\(.key) (\(.value.result))")
+            | join(", ")')
+          if [ -n "$bad" ]; then
+            echo "::error::PR validation failed: $bad"
+            exit 1
+          fi
+          echo "All validation jobs succeeded or were skipped as not applicable."

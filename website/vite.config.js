@@ -14,5 +14,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // vue3-easy-data-table ships CSS with an invalid `var(easy-table-body-row-font-color)`
+    // (missing the `--` custom-property prefix). Vite 8's default lightningcss minifier
+    // parses CSS strictly and fails the build on it, so disable CSS minification.
+    cssMinify: false,
   },
 })

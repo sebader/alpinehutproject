@@ -68,7 +68,7 @@
                      :title="$t('message.showOnMap')"
                      class="coordinates-link"
                   >
-                     <span>{{ hut.latitude?.toLocaleString() }}/{{ hut.longitude?.toLocaleString() }}</span>
+                     <span>{{ formatCoordinate(hut.latitude) }}/{{ formatCoordinate(hut.longitude) }}</span>
                      <i class="map-icon">🗺️</i>
                   </router-link>
                </template>
@@ -412,7 +412,7 @@
 </style>
 
 <script>
-import { Constants } from "../utils";
+import { Constants, formatCoordinate } from "../utils";
 import { EventBus } from "../event-bus";
 import { Modal } from "bootstrap";
 import AdminHutForm from "./AdminHutForm.vue";
@@ -484,6 +484,9 @@ export default {
       await this.loadHuts();
    },
    methods: {
+      formatCoordinate(value) {
+         return formatCoordinate(value);
+      },
       hutSelected(selectedHut) {
          this.$router.push({ name: "hutDetailsPage", params: { hutId: selectedHut.id } });
       },

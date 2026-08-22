@@ -144,7 +144,7 @@
                               </router-link>
                            </h3>
                            <div class="hut-popup-meta" v-if="hut.enabled">
-                              <span class="date-badge">{{ new Date(this.dateFilter).toLocaleDateString() }}</span>
+                              <span class="date-badge">{{ formatDate(this.dateFilter) }}</span>
                               <span
                                  class="source-badge"
                                  :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }"
@@ -276,7 +276,7 @@
                            <div class="popup-footer">
                               <span class="last-updated">
                                  {{ $t("message.lastUpdated") }}:
-                                 {{ new Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString() }}
+                                 {{ formatDateTime(hut.availability?.lastUpdated ?? hut.lastUpdated) }}
                               </span>
                               <a href="#" @click.prevent="hutSelected(hut)" class="zoom-link">
                                  <span class="zoom-icon">🔍</span>
@@ -295,7 +295,7 @@
 <script>
 import { Constants } from "../utils";
 import { EventBus } from "../event-bus";
-import { shortWebsiteUrl } from "../utils";
+import { shortWebsiteUrl, formatDate, formatDateTime } from "../utils";
 import { tileProviders } from "../services/mapview-service";
 
 import L from "leaflet";
@@ -386,6 +386,12 @@ export default {
       },
       shortWebsiteUrl(url) {
          return shortWebsiteUrl(url);
+      },
+      formatDate(value) {
+         return formatDate(value, this.$i18n.locale);
+      },
+      formatDateTime(value) {
+         return formatDateTime(value, this.$i18n.locale);
       },
       async updateAvailabilityData() {
          try {

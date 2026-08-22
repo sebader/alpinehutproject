@@ -721,7 +721,7 @@ export default {
          return shortWebsiteUrl(url);
       },
       formatCoordinate(value) {
-         return formatCoordinate(value);
+         return formatCoordinate(value, this.$i18n.locale);
       },
       formatDate(value) {
          return formatDate(value, this.$i18n.locale);

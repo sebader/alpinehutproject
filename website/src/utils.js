@@ -52,11 +52,15 @@ export function formatDate(value, locale) {
 }
 
 // Coordinates are only shown for orientation, so two decimals are enough.
-export function formatCoordinate(value, digits = 2) {
+// Formatted with the currently selected UI locale (German uses a decimal comma).
+export function formatCoordinate(value, locale, digits = 2) {
    if (value == null || isNaN(Number(value))) {
       return "";
    }
-   return Number(value).toFixed(digits);
+   return Number(value).toLocaleString(locale, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+   });
 }
 
 export function shortWebsiteUrl(url) {

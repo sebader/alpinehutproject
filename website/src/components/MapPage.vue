@@ -143,9 +143,10 @@
                                  {{ hut.name }}
                               </router-link>
                            </h3>
-                           <div class="hut-popup-meta" v-if="hut.enabled">
-                              <span class="date-badge">{{ formatDate(this.dateFilter) }}</span>
+                           <div class="hut-popup-meta" v-if="hut.enabled || hut.altitude != null">
+                              <span class="date-badge" v-if="hut.enabled">{{ formatDate(this.dateFilter) }}</span>
                               <span
+                                 v-if="hut.enabled"
                                  class="source-badge"
                                  :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }"
                               >
@@ -155,6 +156,9 @@
                                        : $t("message.sourceAlpenvereine")
                                  }}
                               </span>
+                              <span class="altitude-badge" v-if="hut.altitude != null" :title="$t('message.altitude')"
+                                 >{{ hut.altitude }} m</span
+                              >
                            </div>
                         </div>
 
@@ -941,6 +945,14 @@ select.form-control {
 }
 
 .source-badge {
+   background-color: rgba(255, 255, 255, 0.2);
+   border-radius: 20px;
+   padding: 2px 12px;
+   font-size: 0.8rem;
+   border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.altitude-badge {
    background-color: rgba(255, 255, 255, 0.2);
    border-radius: 20px;
    padding: 2px 12px;

@@ -485,7 +485,7 @@ export default {
    },
    methods: {
       formatCoordinate(value) {
-         return formatCoordinate(value);
+         return formatCoordinate(value, this.$i18n.locale);
       },
       hutSelected(selectedHut) {
          this.$router.push({ name: "hutDetailsPage", params: { hutId: selectedHut.id } });

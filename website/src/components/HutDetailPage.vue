@@ -70,7 +70,7 @@
                               :title="$t('message.showOnMap')"
                               class="coordinates-link"
                            >
-                              {{ hut.latitude }}/{{ hut.longitude }}
+                              {{ formatCoordinate(hut.latitude) }}/{{ formatCoordinate(hut.longitude) }}
                               <i class="map-icon">🗺️</i>
                            </router-link>
                         </div>
@@ -78,12 +78,12 @@
 
                      <div class="info-item">
                         <div class="info-label">{{ $t("message.lastUpdated") }}</div>
-                        <div class="info-value">{{ new Date(hut.lastUpdated).toLocaleString() }}</div>
+                        <div class="info-value">{{ formatDateTime(hut.lastUpdated) }}</div>
                      </div>
 
                      <div class="info-item">
                         <div class="info-label">{{ $t("message.hutAdded") }}</div>
-                        <div class="info-value">{{ new Date(hut.added).toLocaleDateString() }}</div>
+                        <div class="info-value">{{ formatDate(hut.added) }}</div>
                      </div>
                   </div>
                </div>
@@ -662,7 +662,7 @@
 </style>
 
 <script>
-import { shortWebsiteUrl } from "../utils";
+import { shortWebsiteUrl, formatCoordinate, formatDate, formatDateTime } from "../utils";
 import { Constants } from "../utils";
 import { EventBus } from "../event-bus";
 import { tileProviders } from "../services/mapview-service";
@@ -719,6 +719,15 @@ export default {
    methods: {
       shortWebsiteUrl(url) {
          return shortWebsiteUrl(url);
+      },
+      formatCoordinate(value) {
+         return formatCoordinate(value, this.$i18n.locale);
+      },
+      formatDate(value) {
+         return formatDate(value, this.$i18n.locale);
+      },
+      formatDateTime(value) {
+         return formatDateTime(value, this.$i18n.locale);
       },
       toggleCollapse(month) {
          month.collapsed = !month.collapsed;

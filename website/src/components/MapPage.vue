@@ -143,9 +143,10 @@
                                  {{ hut.name }}
                               </router-link>
                            </h3>
-                           <div class="hut-popup-meta" v-if="hut.enabled">
-                              <span class="date-badge">{{ new Date(this.dateFilter).toLocaleDateString() }}</span>
+                           <div class="hut-popup-meta" v-if="hut.enabled || hut.altitude != null">
+                              <span class="date-badge" v-if="hut.enabled">{{ formatDate(this.dateFilter) }}</span>
                               <span
+                                 v-if="hut.enabled"
                                  class="source-badge"
                                  :class="{ 'source-huettenholiday': hut.source === 'HuettenHoliday' }"
                               >
@@ -155,6 +156,9 @@
                                        : $t("message.sourceAlpenvereine")
                                  }}
                               </span>
+                              <span class="altitude-badge" v-if="hut.altitude != null" :title="$t('message.altitude')"
+                                 >{{ hut.altitude }} m</span
+                              >
                            </div>
                         </div>
 
@@ -276,7 +280,7 @@
                            <div class="popup-footer">
                               <span class="last-updated">
                                  {{ $t("message.lastUpdated") }}:
-                                 {{ new Date(hut.availability?.lastUpdated ?? hut.lastUpdated).toLocaleString() }}
+                                 {{ formatDateTime(hut.availability?.lastUpdated ?? hut.lastUpdated) }}
                               </span>
                               <a href="#" @click.prevent="hutSelected(hut)" class="zoom-link">
                                  <span class="zoom-icon">🔍</span>
@@ -295,7 +299,7 @@
 <script>
 import { Constants } from "../utils";
 import { EventBus } from "../event-bus";
-import { shortWebsiteUrl } from "../utils";
+import { shortWebsiteUrl, formatDate, formatDateTime } from "../utils";
 import { tileProviders } from "../services/mapview-service";
 
 import L from "leaflet";
@@ -386,6 +390,12 @@ export default {
       },
       shortWebsiteUrl(url) {
          return shortWebsiteUrl(url);
+      },
+      formatDate(value) {
+         return formatDate(value, this.$i18n.locale);
+      },
+      formatDateTime(value) {
+         return formatDateTime(value, this.$i18n.locale);
       },
       async updateAvailabilityData() {
          try {
@@ -935,6 +945,14 @@ select.form-control {
 }
 
 .source-badge {
+   background-color: rgba(255, 255, 255, 0.2);
+   border-radius: 20px;
+   padding: 2px 12px;
+   font-size: 0.8rem;
+   border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.altitude-badge {
    background-color: rgba(255, 255, 255, 0.2);
    border-radius: 20px;
    padding: 2px 12px;

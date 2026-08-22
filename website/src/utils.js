@@ -32,6 +32,37 @@ export async function processErrorResponseAsync(httpResponse) {
    return `${await httpResponse.text()} (HTTP: ${httpResponse.status})`;
 }
 
+// Formats a date incl. time using the currently selected UI locale
+// (e.g. German pages show 24h times instead of AM/PM).
+export function formatDateTime(value, locale) {
+   const date = new Date(value);
+   if (isNaN(date.getTime())) {
+      return "";
+   }
+   return date.toLocaleString(locale);
+}
+
+// Formats a date (without time) using the currently selected UI locale.
+export function formatDate(value, locale) {
+   const date = new Date(value);
+   if (isNaN(date.getTime())) {
+      return "";
+   }
+   return date.toLocaleDateString(locale);
+}
+
+// Coordinates are only shown for orientation, so two decimals are enough.
+// Formatted with the currently selected UI locale (German uses a decimal comma).
+export function formatCoordinate(value, locale, digits = 2) {
+   if (value == null || isNaN(Number(value))) {
+      return "";
+   }
+   return Number(value).toLocaleString(locale, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+   });
+}
+
 export function shortWebsiteUrl(url) {
    const regex = new RegExp("^http[s]{0,1}://(www\\.){0,1}(.*?)$");
    const matches = regex.exec(url);

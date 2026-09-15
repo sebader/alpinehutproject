@@ -15,8 +15,18 @@ updates:
   schedule:
     interval: "monthly" 
   target-branch: "dev" 
+- package-ecosystem: "nuget"
+  directory: "/FetchDataFunctions.Tests"
+  schedule:
+    interval: "monthly"
+  target-branch: "dev"
 - package-ecosystem: "npm"
   directory: "/website"
   schedule:
     interval: "monthly" 
   target-branch: "dev" 
+- package-ecosystem: "npm"
+  directory: "/e2e"
+  schedule:
+    interval: "monthly"
+  target-branch: "dev"

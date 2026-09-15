@@ -3,7 +3,7 @@
 #
 #   FetchDataFunctions      -> mirrors main_/dev_alpinehutscrawler.yml (net10.0) + NUnit suite
 #   WebsiteBackendFunctions -> net8.0 (pinned: SWA does not support .NET 10 yet)
-#   website                 -> npm ci + lint + format check + vite build (what Oryx does in the SWA deploy)
+#   website                 -> npm ci + tests + lint + format check + vite build
 #
 # No secrets, no Azure login, no OIDC — safe for fork PRs.
 
@@ -137,6 +137,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Test
+        run: npm test
 
       # Lint and format run before the build so style failures report in seconds
       # instead of after a full bundle.

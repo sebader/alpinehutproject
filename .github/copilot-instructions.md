@@ -7,22 +7,19 @@ Data is scraped from two sources into an Azure SQL database, then served to a Vu
 
 - **`FetchDataFunctions/`** — .NET **10** isolated Azure Functions app on **Flex Consumption** in **France Central**, deployed to `alpinehutscrawler-dev` (dev) and `alpinehutscrawler-prod` (prod). Timer-triggered crawlers + **Durable Functions** (Azure Storage durable backend) that scrape huts/availability and write to Azure SQL via EF Core. See `FetchDataFunctions/README.md` for the infra overview.
 - **`FetchDataFunctions.Tests/`** — **NUnit** unit tests for the crawler's pure logic (availability reconciler, coordinate/altitude parsing, Swiss-grid conversion, provider-payload deserialization).
-- **`WebsiteBackendFunctions/`** — .NET **8** isolated Azure Functions app. The Static Web App's managed API (`/api/*`); read/admin endpoints backed directly by the SQL bindings (no EF Core).
+- **`WebsiteBackendFunctions/`** — .NET **10** isolated Azure Functions app. The Static Web App's managed API (`/api/*`); read/admin endpoints backed directly by the SQL bindings (no EF Core).
 - **`website/`** — Vue 3 SPA (**Vite**, dev/build on `:8080`), deployed to Azure Static Web Apps.
 - **`e2e/`** — standalone Playwright end-to-end smoke suite (its own `package.json`; **not deployed** and intentionally kept out of the frontend build). See Testing.
 
-The two Functions apps plus the `FetchDataFunctions.Tests` project are in `AlpineHutProject.sln`.
-
-## Framework version constraint (do not break)
-
-`FetchDataFunctions` targets `net10.0`; `WebsiteBackendFunctions` targets `net8.0`. **Keep `WebsiteBackendFunctions` on .NET 8 until Azure Static Web Apps supports .NET 10** — do not bump its `TargetFramework` before then. Because the two projects differ, a full-solution `dotnet build` fails on a machine that only has the .NET 8 SDK; build each project independently.
+The two Functions apps plus the `FetchDataFunctions.Tests` project are in `AlpineHutProject.sln` and all target `net10.0`.
 
 ## Build & run
 
 The `FetchDataFunctions` app has an **NUnit** unit-test project (`FetchDataFunctions.Tests`); `WebsiteBackendFunctions` has none. Frontend/site validation is a Playwright E2E suite (see Testing).
 
 ```bash
-# Build each Functions app independently (avoids the mixed-SDK solution build)
+# Build the solution or each Functions app
+dotnet build AlpineHutProject.sln -c Release
 dotnet build FetchDataFunctions/FetchDataFunctions.csproj -c Release
 dotnet build WebsiteBackendFunctions/WebsiteBackendFunctions.csproj -c Release
 

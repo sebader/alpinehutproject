@@ -5,7 +5,7 @@
       "appLocation": ".",
       "apiLocation": "../WebsiteBackendFunctions",
       "apiLanguage": "dotnetisolated",
-      "apiVersion": "8.0",
+      "apiVersion": "10.0",
       "outputLocation": "dist",
       "appBuildCommand": "npm run build",
       "apiBuildCommand": "dotnet publish -c Release",

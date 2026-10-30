@@ -2,7 +2,7 @@
 # deploy workflows do — without deploying anything.
 #
 #   FetchDataFunctions      -> mirrors main_/dev_alpinehutscrawler.yml (net10.0) + NUnit suite
-#   WebsiteBackendFunctions -> net8.0 (pinned: SWA does not support .NET 10 yet)
+#   WebsiteBackendFunctions -> net10.0
 #   website                 -> npm ci + tests + lint + format check + vite build
 #
 # No secrets, no Azure login, no OIDC — safe for fork PRs.
@@ -99,10 +99,7 @@ jobs:
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     env:
-      # Pinned to 8.0.x on purpose: WebsiteBackendFunctions must stay on .NET 8
-      # until Azure Static Web Apps supports .NET 10. This job fails loudly if
-      # the TargetFramework is bumped early.
-      DOTNET_VERSION: '8.0.x'
+      DOTNET_VERSION: '10.0.x'
     steps:
       - uses: actions/checkout@v7
 

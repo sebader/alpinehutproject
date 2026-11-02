@@ -98,9 +98,24 @@ public class UpdateAvailabilityFunctions(
         await context.ProcessSequentiallyAsync<UpdateAvailabilityResult>(
             hutIds, nameof(UpdateHutAvailability), orchestratorLogger);
 
-        // Call stored proc to update reporting table
-        await context.CallActivityAsync(nameof(UpdateAvailabilityReporting),
-            new object()); // using new object instead of null to satisfy analyzer warning
+        // Reporting is optional and must not invalidate completed hut refreshes.
+        try
+        {
+            await context.CallActivityAsync(nameof(UpdateAvailabilityReporting),
+                new object()); // using new object instead of null to satisfy analyzer warning
+        }
+        catch (TaskFailedException e)
+        {
+            // Worker invocation failures can wrap cancellation in their inner failure details.
+            for (TaskFailureDetails? failure = e.FailureDetails; failure != null; failure = failure.InnerFailure)
+            {
+                if (failure.IsCausedBy<OperationCanceledException>())
+                {
+                    throw;
+                }
+            }
+            orchestratorLogger.LogWarning(e, "Availability reporting failed after hut updates completed");
+        }
 
         orchestratorLogger.LogInformation("Update availability orchestrator finished");
     }
@@ -213,12 +228,15 @@ public class UpdateAvailabilityFunctions(
         {
             logger.LogInformation("Executing stored procedure to update availability reporting");
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+            // The daily bulk insert hits S0's 1 MiB/s transaction-log limit; ordinary commands keep their timeout.
+            dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(3));
             var rowsAffected = await dbContext.Database.ExecuteSqlRawAsync("dbo.UpdateAvailabilityReporting", cancellationToken);
             logger.LogInformation("Inserted {RowsAffected} new rows into reporting table", rowsAffected);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Exception in executing stored procedure to update availability reporting");
+            throw;
         }
     }
 

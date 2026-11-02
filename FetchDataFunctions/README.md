@@ -41,3 +41,36 @@ The durable orchestration state (task hub `crawler`) lives in the same storage a
 
 > The exact provisioning commands are kept out of the repo. The dev database is a copy of prod with the
 > availability data and notification subscriptions removed.
+
+## Availability reporting
+
+After updating AV huts, `UpdateAvailabilityReporting` calls `dbo.UpdateAvailabilityReporting` to replace
+the current day's reporting snapshot. This is separate from the website's availability queries.
+
+Only this activity's short-lived context uses a **180-second command timeout**. Production's S0 database
+limits transaction-log throughput to **1 MiB/s**: Query Store showed the bulk INSERT spending 23.6 seconds
+waiting on the log-rate governor before its 30-second cancellation, while the source aggregation took
+about one second. A snapshot contains roughly 157,000 rows, so this write needs a larger budget rather
+than another read index. The 180-second budget provides sixfold headroom over the previous limit, not a
+measured full-snapshot duration. Other database commands retain their configured timeout.
+
+Reporting errors and cancellations are logged and rethrown, so Durable Functions marks the **activity**
+as failed. The orchestrator logs ordinary reporting failures without failing completed hut refreshes.
+Cancellation still propagates, including cancellation wrapped in Durable failure details; hut-refresh
+failures are outside this optional-reporting boundary.
+
+The stored procedure has no explicit transaction around its DELETE and INSERT, and the activity does not
+start one. Under normal autocommit, a failed INSERT does not undo the preceding DELETE: an earlier snapshot
+for the same day can be lost. A timeout does not imply that the procedure made no database changes.
+
+After deployment, verify the next **scheduled** run: check the `Inserted ... new rows into reporting table`
+trace for `alpinehutscrawler-prod`, a completed INSERT in Query Store, and the latest committed snapshot:
+
+```sql
+SELECT TOP (1) reportingdate
+FROM dbo.AvailabilityReporting
+ORDER BY reportingdate DESC;
+```
+
+The date should be the run's UTC date. Offline interceptor tests cover the command budget, pooled-context
+reuse and failure propagation; only a production run can establish the full INSERT's completion time.

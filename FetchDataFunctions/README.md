@@ -74,3 +74,23 @@ ORDER BY reportingdate DESC;
 
 The date should be the run's UTC date. Offline interceptor tests cover the command budget, pooled-context
 reuse and failure propagation; only a production run can establish the full INSERT's completion time.
+
+## Health telemetry and provider maintenance
+
+The shared Application Insights resource must retain **100%** of incoming telemetry. Its ingestion
+sampling setting is separate from `host.json`: at 50%, an entire successful job can disappear from logs
+and falsely trigger a missed-refresh signal. `infra/application-insights-sampling.bicep` changes this
+setting while preserving the supplied existing component configuration and tags.
+The worker also explicitly disables the exporter's default trace-rate limit and retains every trace.
+
+The worker keeps application outcome logs and warnings/errors, but suppresses verbose SQL-command and
+HTTP-client information logs. These categories accounted for over 90% of crawler trace bytes.
+
+`infra/sql/20261105-expand-hut-website.sql` widens the nullable website column to match EF's 2048-character
+limit in both databases. It preserves Unicode data, collation and existing values; truncating provider
+URLs would leave broken links.
+
+`infra/sql/20261105-retire-removed-holiday-huts.sql` is a one-time production correction for three URLs
+confirmed missing from the complete provider catalog and returning 404. It changes only `Enabled`,
+preserves historical data and manual-edit flags, and refuses to overwrite later metadata edits. Do not
+retire huts from a single transient provider error.

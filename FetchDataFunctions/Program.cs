@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -18,6 +19,12 @@ public static class Program
     {
         var host = new HostBuilder()
             .ConfigureFunctionsWebApplication()
+            .ConfigureLogging(logging =>
+            {
+                // Keep complete job telemetry affordable without dropping application outcomes.
+                logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+                logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+            })
             .ConfigureServices((context, services) =>
             {
                 var openTelemetry = services.AddOpenTelemetry()
@@ -27,7 +34,12 @@ public static class Program
                 // Locally the exporter throws when APPLICATIONINSIGHTS_CONNECTION_STRING is not set.
                 if (!string.IsNullOrEmpty(context.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
                 {
-                    openTelemetry.UseAzureMonitorExporter();
+                    openTelemetry.UseAzureMonitorExporter(options =>
+                    {
+                        // Presence-based job health checks cannot use sampled completion traces.
+                        options.TracesPerSecond = null;
+                        options.SamplingRatio = 1.0f;
+                    });
                 }
 
                 // Injectable clock so time-dependent logic (availability windows, month iteration) is testable.

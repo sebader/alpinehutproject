@@ -60,7 +60,7 @@ public partial class AlpinehutsDbContext : DbContext
             entity.Property(e => e.Country).HasMaxLength(100);
             entity.Property(e => e.Region).HasMaxLength(100);
             entity.Property(e => e.Source).HasMaxLength(100);
-            entity.Property(e => e.HutWebsite).HasMaxLength(100);
+            entity.Property(e => e.HutWebsite).HasMaxLength(2048);
             entity.Property(e => e.Link).HasMaxLength(100);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
         });

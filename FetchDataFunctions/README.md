@@ -41,3 +41,56 @@ The durable orchestration state (task hub `crawler`) lives in the same storage a
 
 > The exact provisioning commands are kept out of the repo. The dev database is a copy of prod with the
 > availability data and notification subscriptions removed.
+
+## Availability reporting
+
+After updating AV huts, `UpdateAvailabilityReporting` calls `dbo.UpdateAvailabilityReporting` to replace
+the current day's reporting snapshot. This is separate from the website's availability queries.
+
+Only this activity's short-lived context uses a **180-second command timeout**. Production's S0 database
+limits transaction-log throughput to **1 MiB/s**: Query Store showed the bulk INSERT spending 23.6 seconds
+waiting on the log-rate governor before its 30-second cancellation, while the source aggregation took
+about one second. A snapshot contains roughly 157,000 rows, so this write needs a larger budget rather
+than another read index. The 180-second budget provides sixfold headroom over the previous limit, not a
+measured full-snapshot duration. Other database commands retain their configured timeout.
+
+Reporting errors and cancellations are logged and rethrown, so Durable Functions marks the **activity**
+as failed. The orchestrator logs ordinary reporting failures without failing completed hut refreshes.
+Cancellation still propagates, including cancellation wrapped in Durable failure details; hut-refresh
+failures are outside this optional-reporting boundary.
+
+The stored procedure has no explicit transaction around its DELETE and INSERT, and the activity does not
+start one. Under normal autocommit, a failed INSERT does not undo the preceding DELETE: an earlier snapshot
+for the same day can be lost. A timeout does not imply that the procedure made no database changes.
+
+After deployment, verify the next **scheduled** run: check the `Inserted ... new rows into reporting table`
+trace for `alpinehutscrawler-prod`, a completed INSERT in Query Store, and the latest committed snapshot:
+
+```sql
+SELECT TOP (1) reportingdate
+FROM dbo.AvailabilityReporting
+ORDER BY reportingdate DESC;
+```
+
+The date should be the run's UTC date. Offline interceptor tests cover the command budget, pooled-context
+reuse and failure propagation; only a production run can establish the full INSERT's completion time.
+
+## Health telemetry and provider maintenance
+
+The shared Application Insights resource must retain **100%** of incoming telemetry. Its ingestion
+sampling setting is separate from `host.json`: at 50%, an entire successful job can disappear from logs
+and falsely trigger a missed-refresh signal. `infra/application-insights-sampling.bicep` changes this
+setting while preserving the supplied existing component configuration and tags.
+The worker also explicitly disables the exporter's default trace-rate limit and retains every trace.
+
+The worker keeps application outcome logs and warnings/errors, but suppresses verbose SQL-command and
+HTTP-client information logs. These categories accounted for over 90% of crawler trace bytes.
+
+`infra/sql/20261105-expand-hut-website.sql` widens the nullable website column to match EF's 2048-character
+limit in both databases. It preserves Unicode data, collation and existing values; truncating provider
+URLs would leave broken links.
+
+`infra/sql/20261105-retire-removed-holiday-huts.sql` is a one-time production correction for three URLs
+confirmed missing from the complete provider catalog and returning 404. It changes only `Enabled`,
+preserves historical data and manual-edit flags, and refuses to overwrite later metadata edits. Do not
+retire huts from a single transient provider error.
